@@ -348,7 +348,7 @@ row {
             background-color: #bebebe;
             padding: 0px;
             border-radius: 8px;
-            display: flex;
+            display:flex;
             align-items: center;
             justify-content: center;
             height: 100%;
@@ -374,11 +374,13 @@ row {
             padding: 5px 0;
         }
 
+
         .fastener-subtitle {
             color: #6ccce2;
             font-size: 24px;
             margin: 0;
             text-align: center;
+            padding-bottom: 15px;
         }
 
         .info-row {
@@ -404,6 +406,16 @@ row {
             font-size: 16px;
             font-style: italic;
             margin-top: 10px;
+        }
+
+        
+        .notes a {
+            color: #6ccce2;
+        }
+
+        .notes a:hover {
+            color: #66BB6A;
+            text-decoration: underline;
         }
 
         @media screen and (max-width: 800px) {
