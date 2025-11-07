@@ -71,6 +71,15 @@ body {
 	background-repeat: no-repeat;
 }
 
+h1{
+    color: #f3e722;
+            font-size: 50px;
+            font-weight: bold;
+            margin: 0;
+            text-align: center;
+            padding: 5px 0;
+}
+
 banner {
 	color: #565c5c;
 	font-size: 13px;
@@ -178,9 +187,7 @@ row {
 	border-color: #f3e722;
 }
 
-.row p {
 
-}
 
 .col-md-4, .col-md-2, .col-md-1, .col-md-10, .col-md-6, .col-md-3 {
 	padding: 0px 48px 48px 48px; #top right bottom left
@@ -338,7 +345,7 @@ row {
         }
 
         .fastener-image {
-            background-color: #ffffff;
+            background-color: #bebebe;
             padding: 0px;
             border-radius: 8px;
             display: flex;

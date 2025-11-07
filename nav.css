@@ -12,10 +12,13 @@
 	font-size: 30px;
 	background-color: #555555;
 	padding: 10px 0px 0px 20px;
+    position: sticky !important;
+	top: 0 !important;
+	z-index: 1000 !important;
 }
 
 	.upperleft-links img {
-		height: 25px;
+		height: 30px;
 		padding: 0px 10px 0px 10px;
 	}
 
@@ -44,4 +47,14 @@
 a.email:hover {
 	background-image: url('img/logos/logo_email_hover.png');
 	cursor: pointer;
+}
+
+.upperleft-links H1 {
+	display: inline-block;
+	color: #f3e722;
+	font-size: 30px;
+	margin: 0;
+	padding: 0 20px;
+	vertical-align: center;
+	text-align: center;
 }
