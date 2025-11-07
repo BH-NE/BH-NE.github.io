@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta property="og:title" content="Fasteners" />
+    <meta property="og:image" content="logo.png" />
+    <meta property="og:description" content="" />
+    <meta property="og:site_name" content="BH-NE.github.io" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Northshore Drafting - Fasteners</title>
+    <link rel="icon" href="logo.png">
+
+    <link href="http://s3.amazonaws.com/codecademy-content/courses/ltp/css/shift.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://s3.amazonaws.com/codecademy-content/courses/ltp/css/bootstrap.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="nav.css">
+
+</head>
+
+<body>
+    <div class="upperleft-links">
+        <a class="link" href="index.html">HOME</a>
+    </div>
+
+    <H1>Fasteners</H1>
+    <p>Fastener Excel Chart: <a class="link" target="_blank" href="https://northclad.sharepoint.com/:x:/s/NorthshoreExteriors/Ef6LmC9hugJEu6rXfYr6tqYBaut2hpDkO8bCGCkXVSsIzw?e=9sBiaT">LINK</a>
+
+    <div class="finder-container">
+        <div class="finder-title">Find Your Fastener</div>
+        <div class="finder-subtitle">Select the object and substrate to find the recommended fastener</div>
+
+        <div class="dropdown-group">
+            <label class="dropdown-label">1. Select Object:</label>
+            <select id="objectSelect" onchange="updateSubstrates()">
+                <option value="">-- Select Object --</option>
+                <option value="Light Gauge Flashing">Light Gauge Flashing</option>
+                <option value="Exposed Metal Panel">Exposed Metal Panel</option>
+                <option value="Concealed Metal Panel">Concealed Metal Panel</option>
+                <option value="GreenGirt">GreenGirt</option>
+                <option value="Furring">Furring</option>
+                <option value="EF Panel">EF Panel</option>
+                <option value="Coping">Coping</option>
+                <option value="Cleat">Cleat</option>
+            </select>
+        </div>
+
+        <div class="dropdown-group">
+            <label class="dropdown-label">2. Select Substrate:</label>
+            <select id="substrateSelect" onchange="findFastener()">
+                <option value="">-- Select Substrate --</option>
+            </select>
+        </div>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-title">Recommended Fastener:</div>
+            <div id="resultText" class="result-text"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure: Object -> Substrate -> Fastener
+        const fastenerData = {
+            "Light Gauge Flashing": {
+                "Metal Stud": "#8 Tek2 Round Head",
+                "Furring": "#8 Tek2 Round Head",
+                "Greengirt": "#8 Tek2 Round Head",
+                "Plywood": "#8 SP Round Head",
+                "Wood Stud": "#8 SP Round Head",
+                "Structural Steel": "1/8\" Pop Rivet",
+                "Concrete": "Rawl Pins",
+                "Brick": "Rawl Pins",
+                "CMU": "Rawl Pins",
+                "Light Gauge Flashing": "#8 Tek2 Round Head"
+            },
+            "Exposed Metal Panel": {
+                "Metal Stud": "EPDM Hex Head Tek3",
+                "Furring": "EPDM Hex Head Tek3",
+                "Greengirt": "EPDM Hex Head Tek3",
+                "Plywood": "EPDM Hex Head SP",
+                "Wood Stud": "EPDM Hex Head SP",
+                "Structural Steel": "EPDM Hex Head Tek5",
+                "Concrete": "EPDM Rawl Pins",
+                "Brick": "EPDM Rawl Pins",
+                "CMU": "EPDM Rawl Pins",
+                "Light Gauge Flashing": "NA - Refer to Alan"
+            },
+            "Concealed Metal Panel": {
+                "Metal Stud": "#10 Pan Head Tek3",
+                "Furring": "#10 Pan Head Tek3",
+                "Greengirt": "#10 Pan Head Tek3",
+                "Plywood": "Pan Head SP",
+                "Wood Stud": "Pan Head SP",
+                "Structural Steel": "NA - Refer to Alan",
+                "Concrete": "Rawl Pins",
+                "Brick": "Rawl Pins",
+                "CMU": "Rawl Pins",
+                "Light Gauge Flashing": "NA - Refer to Alan"
+            },
+            "GreenGirt": {
+                "Metal Stud": "EPDM Hex Head Tek3",
+                "Furring": "EPDM Hex Head Tek3",
+                "Greengirt": "NA - Refer to Alan",
+                "Plywood": "EPDM Hex Head SP",
+                "Wood Stud": "EPDM Hex Head SP",
+                "Structural Steel": "EPDM Hex Head Tek5",
+                "Concrete": "EPDM Rawl Pins",
+                "Brick": "EPDM Rawl Pins",
+                "CMU": "EPDM Rawl Pins",
+                "Light Gauge Flashing": "NA - Refer to Alan"
+            },
+            "Furring": {
+                "Metal Stud": "EPDM Hex Head Tek3",
+                "Furring": "EPDM Hex Head Tek3",
+                "Greengirt": "EPDM Hex Head Tek3",
+                "Plywood": "EPDM Hex Head SP",
+                "Wood Stud": "EPDM Hex Head SP",
+                "Structural Steel": "EPDM Hex Head Tek5",
+                "Concrete": "EPDM Rawl Pins",
+                "Brick": "EPDM Rawl Pins",
+                "CMU": "EPDM Rawl Pins",
+                "Light Gauge Flashing": "NA - Refer to Alan"
+            },
+            "EF Panel": {
+                "Metal Stud": "Counter Sunk Screws",
+                "Furring": "Counter Sunk Screws",
+                "Greengirt": "Counter Sunk Screws",
+                "Plywood": "Counter Sunk Screws",
+                "Wood Stud": "Counter Sunk Screws",
+                "Structural Steel": "NA - Refer to Alan",
+                "Concrete": "NA - Refer to Alan",
+                "Brick": "NA - Refer to Alan",
+                "CMU": "NA - Refer to Alan",
+                "Light Gauge Flashing": "NA - Refer to Alan"
+            },
+            "Coping": {
+                "Metal Stud": "Coping Screw",
+                "Furring": "EPDM Hex Head Tek3",
+                "Greengirt": "EPDM Hex Head Tek3",
+                "Plywood": "Coping Screw",
+                "Wood Stud": "Coping Screw",
+                "Structural Steel": "EPDM Hex Head Tek5",
+                "Concrete": "EPDM Rawl Pins",
+                "Brick": "EPDM Rawl Pins",
+                "CMU": "EPDM Rawl Pins",
+                "Light Gauge Flashing": "NA - Refer to Alan"
+            },
+            "Cleat": {
+                "Metal Stud": "#8 Tek2 Round Head",
+                "Furring": "#8 Tek2 Round Head",
+                "Greengirt": "#8 Tek2 Round Head",
+                "Plywood": "#8 SP Round Head",
+                "Wood Stud": "#8 SP Round Head",
+                "Structural Steel": "1/8\" Pop Rivet",
+                "Concrete": "Rawl Pins",
+                "Brick": "Rawl Pins",
+                "CMU": "Rawl Pins",
+                "Light Gauge Flashing": "#8 Tek2 Round Head"
+            }
+        };
+
+        // Get all unique substrates
+        const allSubstrates = [
+            "Metal Stud",
+            "Furring",
+            "Greengirt",
+            "Plywood",
+            "Wood Stud",
+            "Structural Steel",
+            "Concrete",
+            "Brick",
+            "CMU",
+            "Light Gauge Flashing"
+        ];
+
+        function updateSubstrates() {
+            const objectSelect = document.getElementById('objectSelect');
+            const substrateSelect = document.getElementById('substrateSelect');
+            const resultBox = document.getElementById('resultBox');
+            
+            // Clear substrate dropdown
+            substrateSelect.innerHTML = '<option value="">-- Select Substrate --</option>';
+            
+            // Hide result box
+            resultBox.classList.remove('show');
+            
+            const selectedObject = objectSelect.value;
+            
+            if (selectedObject && fastenerData[selectedObject]) {
+                // Add substrates for selected object
+                allSubstrates.forEach(substrate => {
+                    const option = document.createElement('option');
+                    option.value = substrate;
+                    option.textContent = substrate;
+                    substrateSelect.appendChild(option);
+                });
+            }
+        }
+
+        function findFastener() {
+            const objectSelect = document.getElementById('objectSelect');
+            const substrateSelect = document.getElementById('substrateSelect');
+            const resultBox = document.getElementById('resultBox');
+            const resultText = document.getElementById('resultText');
+            
+            const selectedObject = objectSelect.value;
+            const selectedSubstrate = substrateSelect.value;
+            
+            if (selectedObject && selectedSubstrate) {
+                const fastener = fastenerData[selectedObject][selectedSubstrate];
+                
+                if (fastener) {
+                    resultText.textContent = fastener;
+                    resultBox.classList.add('show');
+                } else {
+                    resultText.innerHTML = '<span class="no-result">No fastener recommendation available for this combination.</span>';
+                    resultBox.classList.add('show');
+                }
+            } else {
+                resultBox.classList.remove('show');
+            }
+        }
+    </script>
+
+    <div class="fastener-container">
+
+
+        <!-- COLLAPSIBLE SECTION: Counter Sunk Screws -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Counter Sunk Screws</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10countersunkscrewstek2.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#10 Counter Sunk Screws Tek2</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">3/4"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Corten or 125 Exposed Counter Sunk Fasteners, Painted to Match<BR><BR>#10 x 3/4" Tek2 Stainless Steel Counter Sunk Screws, Painted To Match Panel where Exposed</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/8countersunkscrewstek2.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#8 Counter Sunk Screws Tek2</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1-1/4"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc</div>
+                        </div>
+                        
+                        <div class="notes">Sheathing Attachment to Metal Framing<BR><BR>#8 x 1-1/4" Tek2 Zinc Counter Sunk Screws</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Coping Screws -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Coping Screws</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10hexheadsharppoint(woodscrew).png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#10 Hex Head Sharp Point (Coping Screw)</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1"&emsp; 1-1/2"&emsp; 3"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">2" &emsp; 2-1/2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Steel / Tri-Seal coating</div>
+                        </div>
+                        
+                        <div class="notes">TYPICAL: Galvanized Coping to Wood or Metal Stud / Blocking 
+                            <br>**Default coping screw unless otherwise specified**
+                            <BR><BR>#10 x --- SP EPDM Washered Hex Head Coping Screws @ 12" O.C. Into Oversized Holes
+                            <BR><BR>ZAC® ZINC CAP HEAD
+                            <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20Metal%20to%20Wood%20Tri%2DSeal%20and%20Stainless%20Fasteners%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Panel-Tite Burr Buster (Triangle Fastners)</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10hexheadsharppoint(woodscrew).png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#9 Hex Head Sharp Point (Coping Screw)</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1-1/2"&emsp; 3"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">None</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">TYPICAL: Aluminum Coping to Wood or Metal Studs / Blocking 
+                            <br>**Alternative option for coping screw if #10 Tri-Seal is not approved**
+                            <BR><BR>#9 x --- SP EPDM Washered Stainless Steel  Hex Head Coping Screws @ 12" O.C. Into Oversized Holes
+                            <BR><BR>ZAC® ZINC CAP HEAD
+                            <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20%239%2C%20%2310%20Hex%20Head%20Sharp%20Point%20Coping%20Screw%20w%20EPDM%20Washer%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Type-17 Pole Barn Screw</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Hex Head -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Hex Head</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/12hexheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#12 Hex Head Tek3</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">3/4" &emsp; 1-1/2" &emsp; 2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">1" &emsp; 1-1/4" &emsp; 2-1/2" &emsp; 3"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Steel / Tri-Seal coating</div>
+                        </div>
+                        
+                        <div class="notes">TYPICAL Exposed Panel Attachment to Furring or Metal Studs
+                            <br>Furring Attachment to Metal Studs when required for WRB
+                            <BR><BR>#12 x --- EPDM Washered Tek3 Tri-Seal Coated Hex Head Screws
+                            <BR><BR>Blazer Zinc Cap Type G
+                            <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Blazer Drill Screws (Triangle Fasteners)</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/12hexheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#12 Hex Head Tek3</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">3/4" &emsp; 1-1/4" &emsp; 1-1/2" &emsp; 2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">1" &emsp; 2-1/2" &emsp; 3" &emsp; 4"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Steel / Tri-Seal coating</div>
+                        </div>
+                        
+                        <div class="notes">TYPICAL Furring Attachment to Metal Studs/Other Furring. 
+                            <br>Concealed Panel Attachement to Furring
+                            <BR><BR>#12 x --- Tek3 Tri-Seal Coated Hex Head Screws
+                            <BR><BR>Blazer Zinc Cap Type C
+                            <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Blazer Drill Screws (Triangle Fasteners)</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/12hexheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#12 Hex Head Tek3 - Job Specific Only</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered Optional</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">3/4" &emsp; 1-1/4 &emsp; 1-1/2" &emsp; 2" &emsp; 2-1/2</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">1" &emsp; 1-1/4" &emsp; 1-1/2" &emsp; 2" &emsp; 3"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Furring Attachment to Metal Studs
+                        <BR>Furring Attachment to other Furring
+                        <BR><BR>#12 x --- Tek3 Stainless Steel Hex Head Screws
+                        <BR><BR>Blazer Stainless Cap Type A
+                        <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners)</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/14hexheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#14 Hex Head Tek3</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">EPDM Washered</div>
+                            <div class="info-value">7/8" &emsp; 1-1/4" &emsp; 1-1/2" &emsp; 2" &emsp; 3" &emsp; 4"</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Non-EPDM Washered</div>
+                            <div class="info-value">3/4" &emsp; 1" &emsp; 1-1/4" &emsp; 1-1/2" &emsp; 2" &emsp; 2-1/2"<br>3" &emsp; 4" &emsp; 5" &emsp; 6" &emsp; 7" &emsp; 8" &emsp; 9" &emsp; 10"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Steel / Tri-Seal coating</div>
+                        </div>
+                        
+                        <div class="notes">Use?
+                            <BR><BR>#14 x --- Tek3 Tri-Seal Coated Hex Head Screws
+                        <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) Type H/I</a>
+                        <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20Self%2DDrilling%20Tri%2DSeal%20Fasteners%20%28no%20EPDM%20washer%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) Type E</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/14hexheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#14 Hex Head Tek3 - Job Specific Only</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">7/8" &emsp; 1-1/8" &emsp; 1-1/4" &emsp; 3" &emsp; 4"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Use?
+                            <BR><BR>#14 x --- Tek3 Stainless Steel Hex Head Screws
+                                <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) Type B/C</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/12hexheadtek5.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#12 Hex Head Tek5</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered Optional</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1-1/4" &emsp; 1-1/2" &emsp; 2"</div>
+                        </div>
+                                                
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Steel / Tri-Seal coating</div>
+                        </div>
+                        
+                        <div class="notes">EPDM Furring Attachement to Structural Steel
+                            <br>Non-EPDM Use?
+                            <BR><BR>#12 x --- Tek5 EPDM Washered Tri-Seal Coated Hex Head Screws
+                                <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) EPDM</a>
+                        <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20Self%2DDrilling%20Tri%2DSeal%20Fasteners%20%28no%20EPDM%20washer%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) Non-EPDM</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/14hexheadtek5.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#14 Hex Head Tek5</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered Optional</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1-1/2" &emsp; 3" &emsp; 4"</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">2-1/4" &emsp; 2-1/2" &emsp;3-1/8" &emsp;5" &emsp;6" &emsp;7" &emsp;8"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc / Galvanized</div>
+                        </div>
+                        
+                        <div class="notes">Metal Panel Attachment into Structural Steel
+                            <br> Furring Attachment into Vertical HSS
+                            <BR><BR>#14 x --- Tek5 EPDM Washered Tri-Seal Coated Hex Head Screws
+                                <BR><BR>Blazer Drill Screws (Triangle Fasteners) EPDM</a>
+                        <BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20Self%2DDrilling%20Tri%2DSeal%20Fasteners%20%28no%20EPDM%20washer%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) Non-EPDM</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+                
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Machine Screw and Nut -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Machine Screw and Nut</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10machinescrewandnutna.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#10 Machine Screw and Nut</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">None</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">18-8 Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Special Use Attachment per Engineering
+                            <BR><BR>#10 SS Machine Bolt and Nut</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Pan Head -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Pan Head</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10panheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#10 Pan Head Tek3</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">NA</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Concealed Aluminum Panel Attachment into Metal Stud or Metal Clip / Furring
+                            <BR><BR>#10 Tek3 Stainless Steel Pan Head Screws
+                            <br><BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Pan%20head%20Self%20Drillers%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                            Blazer Drill Screws (Triangle Fasteners) Non-EPDM</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/8panheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#12 Pan Head Tek3 - Job Specific Only</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">3/4"&emsp;1-1/2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">18-8 Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Concealed Aluminum Panel Attachment into Wood
+                            <BR><BR>#12 x --- Tek3 18-8 Stainless Steel Pan Head  Screws</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Pancake Head -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Pancake Head</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10pancakeheadsp.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#10 Pancake Head Sharp Point</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc, Stainless Steel Optional</div>
+                        </div>
+                        
+                        <div class="notes">Roof Clips into Wood
+                            <BR><BR>#10 x 1" SP Zinc Pancake Head Screws</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10pancakeheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#10 Pancake Head Tek3</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc</div>
+                        </div>
+                        
+                        <div class="notes">Roof Clips into Metal
+                            <br>ACM Panel Clip to P4 Extrusion
+                            <BR><BR>#10 x 1" Tek3 Zinc Pancake Head Screws
+                            </div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+            </div>
+        </div>
+
+        
+        <!-- COLLAPSIBLE SECTION: Pop Rivet -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Pop Rivet</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/316poprivetna.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">1/8 Pop Rivet</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">Short &emsp; Long</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Short: Flashing to Flashing or Blind Attachments
+                            <br>Long: Flashing to Structural Steel Attachment
+                            <BR><BR>Stainless Steel Pop-Rivets, Painted To Match Flashing where Exposed</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Rawl Pin -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Rawl Pin</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/14rawlpin.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">Rawl Pin</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered Optional</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">1/4" Stocked Sizes</div>
+                            <div class="info-value">1" &emsp; 1-1/2"</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">1/4" Additional Sizes</div>
+                            <div class="info-value">3/4" &emsp; 1-1/4" &emsp; 2" &emsp;3" &emsp;</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">3/16" Stocked Sizes</div>
+                            <div class="info-value">7/8"</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">NA</div>
+                        </div>
+                        
+                        <div class="notes">1/4" Rawl: Furring Attachment to Masonry (CMU, Brick, Precast, Concrete)
+                            <BR>1/4" Rawl Pins Into Pre-Drilled Holes, w/ EPDM Washers where Exposed
+                                <br><br>3/16" Rawl: Flashing Attachment to Masonry (CMU, Brick, Precast, Concrete)
+                            <BR>3/16" Rawl Pins Into Pre-Drilled Holes, w/ EPDM Washers where Exposed
+                                <br><BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Rawl%20Pin%20%28Zamac%20Nailin%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Mushroom Head Zamac Nailin with Carbon Steel Nail</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Ring Shank Nail -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Nails</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/25lbringshanknail.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">25lb Ring Shank Nail</h2>
+                        <h3 class="fastener-subtitle">Aluminum Gutter Cleat</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1-1/2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Stainless Steel</div>
+                        </div>
+                        
+                        <div class="notes">Aluminum Gutter Cleat
+                            <BR><BR>1-1/2" Stainless Steel Ring Shank Roofing Nails</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/25lbringshanknail.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">Roofing Nail</h2>
+                        <h3 class="fastener-subtitle">Galvanized Cleat and Clad</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Galvanized</div>
+                        </div>
+                        
+                        <div class="notes">Galvanized Gutter Cleat, Galvanized Cleat Attachment to Wood at Roofing, Clad Metal Attachement at Roofing
+                            <BR><BR>2" Galvanized Roofing Nails</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/25lbringshanknail.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">50lb Roofing Nail - Job Specific Only</h2>
+                        <h3 class="fastener-subtitle">Aluminum Gutter Cleat</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1-1/2"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc</div>
+                        </div>
+                        
+                        <div class="notes">Clip Attachment at Roofing
+                            <BR><BR>1-1/2" Zinc Roofing Nails</div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: Round Head -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Round Head</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/10roundheadtek3.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#8 Round Head Sharp Point</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1/2" &emsp;3/4" &emsp; 1-1/4"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc</div>
+                        </div>
+                        
+                        <div class="notes">TYPICAL: Light gauge Flashing to Wood
+                            <br>**Field guys may refer to 'round head' as 'wafer tek'**
+                            <BR><BR>#8 x --- SP Zinc Round Head Wood Screws
+                                <br><BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20%238%20SP%20Wafer%20Head%20Screws%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Phillips Self Piercing</a>
+                                </div>
+                    </div>
+                </div><!-- End Fastener Card -->
+
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/8roundheadtek2.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">#8 Round Head Tek2</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Stocked Sizes</div>
+                            <div class="info-value">1/2" &emsp;3/4" &emsp; 1-1/4" &emsp; 1-3/4" &emsp; 2-1/2" </div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Zinc</div>
+                        </div>
+                        
+                        <div class="notes">TYPICAL Flashing Attachment to Metal Studs or Metal Furring
+                            <br>**Field guys may refer to 'round head' as 'wafer tek'**
+                            <BR><BR>#8 x --- Tek2 Zinc Round Head Screws
+                                <br><BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20%238%20Tek2%20Wafer%20Head%20Screws%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Intercorp Strong-Point</a>
+                            </div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+
+        <!-- COLLAPSIBLE SECTION: TapCon -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>TapCon</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Fastener Card -->
+                <div class="fastener-card">
+                    <div class="fastener-image">
+                        <img src="fastenerdata/316tapconna.png">
+                    </div>
+                    
+                    <div class="fastener-info">
+                        <h2 class="fastener-title">5/16 TapCon - Job Specific Only</h2>
+                        <h3 class="fastener-subtitle">EPDM Washered Optional</h3>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Additional Sizes</div>
+                            <div class="info-value">1-3/4" &emsp; 2-1/4" &emsp;2-3/4" &emsp;3-1/4" &emsp;3-3/4" &emsp;4" &emsp;5" &emsp;6"</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Finish</div>
+                            <div class="info-value">Steel / Blue Corrosion Resistant Coating</div>
+                        </div>
+                        
+                        <div class="notes"> Panel Attachment to Masonry
+                            <br>**These take ~2x as long to install as Rawl Pins - default to Rawl Pins whenever possible**
+                            <BR><BR>5/16" x --- TapCon Hex Head Screws
+                                <br>HAWAII: 1/4"x1-3/4" Stainless Steel Tapcon SCOTS Anchors
+                                <br><BR><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Tapcon%20%28DeWalt%20Ultracon%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">
+                                Dewalt ULTRACON</a></div>
+                    </div>
+                </div><!-- End Fastener Card -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            header.classList.toggle('active');
+            const content = header.nextElementSibling;
+            content.classList.toggle('active');
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <!-- facebook -->
+        <meta property="og:title" content="Fasteners" />
+        <meta property="og:image" content="logo.png" />
+        <meta property="og:description" content="" />
+        <meta property="og:site_name" content="BH-NE.github.io" />
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Northshore Drafting</title>
+        <link rel="icon" href="logo.png">
+
+        <link href="http://s3.amazonaws.com/codecademy-content/courses/ltp/css/shift.css" rel="stylesheet">
+        <link rel="stylesheet" href="http://s3.amazonaws.com/codecademy-content/courses/ltp/css/bootstrap.css">
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="main.css">
+        <link rel="stylesheet" href="nav.css">
+
+        </style>
+    </head>
+
+    <body>
+        <div class="upperleft-links">
+            <a class="link" href="index.html">HOME</a>
+        </div>
+
+        <H1>Fasteners</H1>
+        <h2>Fasteners</h2>
+        <p>Fastener Excel Chart: <a class="link" target="_blank" href="https://northclad.sharepoint.com/:x:/s/NorthshoreExteriors/Ef6LmC9hugJEu6rXfYr6tqYBaut2hpDkO8bCGCkXVSsIzw?e=9sBiaT">LINK</a></p>
+
+<H1>Fasteners</H1>
+
+    <div class="fastener-container">
+
+        <!-- COLLAPSIBLE SECTION 1: Hex Head Screws -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Hex Head Screws</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                
+        <!-- Fastener Card 1 -->
+        <div class="fastener-card">
+            <div class="fastener-image">
+                <img src="fastenerdata/12hhtek3.png">
+            </div>
+            
+            <div class="fastener-info">
+                <h2 class="fastener-title">#12 Hex Head Tek3</h2>
+                
+                <div class="info-row">
+                    <div class="info-label">Stocked Sizes</div>
+                    <div class="info-value">1" &emsp; 1-1/4" &emsp; 2-1/2"</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Additional Sizes</div>
+                    <div class="info-value">1" &emsp; 1-1/4" &emsp; 2-1/2" &emsp; 3"</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Finish</div>
+                    <div class="info-value">Steel / Tri-Seal coating</div>
+                </div>
+                
+                <div class="notes">A) TYPICAL Panel Attachment to Furring or Metal Studs
+                    <BR>B) Furring Attachment to Metal Studs when required for WRB
+                    <BR><BR>#12 x --- EPDM Washered Tek3 Tri-Seal Coated Hex Head Screws
+                    <br><a class="link" href="https://northclad.sharepoint.com/sites/NorthshoreExteriors/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners%2F%5BPRODUCT%20DATA%5D%20Blazer%20%28Triangle%29%20Self%2DDrilling%20Tri%2DSeal%20and%20Stainless%20Fasteners%20%28EPDM%20washered%29%2Epdf&parent=%2Fsites%2FNorthshoreExteriors%2FShared%20Documents%2FNorthshore%20Data%2FSubmittal%20Documents%2FSUBMITTALS%2FFasteners%20and%20Adhesives%2FStocked%20Fasteners&p=true&ga=1">BLAZER ZINC CAP TYPE G</a></div>
+            </div>
+        </div><!-- End Fastener Card -->
+
+            </div>
+        </div><!-- END COLLAPSIBLE SECTION -->
+
+
+
+        <!-- COLLAPSIBLE SECTION 2: Pan Head Screws -->
+        <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <span>Pan Head Screws</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                
+                <!-- Add fastener cards here -->
+
+            </div>
+        </div><!-- END COLLAPSIBLE SECTION -->
+
+
+        
+    </div>
+
+        <script>
+        function toggleSection(header) {
+            header.classList.toggle('active');
+            const content = header.nextElementSibling;
+            content.classList.toggle('active');
+        }
+    </script>
+
+    </body>
+</html>
+

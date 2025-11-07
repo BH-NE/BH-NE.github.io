@@ -1,0 +1,506 @@
+Try AI directly in your favorite apps … 
+Use Gemini to generate drafts and refine content, plus get Gemini Pro with access to Google's next-gen AI for $19.99 $0 for 1 month
+Gemini
+Summarize this folder
+Analyze each filein this folder
+
+    What can Gemini do with foldersin Google Drive
+
+Sales pitch ideatorCreate compelling sales pitches that resonate with your audience and drive conversions.
+Learning coachHere to help you learn and practice new concepts. Tell me what you'd like to learn, and I'll help you get started.
+
+    Sentiment analyzerAnalyze customer feedback to reveal trends and make recommendations.
+
+Your Gems will appear across Workspace
+Gemini in Workspace can make mistakes, so double-check responses. Learn more
+
+@font-face {
+	font-family: 'grobold';
+	src: url('fonts/GROBOLD.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'ubuntu';
+	src: url('fonts/Ubuntu-Regular.ttf') format('truetype');
+}
+
+.jumbotron {
+  
+	height: 500px;
+	background-repeat: no-repeat;
+	background-size: 700px;
+	background-position: right;
+	background-color: #000000;
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto 
+}
+
+.learn-more {
+	background-color: #555555;
+	color: #000000;
+	#position:fixed;
+	left:0px;
+	bottom:0px;
+	width:100%;
+	height:130px
+}
+
+.learn-more h3 {
+	font-family: 'Shift', sans-serif;
+	font-size: 18px;
+	font-weight: bold;
+	color: #000000;
+}
+
+.learn-more a {
+	color: #000000;
+}
+
+body {
+	background-color: #1f2121;
+	color: #d7dcdc;
+	font-size: 13px;
+	#font-weight: bold;
+	background-image: url("img/background.png");
+	background-position: bottom center;
+	background-size: 100%;
+	background-repeat: no-repeat;
+}
+
+banner {
+	color: #565c5c;
+	font-size: 13px;
+	font-weight: bold;
+	margin: auto;
+	width: 80%;
+	font-family: grobold;
+}
+.banner p {
+	color: #d7dcdc;
+	font-size: 17px;
+	margin: auto;
+	width: 80%;
+	font-family: grobold;
+	padding: 0px 0px 20px 0px;	#top right bottom left
+}
+
+.banner a {
+	color: #6ccce2;
+	font-size: 13px;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.banner h1 {
+	color: #6ccce2;
+	font-size: 52px;
+	#font-weight: bold;
+	text-transform: uppercase;
+	text-align: center;
+	font-face: grobold;
+}
+
+.banner h2 {
+    color: #6ccce2;
+    font-size: 26px;
+    #font-weight: bold;
+    text-transform: italic;
+}
+
+.banner img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 5px;
+}
+
+
+h3 a {
+	color: #f3e722;
+	font-size: 15px;
+	#font-weight: bold;
+}
+
+container {
+	background-color: #f3e722;
+}
+
+row {
+	color: #f3e722;
+	font-size: 13px;
+	font-weight: bold;
+	text-transform: uppercase;
+	text-align: center;
+	background-color: #f3e722;
+}
+
+.row a {
+	color: #f3e722;
+	font-size: 13px;
+	#font-weight: bold;
+	text-transform: uppercase;
+}
+
+.row h1 {
+	color: #f3e722;
+	font-size: 24px;
+	#font-weight: bold;
+	text-transform: uppercase;
+	text-align: center;
+	font-family: grobold;
+}
+
+.row h2 {
+	color: #6ccce2;
+	font-size: 20px;
+	text-align: center;
+	font-family: grobold;
+}
+
+.row img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+}
+
+.row a img:hover {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	border-radius: 5px;
+	border-style: outset;
+	border-width: 4px;
+	border-color: #f3e722;
+}
+
+.row p {
+
+}
+
+.col-md-4, .col-md-2, .col-md-1, .col-md-10, .col-md-6, .col-md-3 {
+	padding: 0px 48px 48px 48px; #top right bottom left
+}
+
+.col-md-12{
+	font-size: 18px;
+	padding: 48px 48px 0px 48px; #top right bottom left
+}
+
+.subscribe-label {
+	width: 100%;
+	text-align: center;
+	margin-bottom: 12px;
+	color: #fed396;
+    font-size: 28px;
+}
+
+.subscribe-sublabel {
+	width: 100%;
+	text-align: center;
+	color: #fed396;
+	font-family: "Aller_Lt", Arial, Helvetica, sans-serif;
+    font-size: 16px;
+}
+
+.input-label {
+	width: 100%;
+	text-align: center;
+	margin-bottom: 24px;
+}
+
+.email {
+	background-color: #fef6e1;
+	color: #000000;
+    font-size: 16px;
+	text-transform: uppercase;
+	width: 300px;
+}
+
+.btn-submit {
+    width: 100%;
+    margin: auto;
+    text-align: center;
+}
+
+.btn {
+	width: 320px;
+	background: url("../img/buttons/button1_standard.png");
+	background-size: cover;
+	border: ridge ;
+	font-family: grobold;
+	font-size: 24px;
+	line-height: 24px;
+	padding: 20px 0px;
+	color: #fef6e1;
+	min-height: 64px;
+	margin: 24px;
+	text-transform: uppercase;
+}
+
+.btn:hover {
+	background: url("../img/buttons/button1_standard_hover.png");
+	background-size: cover;
+	color: #fef6e1;
+	background-color: #6ccce2;
+}
+
+@media screen and (max-width: 800px)
+{
+	body
+	{
+		font-size: 20px;
+	}
+  
+	.row a{
+		font-size: 20px;
+	}
+  
+	.row h1 {
+		font-size: 36px;
+	}
+  
+	.row h2 {
+		font-size: 30px;
+	}
+  
+	.col-md-4, .col-md-2, .col-md-1, .col-md-10, .col-md-6, .col-md-3 {
+		padding: 0px 10% 20% 10%; #top right bottom left
+	}
+	
+	img.nav-img {
+		height: 40px;
+	}
+}
+
+        .fastener-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+                /* Collapsible Section Styles */
+        .collapsible-section {
+            margin-bottom: 20px;
+        }
+
+                .section-header {
+            background-color: #6ccce2;
+            color: #2a2d2d;
+            padding: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .section-header:hover {
+            background-color: #f3e722;
+        }
+
+        .section-header .arrow {
+            font-size: 24px;
+            transition: transform 0.3s;
+        }
+
+        .section-header.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .section-content.active {
+            max-height: 5000px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .fastener-card {
+            background-color: #2a2d2d;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .fastener-image {
+            background-color: #ffffff;
+            padding: 0px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .fastener-image img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .fastener-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .fastener-title {
+            color: #f3e722;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        .fastener-subtitle {
+            color: #6ccce2;
+            font-size: 24px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 5px;
+            padding: 0px 0;
+        }
+
+        .info-label {
+            color: #d7dcdc;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .info-value {
+            color: #d7dcdc;
+            font-size: 18px;
+        }
+
+        .notes {
+            color: #d7dcdc;
+            font-size: 16px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        @media screen and (max-width: 800px) {
+            .fastener-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        .finder-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: #2a2d2d;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .finder-title {
+            color: #6ccce2;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .finder-subtitle {
+            color: #d7dcdc;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dropdown-group {
+            margin-bottom: 30px;
+        }
+
+        .dropdown-label {
+            color: #f3e722;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #1f2121;
+            color: #d7dcdc;
+            border: 2px solid #6ccce2;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        select:hover {
+            border-color: #f3e722;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #f3e722;
+        }
+
+        .result-box {
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #1f2121;
+            border-radius: 8px;
+            border: 3px solid #6ccce2;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-title {
+            color: #f3e722;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .result-text {
+            color: #d7dcdc;
+            font-size: 22px;
+            line-height: 1.6;
+        }
+
+        .no-result {
+            color: #d7dcdc;
+            font-size: 18px;
+            font-style: italic;
+        }
+
+        @media screen and (max-width: 800px) {
+            .finder-container {
+                margin: 20px;
+                padding: 20px;
+            }
+            
+            .finder-title {
+                font-size: 28px;
+            }
+        }

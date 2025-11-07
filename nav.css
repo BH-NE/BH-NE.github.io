@@ -1,0 +1,47 @@
+@font-face {
+	font-family: 'grobold';
+	src: url('fonts/GROBOLD.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'ubuntu';
+	src: url('fonts/Ubuntu-Regular.ttf') format('truetype');
+}
+
+.upperleft-links {
+	font-size: 30px;
+	background-color: #555555;
+	padding: 10px 0px 0px 20px;
+}
+
+	.upperleft-links img {
+		height: 25px;
+		padding: 0px 10px 0px 10px;
+	}
+
+	.upperleft-links a {
+		vertical-align: top;
+	}
+
+.email {
+	display: inline-block;
+	height: 30px;
+	width: 30px;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-image: url("img/logos/logo_email - copy.png");
+	background-color: #555555;
+}
+
+	.email:hover {
+		background-color: #f3e722;
+	}
+
+.link {
+	display: inline-block;
+}
+
+a.email:hover {
+	background-image: url('img/logos/logo_email_hover.png');
+	cursor: pointer;
+}
