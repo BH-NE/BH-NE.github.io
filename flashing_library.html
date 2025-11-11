@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta property="og:title" content="Detail Library" />
+    <meta property="og:image" content="logo.png" />
+    <meta property="og:description" content="" />
+    <meta property="og:site_name" content="BH-NE.github.io" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Northshore Drafting - Detail Library</title>
+    <link rel="icon" href="logo.png">
+
+    <link href="http://s3.amazonaws.com/codecademy-content/courses/ltp/css/shift.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://s3.amazonaws.com/codecademy-content/courses/ltp/css/bootstrap.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="nav.css">
+
+    <style>
+        .filter-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: #2a2d2d;
+            border-radius: 12px;
+        }
+
+        .filter-title {
+            color: #6ccce2;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            color: #f3e722;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #1f2121;
+            color: #d7dcdc;
+            border: 2px solid #6ccce2;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .filter-select:hover {
+            border-color: #f3e722;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #f3e722;
+        }
+
+        .results-info {
+            text-align: center;
+            color: #d7dcdc;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #1f2121;
+            border-radius: 6px;
+        }
+
+        .gallery-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background-color: #2a2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(108, 204, 226, 0.3);
+        }
+
+        .detail-image {
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .detail-image img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .detail-title {
+            color: #f3e722;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background-color: #6ccce2;
+            color: #1f2121;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #d7dcdc;
+            font-size: 24px;
+            padding: 60px 20px;
+            background-color: #2a2d2d;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        @media screen and (max-width: 800px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="upperleft-links">
+        <a class="link" href="index.html"><img src="Home-icon.png"></a>
+        <a class="link" href="mailto:brandan@northshoreext.com?subject=Flashing Library Webpage Issue"><img src="Bug-icon.png"></a>
+        <H1>Flashing Library</H1>
+    </div>
+    </div>
+
+    <h1>Page in Development!</h1>
+    <div class="filter-container">
+        <div class="filter-title">Filter Flashings</div>
+        
+        <div class="filter-row">
+            <div class="filter-group">
+                <label class="filter-label">Filter 1:</label>
+                <select id="filter1" class="filter-select" onchange="filterDetails()">
+                    <option value="">-- All --</option>
+                    <option value="base">Base</option>
+                    <option value="head">Head</option>
+                    <option value="sill">Sill</option>
+                    <option value="jamb">Jamb</option>
+                    <option value="penetration">Penetration</option>
+                    <option value="coping">Coping</option>
+                    <option value="reveal">Reveal</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Filter 2:</label>
+                <select id="filter2" class="filter-select" onchange="filterDetails()">
+                    <option value="">-- All --</option>
+                    <option value="base">Base</option>
+                    <option value="head">Head</option>
+                    <option value="sill">Sill</option>
+                    <option value="jamb">Jamb</option>
+                    <option value="penetration">Penetration</option>
+                    <option value="coping">Coping</option>
+                    <option value="reveal">Reveal</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Filter 3:</label>
+                <select id="filter3" class="filter-select" onchange="filterDetails()">
+                    <option value="">-- All --</option>
+                    <option value="base">Base</option>
+                    <option value="head">Head</option>
+                    <option value="sill">Sill</option>
+                    <option value="jamb">Jamb</option>
+                    <option value="penetration">Penetration</option>
+                    <option value="coping">Coping</option>
+                    <option value="reveal">Reveal</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="resultsInfo" class="results-info"></div>
+    </div>
+
+    <div class="gallery-container">
+        <div id="gallery" class="gallery-grid"></div>
+    </div>
+
+    <script>
+        // Define your details here
+        // Format: { title: "Detail Name", image: "filename.png", tags: ["tag1", "tag2", "tag3"] }
+        const details = [
+            { title: "Window Head Detail", image: "detail1.png", tags: ["head", "jamb", "reveal"] },
+            { title: "Window Sill Detail", image: "detail2.png", tags: ["sill", "base"] },
+            { title: "Door Jamb Detail", image: "detail3.png", tags: ["jamb", "reveal"] },
+            { title: "Roof Coping Detail", image: "detail4.png", tags: ["coping", "head"] },
+            { title: "Wall Base Detail", image: "detail5.png", tags: ["base", "sill"] },
+            { title: "Pipe Penetration Detail", image: "detail6.png", tags: ["penetration", "coping"] },
+            { title: "Corner Reveal Detail", image: "detail7.png", tags: ["reveal", "jamb"] },
+            { title: "Foundation Base Detail", image: "detail8.png", tags: ["base"] },
+            { title: "Parapet Coping Detail", image: "detail9.png", tags: ["coping", "head", "reveal"] },
+            { title: "Vent Penetration Detail", image: "detail10.png", tags: ["penetration", "head"] }
+        ];
+
+        function filterDetails() {
+            const filter1 = document.getElementById('filter1').value.toLowerCase();
+            const filter2 = document.getElementById('filter2').value.toLowerCase();
+            const filter3 = document.getElementById('filter3').value.toLowerCase();
+            
+            // Collect all selected filters (non-empty)
+            const selectedFilters = [filter1, filter2, filter3].filter(f => f !== "");
+            
+            // Filter details that have ALL selected tags
+            const filteredDetails = details.filter(detail => {
+                if (selectedFilters.length === 0) {
+                    return true; // Show all if no filters selected
+                }
+                
+                // Check if detail has ALL selected tags
+                return selectedFilters.every(filter => 
+                    detail.tags.some(tag => tag.toLowerCase() === filter)
+                );
+            });
+            
+            displayDetails(filteredDetails, selectedFilters);
+        }
+
+        function displayDetails(filteredDetails, selectedFilters) {
+            const gallery = document.getElementById('gallery');
+            const resultsInfo = document.getElementById('resultsInfo');
+            
+            // Update results info
+            if (selectedFilters.length > 0) {
+                const filterText = selectedFilters.map(f => f.charAt(0).toUpperCase() + f.slice(1)).join(' + ');
+                resultsInfo.textContent = `Showing ${filteredDetails.length} flashing${filteredDetails.length !== 1 ? 's' : ''} matching: ${filterText}`;
+                resultsInfo.style.display = 'block';
+            } else {
+                resultsInfo.textContent = `Showing all ${filteredDetails.length} details`;
+                resultsInfo.style.display = 'block';
+            }
+            
+            // Clear gallery
+            gallery.innerHTML = '';
+            
+            // Display filtered details
+            if (filteredDetails.length === 0) {
+                gallery.innerHTML = '<div class="no-results">No flashings match the selected filters</div>';
+                return;
+            }
+            
+            filteredDetails.forEach(detail => {
+                const card = document.createElement('div');
+                card.className = 'detail-card';
+                
+                card.innerHTML = `
+                    <div class="detail-image">
+                        <img src="details/${detail.image}" alt="${detail.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23cccccc%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2218%22 text-anchor=%22middle%22 alignment-baseline=%22middle%22 font-family=%22monospace%22 fill=%22%23333333%22%3EImage Not Found%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="detail-title">${detail.title}</div>
+                    <div class="detail-tags">
+                        ${detail.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+                
+                gallery.appendChild(card);
+            });
+        }
+
+        // Initialize - show all details
+        filterDetails();
+    </script>
+
+</body>
+</html>

@@ -1,18 +1,3 @@
-Try AI directly in your favorite apps … 
-Use Gemini to generate drafts and refine content, plus get Gemini Pro with access to Google's next-gen AI for $19.99 $0 for 1 month
-Gemini
-Summarize this folder
-Analyze each filein this folder
-
-    What can Gemini do with foldersin Google Drive
-
-Sales pitch ideatorCreate compelling sales pitches that resonate with your audience and drive conversions.
-Learning coachHere to help you learn and practice new concepts. Tell me what you'd like to learn, and I'll help you get started.
-
-    Sentiment analyzerAnalyze customer feedback to reveal trends and make recommendations.
-
-Your Gems will appear across Workspace
-Gemini in Workspace can make mistakes, so double-check responses. Learn more
 
 @font-face {
 	font-family: 'grobold';
@@ -23,6 +8,15 @@ Gemini in Workspace can make mistakes, so double-check responses. Learn more
 	font-family: 'ubuntu';
 	src: url('fonts/Ubuntu-Regular.ttf') format('truetype');
 }
+
+        a {
+            color: #f365cb;
+        }
+
+        a:hover {
+            color: #f365cb;
+            text-decoration: underline;
+        }
 
 .jumbotron {
   
@@ -98,7 +92,7 @@ banner {
 }
 
 .banner a {
-	color: #6ccce2;
+	color: #f365cb;
 	font-size: 13px;
 	font-weight: bold;
 	text-transform: uppercase;
@@ -129,7 +123,7 @@ banner {
 
 
 h3 a {
-	color: #f3e722;
+	color: #f365cb;
 	font-size: 15px;
 	#font-weight: bold;
 }
@@ -148,7 +142,7 @@ row {
 }
 
 .row a {
-	color: #f3e722;
+	color: #f365cb;
 	font-size: 13px;
 	#font-weight: bold;
 	text-transform: uppercase;
@@ -410,11 +404,11 @@ row {
 
         
         .notes a {
-            color: #6ccce2;
+            color: #f365cb;
         }
 
         .notes a:hover {
-            color: #66BB6A;
+            color: #f365cb;
             text-decoration: underline;
         }
 
