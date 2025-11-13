@@ -187,7 +187,7 @@
         <div class="filter-row">
             <div class="filter-group">
                 <label class="filter-label">Filter 1:</label>
-                <select id="filter1" class="filter-select" onchange="filterDetails()">
+                <select id="filter1" class="filter-select" onchange="filterFlashings()">
                     <option value="">-- All --</option>
                     <option value="base">Base</option>
                     <option value="head">Head</option>
@@ -202,7 +202,7 @@
 
             <div class="filter-group">
                 <label class="filter-label">Filter 2:</label>
-                <select id="filter2" class="filter-select" onchange="filterDetails()">
+                <select id="filter2" class="filter-select" onchange="filterFlashings()">
                     <option value="">-- All --</option>
                     <option value="base">Base</option>
                     <option value="head">Head</option>
@@ -216,7 +216,7 @@
 
             <div class="filter-group">
                 <label class="filter-label">Filter 3:</label>
-                <select id="filter3" class="filter-select" onchange="filterDetails()">
+                <select id="filter3" class="filter-select" onchange="filterFlashings()">
                     <option value="">-- All --</option>
                     <option value="base">Base</option>
                     <option value="head">Head</option>
@@ -237,9 +237,9 @@
     </div>
 
     <script>
-        // Define your details here
+        // Define your flashings here
         // Format: { title: "Detail Name", image: "filename.png", tags: ["tag1", "tag2", "tag3"] }
-        const details = [
+        const flashings = [
             { title: "Window Head Detail", image: "detail1.png", tags: ["head", "jamb", "reveal"] },
             { title: "Window Sill Detail", image: "detail2.png", tags: ["sill", "base"] },
             { title: "Door Jamb Detail", image: "detail3.png", tags: ["jamb", "reveal"] },
@@ -253,7 +253,7 @@
             { title: "Vent Penetration Detail", image: "detail10.png", tags: ["penetration", "head"] }
         ];
 
-        function filterDetails() {
+        function filterFlashings() {
             const filter1 = document.getElementById('filter1').value.toLowerCase();
             const filter2 = document.getElementById('filter2').value.toLowerCase();
             const filter3 = document.getElementById('filter3').value.toLowerCase();
@@ -261,8 +261,8 @@
             // Collect all selected filters (non-empty)
             const selectedFilters = [filter1, filter2, filter3].filter(f => f !== "");
             
-            // Filter details that have ALL selected tags
-            const filteredDetails = details.filter(detail => {
+            // Filter flashings that have ALL selected tags
+            const filteredflashings = flashings.filter(detail => {
                 if (selectedFilters.length === 0) {
                     return true; // Show all if no filters selected
                 }
@@ -273,39 +273,39 @@
                 );
             });
             
-            displayDetails(filteredDetails, selectedFilters);
+            displayflashings(filteredflashings, selectedFilters);
         }
 
-        function displayDetails(filteredDetails, selectedFilters) {
+        function displayflashings(filteredflashings, selectedFilters) {
             const gallery = document.getElementById('gallery');
             const resultsInfo = document.getElementById('resultsInfo');
             
             // Update results info
             if (selectedFilters.length > 0) {
                 const filterText = selectedFilters.map(f => f.charAt(0).toUpperCase() + f.slice(1)).join(' + ');
-                resultsInfo.textContent = `Showing ${filteredDetails.length} flashing${filteredDetails.length !== 1 ? 's' : ''} matching: ${filterText}`;
+                resultsInfo.textContent = `Showing ${filteredflashings.length} flashing${filteredflashings.length !== 1 ? 's' : ''} matching: ${filterText}`;
                 resultsInfo.style.display = 'block';
             } else {
-                resultsInfo.textContent = `Showing all ${filteredDetails.length} details`;
+                resultsInfo.textContent = `Showing all ${filteredflashings.length} flashings`;
                 resultsInfo.style.display = 'block';
             }
             
             // Clear gallery
             gallery.innerHTML = '';
             
-            // Display filtered details
-            if (filteredDetails.length === 0) {
+            // Display filtered flashings
+            if (filteredflashings.length === 0) {
                 gallery.innerHTML = '<div class="no-results">No flashings match the selected filters</div>';
                 return;
             }
             
-            filteredDetails.forEach(detail => {
+            filteredflashings.forEach(detail => {
                 const card = document.createElement('div');
                 card.className = 'detail-card';
                 
                 card.innerHTML = `
                     <div class="detail-image">
-                        <img src="details/${detail.image}" alt="${detail.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23cccccc%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2218%22 text-anchor=%22middle%22 alignment-baseline=%22middle%22 font-family=%22monospace%22 fill=%22%23333333%22%3EImage Not Found%3C/text%3E%3C/svg%3E'">
+                        <img src="flashings/${detail.image}" alt="${detail.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23cccccc%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2218%22 text-anchor=%22middle%22 alignment-baseline=%22middle%22 font-family=%22monospace%22 fill=%22%23333333%22%3EImage Not Found%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="detail-title">${detail.title}</div>
                     <div class="detail-tags">
@@ -317,8 +317,8 @@
             });
         }
 
-        // Initialize - show all details
-        filterDetails();
+        // Initialize - show all flashings
+        filterFlashings();
     </script>
 
 </body>

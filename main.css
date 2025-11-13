@@ -392,6 +392,7 @@ row {
 
         .info-value {
             color: #d7dcdc;
+            font-weight: bold;
             font-size: 18px;
         }
 
