@@ -189,14 +189,34 @@
                 <label class="filter-label">Filter 1:</label>
                 <select id="filter1" class="filter-select" onchange="filterFlashings()">
                     <option value="">-- All --</option>
-                    <option value="base">Base</option>
-                    <option value="head">Head</option>
-                    <option value="sill">Sill</option>
-                    <option value="jamb">Jamb</option>
-                    <option value="penetration">Penetration</option>
-                    <option value="coping">Coping</option>
-                    <option value="reveal">Reveal</option>
-                    <option value="Termination">Termination</option>
+<option value="angle">ANGLE</option>
+<option value="base">BASE</option>
+<option value="cleat">CLEAT</option>
+<option value="closure">CLOSURE</option>
+<option value="coping">COPING</option>
+<option value="corner">CORNER</option>
+<option value="drip">DRIP</option>
+<option value="flat">FLAT</option>
+<option value="furring">FURRING</option>
+<option value="gravel-stop">GRAVEL STOP</option>
+<option value="head">HEAD</option>
+<option value="hem">HEM</option>
+<option value="hook">HOOK</option>
+<option value="inside-corner">INSIDE CORNER</option>
+<option value="j-flashing">J-FLASHING</option>
+<option value="j-flashing-cleat">J-FLASHING CLEAT</option>
+<option value="jamb">JAMB</option>
+<option value="joggle">JOGGLE</option>
+<option value="outside-corner">OUTSIDE CORNER</option>
+<option value="peak">PEAK</option>
+<option value="return">RETURN</option>
+<option value="ridge">RIDGE</option>
+<option value="roof">ROOF</option>
+<option value="rtw">RTW</option>
+<option value="sill">SILL</option>
+<option value="snap-on">SNAP ON</option>
+<option value="soffit">SOFFIT</option>
+<option value="zee">ZEE</option>
                 </select>
             </div>
 
@@ -204,13 +224,34 @@
                 <label class="filter-label">Filter 2:</label>
                 <select id="filter2" class="filter-select" onchange="filterFlashings()">
                     <option value="">-- All --</option>
-                    <option value="base">Base</option>
-                    <option value="head">Head</option>
-                    <option value="sill">Sill</option>
-                    <option value="jamb">Jamb</option>
-                    <option value="penetration">Penetration</option>
-                    <option value="coping">Coping</option>
-                    <option value="reveal">Reveal</option>
+<option value="angle">ANGLE</option>
+<option value="base">BASE</option>
+<option value="cleat">CLEAT</option>
+<option value="closure">CLOSURE</option>
+<option value="coping">COPING</option>
+<option value="corner">CORNER</option>
+<option value="drip">DRIP</option>
+<option value="flat">FLAT</option>
+<option value="furring">FURRING</option>
+<option value="gravel-stop">GRAVEL STOP</option>
+<option value="head">HEAD</option>
+<option value="hem">HEM</option>
+<option value="hook">HOOK</option>
+<option value="inside-corner">INSIDE CORNER</option>
+<option value="j-flashing">J-FLASHING</option>
+<option value="j-flashing-cleat">J-FLASHING CLEAT</option>
+<option value="jamb">JAMB</option>
+<option value="joggle">JOGGLE</option>
+<option value="outside-corner">OUTSIDE CORNER</option>
+<option value="peak">PEAK</option>
+<option value="return">RETURN</option>
+<option value="ridge">RIDGE</option>
+<option value="roof">ROOF</option>
+<option value="rtw">RTW</option>
+<option value="sill">SILL</option>
+<option value="snap-on">SNAP ON</option>
+<option value="soffit">SOFFIT</option>
+<option value="zee">ZEE</option>
                 </select>
             </div>
 
@@ -218,13 +259,34 @@
                 <label class="filter-label">Filter 3:</label>
                 <select id="filter3" class="filter-select" onchange="filterFlashings()">
                     <option value="">-- All --</option>
-                    <option value="base">Base</option>
-                    <option value="head">Head</option>
-                    <option value="sill">Sill</option>
-                    <option value="jamb">Jamb</option>
-                    <option value="penetration">Penetration</option>
-                    <option value="coping">Coping</option>
-                    <option value="reveal">Reveal</option>
+<option value="angle">ANGLE</option>
+<option value="base">BASE</option>
+<option value="cleat">CLEAT</option>
+<option value="closure">CLOSURE</option>
+<option value="coping">COPING</option>
+<option value="corner">CORNER</option>
+<option value="drip">DRIP</option>
+<option value="flat">FLAT</option>
+<option value="furring">FURRING</option>
+<option value="gravel-stop">GRAVEL STOP</option>
+<option value="head">HEAD</option>
+<option value="hem">HEM</option>
+<option value="hook">HOOK</option>
+<option value="inside-corner">INSIDE CORNER</option>
+<option value="j-flashing">J-FLASHING</option>
+<option value="j-flashing-cleat">J-FLASHING CLEAT</option>
+<option value="jamb">JAMB</option>
+<option value="joggle">JOGGLE</option>
+<option value="outside-corner">OUTSIDE CORNER</option>
+<option value="peak">PEAK</option>
+<option value="return">RETURN</option>
+<option value="ridge">RIDGE</option>
+<option value="roof">ROOF</option>
+<option value="rtw">RTW</option>
+<option value="sill">SILL</option>
+<option value="snap-on">SNAP ON</option>
+<option value="soffit">SOFFIT</option>
+<option value="zee">ZEE</option>
                 </select>
             </div>
         </div>
@@ -240,17 +302,36 @@
         // Define your flashings here
         // Format: { title: "Detail Name", image: "filename.png", tags: ["tag1", "tag2", "tag3"] }
         const flashings = [
-            { title: "Window Head Detail", image: "detail1.png", tags: ["head", "jamb", "reveal"] },
-            { title: "Window Sill Detail", image: "detail2.png", tags: ["sill", "base"] },
-            { title: "Door Jamb Detail", image: "detail3.png", tags: ["jamb", "reveal"] },
-            { title: "Roof Coping Detail", image: "detail4.png", tags: ["coping", "head"] },
-            { title: "Wall Base Detail", image: "detail5.png", tags: ["base", "sill"] },
-            { title: "Pipe Penetration Detail", image: "detail6.png", tags: ["penetration", "coping"] },
-            { title: "Corner Reveal Detail", image: "detail7.png", tags: ["reveal", "jamb"] },
-            { title: "Foundation Base Detail", image: "detail8.png", tags: ["base"] },
-            { title: "Parapet Coping Detail", image: "detail9.png", tags: ["coping", "head", "reveal"] },
-            { title: "Parapet Coping Detail", image: "detail9.png", tags: ["Termination", "head", "reveal"] },
-            { title: "Vent Penetration Detail", image: "detail10.png", tags: ["penetration", "head"] }
+{ title: "Drip Flashing with Color underneath", image: "Drip Flashing with Color underneath.png", tags: ["HEAD","BASE","DRIP"] },
+{ title: "Head Flashing with Hemmed Back Leg", image: "Head Flashing with Hemmed Back Leg.png", tags: ["SOFFIT","BASE","DRIP"] },
+{ title: "Drip Flashing with Hem and Drip", image: "Drip Flashing with Hem and Drip.png", tags: ["HEAD","BASE","DRIP"] },
+{ title: "Base Shelf Flashing with Hem", image: "Base Shelf Flashing with Hem.png", tags: ["HEAD","BASE","RTW"] },
+{ title: "Base Shelf Flashing with Hem and Drip", image: "Base Shelf Flashing with Hem and Drip.png", tags: ["HEAD","BASE","RTW"] },
+{ title: "Ridge Flashing", image: "Ridge Flashing.png", tags: ["RIDGE","PEAK","ROOF"] },
+{ title: "Vented Ridge Flashing", image: "Vented Ridge Flashing.png", tags: ["RIDGE","PEAK","ROOF"] },
+{ title: "Outside Corner Flashing with Hems", image: "Outside Corner Flashing with Hems.png", tags: ["OUTSIDE CORNER","CORNER","ANGLE"] },
+{ title: "Inside Corner Flashing with Hems", image: "Inside Corner Flashing with Hems.png", tags: ["INSIDE CORNER","CORNER","ANGLE"] },
+{ title: "Outside Corner Flashing with One Hem", image: "Outside Corner Flashing with One Hem.png", tags: ["OUTSIDE CORNER","CORNER","ANGLE"] },
+{ title: "Inside Corner Flashing with One Hem", image: "Inside Corner Flashing with One Hem.png", tags: ["INSIDE CORNER","CORNER","ANGLE"] },
+{ title: "Bent Angle", image: "Bent Angle.png", tags: ["JAMB","CORNER","ANGLE"] },
+{ title: "J Flashing with Hem", image: "J Flashing with Hem.png", tags: ["JAMB","J-FLASHING",""] },
+{ title: "J Flashing with Drip", image: "J Flashing with Drip.png", tags: ["SILL","J-FLASHING",""] },
+{ title: "J Flashing Cleat", image: "J Flashing Cleat.png", tags: ["JAMB","J-FLASHING","CLEAT"] },
+{ title: "J Flashing with Drip Cleat", image: "J Flashing with Drip Cleat.png", tags: ["SILL","J-FLASHING","CLEAT"] },
+{ title: "Zee Furring or Zee Closure Flashing", image: "Zee Furring or Zee Closure Flashing.png", tags: ["FURRING","CLOSURE","ZEE"] },
+{ title: "Coping with Standard Front and Back", image: "Coping with Standard Front and Back.png", tags: ["COPING","DRIP","DRIP"] },
+{ title: "Coping with Standard Face and Snap on Back", image: "Coping with Standard Face and Snap on Back.png", tags: ["COPING","DRIP","SNAP-ON"] },
+{ title: "Coping with Hook Face and Standard Back", image: "Coping with Hook Face and Standard Back.png", tags: ["COPING","HOOK","DRIP"] },
+{ title: "Coping with Hem Face and Standard Back", image: "Coping with Hem Face and Standard Back.png", tags: ["COPING","HEM","DRIP"] },
+{ title: "Cleat Standard with Drip", image: "Cleat Standard with Drip.png", tags: ["CLEAT","COPING","DRIP"] },
+{ title: "Cleat Gravel Stop with Drip", image: "Cleat Gravel Stop with Drip.png", tags: ["CLEAT","COPING","GRAVEL-STOP"] },
+{ title: "Cleat Standard with Joggle", image: "Cleat Standard with Joggle.png", tags: ["CLEAT","COPING","JOGGLE"] },
+{ title: "Cleat Gravel Stop with Joggle", image: "Cleat Gravel Stop with Joggle.png", tags: ["CLEAT","COPING","JOGGLE"] },
+{ title: "Cleat Flat with Drip", image: "Cleat Flat with Drip.png", tags: ["CLEAT","FLAT","DRIP"] }
+
+
+
+
         ];
 
         function filterFlashings() {
