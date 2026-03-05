@@ -228,14 +228,16 @@
     'Matt','Mike','Peter','Taylor',
   ];
 
+  
+
   const DRAFTING_STATUS = [
     { value:'Ready',                  color:'#60a5fa' },
     { value:'In Progress',            color:'#3b82f6' },
     { value:'Review – Northshore',    color:'#a78bfa' },
-    { value:'Pending Info',           color:'#fbbf24' },
+    { value:'Pending Info',           color:'#9ca3af' },
     { value:'Hold',                   color:'#9ca3af' },
     { value:'Approved as Noted',      color:'#fb923c' },
-    { value:'NO SHOPS',               color:'#f97373' },
+    { value:'NO SHOPS',               color:'#9ca3af' },
     { value:'Review – Design',        color:'#e879f9' },
     { value:'Approved',               color:'#4ade80' },
     { value:'Review - Markups Ready', color:'#38bdf8' },
@@ -690,16 +692,12 @@
               <tr>
                 <th className="sortable" onClick={()=>handleSort('pri')}>PRI <SA f="pri" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('name')}>Project <SA f="name" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th className="sortable" onClick={()=>handleSort('jobNumber')}>Job # <SA f="jobNumber" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th>Division</th>
                 <th>Type</th>
-                <th>PE</th>
+                <th className="sortable" onClick={()=>handleSort('pe')}>PE <SA f="pe" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th>PM</th>
                 <th className="sortable" onClick={()=>handleSort('status')}>Status <SA f="status" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('dueDate')}>Due <SA f="dueDate" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th>Progress</th>
-                <th>Details</th>
-                <th>Elevs</th>
                 <th>WO</th>
                 <th>Plans</th>
                 <th>Notes</th>
@@ -718,11 +716,10 @@
                   return(
                     <tr key={p.id} onClick={()=>setModal({mode:'edit',project:p})} title="Click to edit">
                       <td style={{color:'var(--text-muted)',fontWeight:600,textAlign:'center'}}>{p.pri||'—'}</td>
-                      <td style={{maxWidth:160}}>
+                      <td style={{maxWidth:300}}>
                         <span style={{display:'block',overflow:'hidden',textOverflow:'ellipsis',fontWeight:500}}>{p.name}</span>
-                        {p.price&&<span style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{fmtCurrency(p.price)}</span>}
                       </td>
-                      <td style={{color:'var(--text-muted)',fontSize:'0.78rem'}}>{p.jobNumber||'—'}</td>
+                      
                       <td>{p.division?<Badge val={p.division} arr={DIVISIONS}/>:<span style={{color:'var(--text-muted)'}}>—</span>}</td>
                       <td style={{fontSize:'0.78rem',color:'var(--text-muted)',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis'}}>{p.projectType||'—'}</td>
                       <td style={{fontSize:'0.8rem'}}>{p.pe||'—'}</td>
@@ -732,16 +729,16 @@
                         <span style={{color:ov?'var(--danger)':'inherit'}}>{fmtDate(p.dueDate)}</span>
                         {ov&&<span className="overdue-tag">overdue</span>}
                       </td>
-                      <td>
-                        {tot?(<div className="prog-bar"><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`,background:fill}}/></div><span className="prog-label">{pct}%</span></div>):<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}
-                      </td>
-                      <td style={{fontSize:'0.78rem',textAlign:'center'}}>{(+p.detailsTotal||0)?`${+p.detailsDone||0}/${+p.detailsTotal}`:'—'}</td>
-                      <td style={{fontSize:'0.78rem',textAlign:'center'}}>{(+p.elevationsTotal||0)?`${+p.elevationsDone||0}/${+p.elevationsTotal}`:'—'}</td>
+
+
                       <td onClick={e=>e.stopPropagation()}>{p.woLink?<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link">WO ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
                       <td onClick={e=>e.stopPropagation()}>{p.plansLink?<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link">Plans ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
                       <td style={{fontSize:'0.75rem',color:'var(--text-muted)',textAlign:'center'}}>{p.notes?.length?<span style={{color:'var(--accent)'}}>{p.notes.length}</span>:'—'}</td>
+                      <td style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{fmtCurrency(p.price)}</td>
+                      
+                      
                       <td style={{textAlign:'right',whiteSpace:'nowrap'}} onClick={e=>e.stopPropagation()}>
-                        <button className="btn-icon" onClick={()=>setModal({mode:'edit',project:p})}>Edit</button>
+
                         {tab==='active'
                           ?<button className="btn-icon btn-warning" style={{marginLeft:4}} onClick={()=>setConfirm({type:'archive',project:p})}>Archive</button>
                           :<button className="btn-icon btn-success" style={{marginLeft:4}} onClick={()=>doRestore(p)}>Restore</button>}
@@ -774,27 +771,13 @@
           </div>
           <div style={{marginBottom:8}}>
             <Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/>
-            {p.division&&<span style={{marginLeft:6}}><Badge val={p.division} arr={DIVISIONS}/></span>}
           </div>
-          <div className="quick-card-row"><span>PE</span><span>{p.pe||'—'}</span></div>
+          <div className="quick-card-row"><span>Project Manager</span><span>{p.pm||'—'}</span></div>
           <div className="quick-card-row">
             <span>Due</span>
             <span style={{color:ov?'var(--danger)':'var(--text)'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag">!</span>}</span>
           </div>
-          {tot>0&&(
-            <div style={{marginTop:8}}>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'var(--text-muted)',marginBottom:3}}>
-                <span>Progress</span><span>{pct}%</span>
-              </div>
-              <div className="prog-track" style={{height:6}}>
-                <div className="prog-fill" style={{width:`${pct}%`,background:fill,height:'100%'}}/>
-              </div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.7rem',color:'var(--text-muted)',marginTop:3}}>
-                <span>Details {+p.detailsDone||0}/{+p.detailsTotal||0}</span>
-                <span>Elevs {+p.elevationsDone||0}/{+p.elevationsTotal||0}</span>
-              </div>
-            </div>
-          )}
+
         </div>
       );
     }
@@ -1014,7 +997,7 @@
             <h2>Search</h2>
             <input type="search" placeholder="Name, job #, PE…" value={search} onChange={e=>setSearch(e.target.value)} style={{width:'100%'}}/>
 
-            <h2>Filter — Status</h2>
+            <h2>Filter — Project Engineer</h2>
             <div className="panel">
               {DRAFTING_STATUS.map(s=>(
                 <label key={s.value} className="filter-row">
