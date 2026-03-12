@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>PE Report — Northshore | NorthClad</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root{
+      --bg:#070b10;--bg-elevated:#131821;--bg-panel:#181d28;
+      --accent:#3b82f6;--accent-soft:rgba(59,130,246,0.12);
+      --border:#242a37;--border-subtle:#1b202b;
+      --text:#e5e7eb;--text-muted:#9ca3af;
+      --danger:#f97373;--success:#4ade80;--warning:#fbbf24;
+      --radius-lg:10px;--radius-md:8px;--radius-sm:6px;
+      --shadow-soft:0 18px 45px rgba(0,0,0,0.6);
+      --font:system-ui,-apple-system,"Segoe UI",sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    html,body{margin:0;padding:0;height:100%;}
+    body{font-family:var(--font);background:radial-gradient(circle at top left,#0f172a 0,#020617 55%,#000 100%);color:var(--text);min-height:100vh;}
+    .app-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:linear-gradient(to right,rgba(15,23,42,0.96),rgba(15,23,42,0.9));border-bottom:1px solid var(--border);}
+    .app-title h1{margin:0;font-size:1.1rem;letter-spacing:0.06em;text-transform:uppercase;}
+    .app-subtitle{font-size:0.75rem;color:var(--text-muted);}
+    .sync-bar{display:flex;align-items:center;gap:8px;padding:5px 18px;font-size:0.76rem;border-bottom:1px solid var(--border);background:rgba(15,23,42,0.95);}
+    .sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .sync-dot.ok{background:var(--success);}
+    .sync-dot.busy{background:var(--warning);animation:pulse 1s infinite;}
+    .sync-dot.err{background:var(--danger);}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    .sync-msg{color:var(--text-muted);}
+    /* Password gate */
+    .pw-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(6px);}
+    .pw-box{background:radial-gradient(circle at top left,#111827 0,#020617 70%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 40px;width:340px;box-shadow:var(--shadow-soft);}
+    .pw-box h2{margin:0 0 6px;font-size:1.1rem;}
+    .pw-box p{font-size:0.82rem;color:var(--text-muted);margin:0 0 20px;}
+    .pw-box input{width:100%;margin-bottom:10px;background:rgba(15,23,42,0.96);border:1px solid rgba(51,65,85,0.9);border-radius:var(--radius-md);padding:8px 10px;color:var(--text);font-size:0.9rem;font-family:var(--font);}
+    .pw-box input:focus{outline:none;border-color:rgba(59,130,246,0.6);}
+    .pw-err{color:var(--danger);font-size:0.76rem;margin-bottom:10px;display:block;}
+    .btn-primary{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.65);color:#93c5fd;border-radius:var(--radius-md);padding:8px 14px;font:inherit;font-size:0.85rem;cursor:pointer;transition:background 120ms;}
+    .btn-primary:hover{background:rgba(59,130,246,0.25);}
+    button{font:inherit;}
+    /* Content */
+    .content{padding:16px 20px;max-width:1400px;margin:0 auto;}
+    /* Tab bar */
+    .tab-bar{display:flex;gap:6px;margin-bottom:20px;}
+    .tab-btn{padding:6px 18px;font-size:0.84rem;border-radius:var(--radius-md);border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all 120ms;}
+    .tab-btn:hover{border-color:var(--accent);color:var(--text);}
+    .tab-btn.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.65);color:#93c5fd;}
+    /* PE cards grid */
+    .pe-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px;}
+    .pe-stat-card{background:radial-gradient(circle at top left,#111827 0,#020617 80%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;cursor:pointer;transition:border-color 150ms,box-shadow 150ms,transform 80ms;}
+    .pe-stat-card:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+    .pe-stat-card.selected{box-shadow:0 0 0 2px var(--card-color,var(--accent));}
+    .pe-stat-card-name{font-size:0.9rem;font-weight:700;margin-bottom:10px;}
+    .pe-stat-row{display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:4px;}
+    .pe-stat-row span:first-child{color:var(--text-muted);}
+    .pe-stat-row span:last-child{font-weight:600;}
+    /* Charts */
+    .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+    .chart-section{background:radial-gradient(circle at top left,#111827 0,#020617 80%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;}
+    .chart-title{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:14px;font-weight:600;}
+    .hbar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+    .hbar-label{width:90px;font-size:0.78rem;color:var(--text-muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+    .hbar-track{flex:1;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;}
+    .hbar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;}
+    .hbar-fill span{font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.9);white-space:nowrap;}
+    .hbar-zero{font-size:0.7rem;color:var(--text-muted);padding:0 6px;}
+    /* Section divider */
+    .section-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:10px;font-weight:600;}
+    /* Table */
+    .table-wrap{overflow-x:auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);margin-bottom:20px;}
+    .table{width:100%;border-collapse:collapse;font-size:0.82rem;white-space:nowrap;}
+    .table thead{background:#020617;}
+    .table th,.table td{padding:7px 10px;border-bottom:1px solid rgba(31,41,55,0.9);text-align:left;}
+    .table th{font-weight:500;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;}
+    .table tbody tr{background:rgba(15,23,42,0.96);}
+    .table tbody tr:nth-child(even){background:rgba(2,6,23,0.98);}
+    .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;}
+    .prog-bar{display:flex;align-items:center;gap:5px;min-width:80px;}
+    .prog-track{flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:3px;}
+    .prog-label{font-size:0.72rem;color:var(--text-muted);white-space:nowrap;}
+    .overdue-tag{font-size:0.66rem;color:var(--danger);margin-left:4px;font-weight:600;}
+    .pe-section{margin-bottom:28px;}
+    .pe-section-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    /* Select hint */
+    .select-hint{text-align:center;padding:32px;color:var(--text-muted);font-size:0.88rem;background:radial-gradient(circle at top left,#111827 0,#020617 80%);border:1px solid var(--border);border-radius:var(--radius-lg);}
+    /* Select all/none controls */
+    .selection-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .sel-btn{background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);padding:3px 10px;font-size:0.76rem;cursor:pointer;}
+    .sel-btn:hover{border-color:var(--accent);color:var(--text);}
+    .sel-count{font-size:0.76rem;color:var(--text-muted);margin-left:auto;}
+    @media(max-width:800px){.charts-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxnntbkAJ_z_gckX_NUeaH21qUhlxtjLDCOqugWLEEb5Me1mITTAcYBrR48Q3W_Ws1uiw/exec';
+  const CLOWNBYNE = 'clown';
+  const REFRESH_MS = 300000;
+
+  const DRAFTING_STATUS = [
+    { value:'Ready',                  color:'#56d7e8' },
+    { value:'In Progress',            color:'#3b82f6' },
+    { value:'Internal Review',    color:'#fb923c' },
+    { value:'External Review',        color:'#e879f9' },
+
+    { value:'Approved',               color:'#4ade80' },
+    { value:'Hold',                   color:'#a83254' },
+    { value:'Approved as Noted',      color:'#4ade80' },
+    { value:'NO SHOPS',               color:'#9ca3af' },
+        { value:'Complete',               color:'#86efac' },
+  ];
+
+  const DIVISIONS = [
+    { value:'NorthClad',        color:'#60a5fa' },
+    { value:'Northshore WA',       color:'#4ade80' },
+    { value:'Northshore HI',color:'#fb923c' },
+  ];
+  const PALETTE = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16','#f97316','#6366f1','#14b8a6','#e11d48','#7c3aed','#0ea5e9','#65a30d','#d97706'];
+
+  function colorOf(val,arr){ return arr.find(o=>o.value===val)?.color??'#9ca3af'; }
+  function fmtDate(s){ if(!s)return'—'; const[y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  function isOverdue(d,s){ if(!d||s==='Finished'||s==='Approved'||s==='NO SHOPS')return false; const t=new Date();t.setHours(0,0,0,0);const[y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd)<t; }
+  function parsePrice(s){ if(!s&&s!==0)return 0; const n=parseFloat(String(s).replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; }
+  function fmtCurrency(v){ if(!v&&v!==0)return''; const n=parseFloat(String(v).replace(/[^0-9.]/g,'')); if(isNaN(n))return String(v); return n.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}); }
+  function calcPct(p){ const tot=+p.detailsTotal||0; if(!tot)return 0; return Math.min(100,Math.round(((+p.detailsDone||0)/tot)*100)); }
+
+  function Badge({val,arr}){ const c=colorOf(val,arr); return <span className="badge" style={{background:c+'1a',color:c,border:`1px solid ${c}44`}}>{val}</span>; }
+
+  function gasGet(){
+    return new Promise((resolve,reject)=>{
+      const cb='__gasCb_'+Date.now();
+      const s=document.createElement('script');
+      window[cb]=(json)=>{ delete window[cb]; s.parentNode&&s.parentNode.removeChild(s); json.ok?resolve(json.data||[]):reject(new Error('read failed')); };
+      s.onerror=()=>{ delete window[cb]; s.parentNode&&s.parentNode.removeChild(s); reject(new Error('script load failed')); };
+      s.src=GAS_URL+'?callback='+cb+'&t='+Date.now();
+      document.head.appendChild(s);
+    });
+  }
+
+  function App(){
+    const [unlocked,setUnlocked]   = useState(false);
+    const [pwInput,setPwInput]     = useState('');
+    const [pwErr,setPwErr]         = useState(false);
+    const [projects,setProjects]   = useState([]);
+    const [tab,setTab]             = useState('combined'); // 'active'|'archived'|'combined'
+    const [selectedPEs,setSelectedPEs] = useState([]); // empty = all shown
+    const [syncStatus,setSyncStatus] = useState('loading');
+    const [syncMsg,setSyncMsg]       = useState('Loading…');
+
+    function pull(silent){
+      if(!silent){ setSyncStatus('loading'); setSyncMsg('Loading from Google Sheets…'); }
+      gasGet().then(data=>{
+        setProjects(data);
+        setSyncStatus('ok');
+        setSyncMsg('Synced · '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}));
+      }).catch(()=>{
+        setSyncStatus('error');
+        setSyncMsg('Could not reach Google Sheets');
+      });
+    }
+
+    useEffect(()=>{ if(unlocked) pull(false); },[unlocked]);
+    useEffect(()=>{
+      if(!unlocked) return;
+      const id=setInterval(()=>pull(true),REFRESH_MS);
+      return()=>clearInterval(id);
+    },[unlocked]);
+
+    function handlePw(e){
+      e.preventDefault();
+      if(pwInput===CLOWNBYNE){ setUnlocked(true); setPwErr(false); }
+      else{ setPwErr(true); setPwInput(''); }
+    }
+
+    if(!unlocked) return(
+      <div className="pw-overlay">
+        <div className="pw-box">
+          <h2>📊 PE Report</h2>
+          <p>Enter the password to access this report.</p>
+          <form onSubmit={handlePw}>
+            <input type="password" value={pwInput} onChange={e=>{setPwInput(e.target.value);setPwErr(false);}} placeholder="Password" autoFocus/>
+            {pwErr&&<span className="pw-err">Incorrect password.</span>}
+            <button type="submit" className="btn-primary" style={{width:'100%'}}>Enter</button>
+          </form>
+        </div>
+      </div>
+    );
+
+    // Data source based on tab
+    const active   = projects.filter(p=>!p.archived);
+    const archived = projects.filter(p=>p.archived);
+    const source   = tab==='active'?active:tab==='archived'?archived:projects;
+
+    // Build PE data
+    const allPENames = [...new Set(source.map(p=>p.pe||'Unassigned'))].sort();
+    const peColor = pe=>PALETTE[allPENames.indexOf(pe)%PALETTE.length];
+
+    const allPEData = allPENames.map(pe=>{
+      const projs=source.filter(p=>(p.pe||'Unassigned')===pe);
+      const finished=projs.filter(p=>p.draftingStatus==='Finished'||p.draftingStatus==='Approved');
+      const totalDetails=projs.reduce((a,p)=>a+(+p.detailsTotal||0),0);
+      const doneDetails=projs.reduce((a,p)=>a+(+p.detailsDone||0),0);
+      const totalValue=projs.reduce((a,p)=>a+parsePrice(p.price),0);
+      const overdue=projs.filter(p=>isOverdue(p.dueDate,p.draftingStatus)).length;
+      const statusBreak={};
+      projs.forEach(p=>{statusBreak[p.draftingStatus]=(statusBreak[p.draftingStatus]||0)+1;});
+      return{pe,count:projs.length,finished:finished.length,totalDetails,doneDetails,totalValue,overdue,statusBreak,projs};
+    }).filter(d=>d.count>0);
+
+    // Toggle PE selection
+    function togglePE(pe){
+      setSelectedPEs(prev=>prev.includes(pe)?prev.filter(x=>x!==pe):[...prev,pe]);
+    }
+    const isSelected = pe=>selectedPEs.length===0||selectedPEs.includes(pe);
+    const detailData = selectedPEs.length===0 ? allPEData : allPEData.filter(d=>selectedPEs.includes(d.pe));
+    const hasValue   = allPEData.some(d=>d.totalValue>0);
+
+    function HBarChart({title,data,fmt}){
+      const filtered = selectedPEs.length===0?data:data.filter(d=>selectedPEs.includes(d.label));
+      const max=Math.max(...filtered.map(d=>d.val),1);
+      return(
+        <div className="chart-section">
+          <div className="chart-title">{title}</div>
+          {filtered.map(d=>(
+            <div key={d.label} className="hbar-row">
+              <span className="hbar-label" title={d.label}>{d.label}</span>
+              <div className="hbar-track">
+                {d.val>0
+                  ?<div className="hbar-fill" style={{width:`${Math.max(4,(d.val/max)*100)}%`,background:d.color}}>
+                     <span>{fmt?fmt(d.val):d.val}</span>
+                   </div>
+                  :<span className="hbar-zero">0</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return(
+      <>
+        <header className="app-header">
+          <div className="app-title">
+            <h1>📊 PE Report — Northshore | NorthClad</h1>
+            <span className="app-subtitle">Read-only · Auto-refreshes every 5 minutes</span>
+          </div>
+          <button onClick={()=>pull(false)} style={{background:'transparent',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',color:'var(--text-muted)',padding:'6px 12px',fontSize:'0.8rem',cursor:'pointer'}}>↻ Refresh</button>
+        </header>
+
+        <div className="sync-bar">
+          <div className={`sync-dot ${syncStatus==='loading'?'busy':syncStatus==='error'?'err':'ok'}`}/>
+          <span className="sync-msg">{syncMsg}</span>
+        </div>
+
+        <div className="content">
+          {/* Tab bar */}
+          <div className="tab-bar">
+            <button className={`tab-btn ${tab==='combined'?'active':''}`} onClick={()=>setTab('combined')}>Combined ({projects.length})</button>
+            <button className={`tab-btn ${tab==='active'?'active':''}`} onClick={()=>setTab('active')}>Active ({active.length})</button>
+            <button className={`tab-btn ${tab==='archived'?'active':''}`} onClick={()=>setTab('archived')}>Archived ({archived.length})</button>
+          </div>
+
+          {/* PE summary cards */}
+          <div className="section-label">PE Summary — click to select · compare multiple</div>
+          <div className="selection-bar">
+            <button className="sel-btn" onClick={()=>setSelectedPEs([])}>Show All</button>
+            <button className="sel-btn" onClick={()=>setSelectedPEs(allPEData.map(d=>d.pe))}>Select All</button>
+            {selectedPEs.length>0&&<span className="sel-count">{selectedPEs.length} selected</span>}
+          </div>
+          <div className="pe-stat-grid">
+            {allPEData.map(d=>{
+              const c=peColor(d.pe);
+              const sel=isSelected(d.pe);
+              const detPct=d.totalDetails?Math.round((d.doneDetails/d.totalDetails)*100):0;
+              return(
+                <div key={d.pe}
+                  className={`pe-stat-card ${selectedPEs.includes(d.pe)?'selected':''}`}
+                  style={{'--card-color':c,borderColor:selectedPEs.includes(d.pe)?c:c+'44',opacity:sel?1:0.4}}
+                  onClick={()=>togglePE(d.pe)}>
+                  <div className="pe-stat-card-name" style={{color:c}}>{d.pe}</div>
+                  <div className="pe-stat-row"><span>Projects</span><span>{d.count}</span></div>
+                  <div className="pe-stat-row"><span>Completed</span><span style={{color:'var(--success)'}}>{d.finished}</span></div>
+                  {d.overdue>0&&<div className="pe-stat-row"><span>Overdue</span><span style={{color:'var(--danger)'}}>{d.overdue}</span></div>}
+                  {d.totalDetails>0&&<div className="pe-stat-row"><span>Details</span><span>{d.doneDetails}/{d.totalDetails}<span style={{color:'var(--text-muted)',fontWeight:400}}> ({detPct}%)</span></span></div>}
+                  {d.totalValue>0&&<div className="pe-stat-row"><span>Value</span><span style={{color:'var(--warning)'}}>{fmtCurrency(d.totalValue)}</span></div>}
+                  <div style={{marginTop:8,display:'flex',gap:2,height:4,borderRadius:2,overflow:'hidden'}}>
+                    {Object.entries(d.statusBreak).map(([s,n])=>(
+                      <div key={s} title={`${s}: ${n}`} style={{flex:n,background:colorOf(s,DRAFTING_STATUS),minWidth:2}}/>
+                    ))}
+                  </div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:'3px 6px',marginTop:4}}>
+                    {Object.entries(d.statusBreak).map(([s,n])=>(
+                      <span key={s} style={{fontSize:'0.62rem',color:colorOf(s,DRAFTING_STATUS)}}>{s}: {n}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Charts — filtered to selection */}
+          <div className="section-label">Charts{selectedPEs.length>0?' — selected PEs':''}</div>
+          <div className="charts-grid">
+            <HBarChart title="Projects" data={allPEData.map(d=>({label:d.pe,val:d.count,color:peColor(d.pe)}))}/>
+            <HBarChart title="Details Drawn" data={allPEData.map(d=>({label:d.pe,val:d.doneDetails,color:peColor(d.pe)}))}/>
+            {hasValue&&<HBarChart title="Total Project Value" data={allPEData.map(d=>({label:d.pe,val:d.totalValue,color:peColor(d.pe)}))} fmt={fmtCurrency}/>}
+          </div>
+
+          {/* Detailed tables — only for selected PEs (or all if none selected) */}
+          <div className="section-label">
+            {selectedPEs.length===0
+              ? 'Project Detail — All PEs (click a card above to filter)'
+              : `Project Detail — ${detailData.map(d=>d.pe).join(', ')}`}
+          </div>
+          {detailData.length===0
+            ? <div className="select-hint">Select one or more PE cards above to view their projects.</div>
+            : detailData.map(d=>(
+              <div key={d.pe} className="pe-section">
+                <div className="pe-section-header">
+                  <span style={{fontWeight:700,color:peColor(d.pe),fontSize:'0.9rem'}}>{d.pe}</span>
+                  <div style={{flex:1,height:1,background:peColor(d.pe)+'44'}}/>
+                  <span style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{d.count} project{d.count!==1?'s':''}</span>
+                </div>
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>PRI</th><th>Project</th><th>Job #</th><th>Division</th>
+                        <th>Status</th><th>Due</th><th>PM</th>
+                        <th>Details</th><th>Progress</th>
+                        {d.projs.some(p=>p.price)&&<th>Value</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {d.projs.sort((a,b)=>(parseInt(a.pri)||9999)-(parseInt(b.pri)||9999)).map(p=>{
+                        const pct=calcPct(p);
+                        const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
+                        const tot=+p.detailsTotal||0;
+                        const ov=isOverdue(p.dueDate,p.draftingStatus);
+                        return(
+                          <tr key={p.id}>
+                            <td style={{color:'var(--text-muted)',textAlign:'center'}}>{p.pri||'—'}</td>
+                            <td style={{fontWeight:500,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</td>
+                            <td style={{color:'var(--text-muted)',fontSize:'0.78rem'}}>{p.jobNumber||'—'}</td>
+                            <td>{p.division?<Badge val={p.division} arr={DIVISIONS}/>:<span style={{color:'var(--text-muted)'}}>—</span>}</td>
+                            <td><Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/></td>
+                            <td style={{whiteSpace:'nowrap',color:ov?'var(--danger)':'inherit'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag">!</span>}</td>
+                            <td style={{fontSize:'0.8rem'}}>{p.pm||'—'}</td>
+                            <td style={{textAlign:'center'}}>{tot?`${+p.detailsDone||0}/${tot}`:'—'}</td>
+                            <td style={{minWidth:90}}>{tot?(<div className="prog-bar"><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`,background:fill}}/></div><span className="prog-label">{pct}%</span></div>):<span style={{color:'var(--text-muted)'}}>—</span>}</td>
+                            {d.projs.some(pp=>pp.price)&&<td style={{color:'var(--warning)',fontSize:'0.78rem'}}>{p.price?fmtCurrency(p.price):'—'}</td>}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>Drafting Tracker – Northshore Exteriors</title>
+  <title>Drafting Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -154,14 +155,6 @@
     @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
     .sync-msg{color:var(--text-muted);}
     /* ─── Password gate ─── */
-    .pw-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(6px);}
-    .pw-box{background:radial-gradient(circle at top left,#111827 0,#020617 70%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 36px;width:320px;box-shadow:var(--shadow-soft);}
-    .pw-box h2{margin:0 0 6px;font-size:1rem;}
-    .pw-box p{font-size:0.8rem;color:var(--text-muted);margin:0 0 18px;}
-    .pw-box input{width:100%;margin-bottom:10px;}
-    .pw-err{color:var(--danger);font-size:0.76rem;margin-bottom:10px;display:block;}
-    /* ─── PE Report view ─── */
-    .pe-report{display:flex;flex-direction:column;gap:24px;}
     .pe-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
     .pe-stat-card{background:radial-gradient(circle at top left,#111827 0,#020617 80%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;}
     .pe-stat-card-name{font-size:0.9rem;font-weight:700;margin-bottom:10px;}
@@ -217,35 +210,35 @@
   const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxnntbkAJ_z_gckX_NUeaH21qUhlxtjLDCOqugWLEEb5Me1mITTAcYBrR48Q3W_Ws1uiw/exec';
-  const REPORT_PASSWORD = 'clown';
   const LOCAL_KEY = 'northshore-drafting-offline'; // fallback cache
 
   // Data now stored in Google Sheets via GAS. LOCAL_KEY is cache only.
 
   const TEAM = [
-    'Alan','Axel','Brandan','Colton','Dave','Dennis','Eric',
-    'Grant','Jeremy','Joey','Josh','Keith','Kristi',
-    'Matt','Mike','Peter','Taylor',
+    'Alan P','Axel P','Brandan H','Charles L','Colton R','Dante B','Dave K','Dave M',
+    'Dennis E','Eric K','Grant T','Halden H','Jason W','Jeffery H','Jeremy H','Joey M',
+    'Josh F','Keith E','Kristi G','Mike S','Patrick K','Peter J','Ryan M','Taylor K','Tina H',
   ];
 
+  
+
   const DRAFTING_STATUS = [
-    { value:'Ready',                  color:'#60a5fa' },
+    { value:'Ready',                  color:'#56d7e8' },
     { value:'In Progress',            color:'#3b82f6' },
-    { value:'Review – Northshore',    color:'#a78bfa' },
-    { value:'Pending Info',           color:'#fbbf24' },
-    { value:'Hold',                   color:'#9ca3af' },
-    { value:'Approved as Noted',      color:'#fb923c' },
-    { value:'NO SHOPS',               color:'#f97373' },
-    { value:'Review – Design',        color:'#e879f9' },
+    { value:'Internal Review',    color:'#fb923c' },
+    { value:'External Review',        color:'#e879f9' },
+
     { value:'Approved',               color:'#4ade80' },
-    { value:'Review - Markups Ready', color:'#38bdf8' },
-    { value:'Finished',               color:'#86efac' },
+    { value:'Hold',                   color:'#a83254' },
+    { value:'Approved as Noted',      color:'#4ade80' },
+    { value:'NO SHOPS',               color:'#9ca3af' },
+        { value:'Complete',               color:'#86efac' },
   ];
 
   const DIVISIONS = [
     { value:'NorthClad',        color:'#60a5fa' },
-    { value:'Northshore',       color:'#4ade80' },
-    { value:'Northshore Hawaii',color:'#fb923c' },
+    { value:'Northshore WA',       color:'#4ade80' },
+    { value:'Northshore HI',color:'#fb923c' },
   ];
 
   const STATUS_ORDER = {};
@@ -261,13 +254,14 @@
   ];
 
   const DEFAULT_FORM = {
-    pri:'',name:'',jobNumber:'',division:'',projectType:'',
+    pri:'',name:'',jobNumber:'',division:'Northshore',projectType:'',
     pe:'',pm:'',estimator:'',
     draftingStatus:'Ready',dueDate:'',
     woLink:'',plansLink:'',
     price:'',
+    reviewState:0,
+    woComplete:false,cadAvailable:false,
     detailsTotal:0,detailsDone:0,
-    elevationsTotal:0,elevationsDone:0,
     notes:[],
   };
 
@@ -335,8 +329,21 @@
   function fmtDate(s){ if(!s)return'—'; const[y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
   function isOverdue(d,s){ if(!d||s==='Finished'||s==='Approved'||s==='NO SHOPS') return false; const t=new Date();t.setHours(0,0,0,0);const[y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd)<t; }
   function colorOf(val,arr){ return arr.find(o=>o.value===val)?.color??'#9ca3af'; }
-  function calcPct(p){ const tot=(+p.detailsTotal||0)+(+p.elevationsTotal||0); if(!tot)return 0; const done=(+p.detailsDone||0)+(+p.elevationsDone||0); return Math.min(100,Math.round((done/tot)*100)); }
+  function calcPct(p){ const tot=+p.detailsTotal||0; if(!tot)return 0; return Math.min(100,Math.round(((+p.detailsDone||0)/tot)*100)); }
   function fmtNoteTime(iso){ try{ return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch{return'';} }
+
+  function fmtCurrency(v){
+    if(!v&&v!==0) return '';
+    const n = parseFloat(String(v).replace(/[^0-9.]/g,''));
+    if(isNaN(n)) return String(v);
+    return n.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0});
+  }
+
+  function parseCurrency(s){
+    if(!s) return '';
+    const n = parseFloat(String(s).replace(/[^0-9.]/g,''));
+    return isNaN(n) ? '' : n;
+  }
 
   /* Badge */
   function Badge({val,arr}){ const c=colorOf(val,arr); return <span className="badge" style={{background:c+'1a',color:c,border:`1px solid ${c}44`}}>{val}</span>; }
@@ -348,7 +355,7 @@
   function ProgBar({project}){
     const pct=calcPct(project);
     const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
-    const tot=(+project.detailsTotal||0)+(+project.elevationsTotal||0);
+    const tot=+project.detailsTotal||0;
     if(!tot)return <span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>;
     return(
       <div className="prog-bar">
@@ -450,7 +457,16 @@
               </div>
               <div className="field">
                 <label>Price</label>
-                <input type="text" value={form.price} onChange={e=>set('price',e.target.value)} placeholder="$0.00"/>
+                <input
+                  type="text"
+                  value={form.price}
+                  onChange={e=>set('price',e.target.value)}
+                  onBlur={e=>{
+                    const n=parseCurrency(e.target.value);
+                    if(n!=='') set('price', n);
+                  }}
+                  placeholder="$0.00"
+                />
               </div>
             </div>
 
@@ -491,16 +507,7 @@
                     <input type="number" min="0" value={form.detailsDone} onChange={e=>num('detailsDone',e.target.value)}/></div>
                 </div>
               </div>
-              {/* Elevations */}
-              <div>
-                <div style={{fontSize:'0.74rem',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Elevations</div>
-                <div className="field-row">
-                  <div className="field"><label>Total Elevations</label>
-                    <input type="number" min="0" value={form.elevationsTotal} onChange={e=>num('elevationsTotal',e.target.value)}/></div>
-                  <div className="field"><label>Elevations Finished</label>
-                    <input type="number" min="0" value={form.elevationsDone} onChange={e=>num('elevationsDone',e.target.value)}/></div>
-                </div>
-              </div>
+
             </div>
 
             {/* Links */}
@@ -510,6 +517,38 @@
                 <input type="url" value={form.woLink} onChange={e=>set('woLink',e.target.value)} placeholder="https://…"/></div>
               <div className="field"><label>Plans Link</label>
                 <input type="url" value={form.plansLink} onChange={e=>set('plansLink',e.target.value)} placeholder="https://…"/></div>
+            </div>
+
+            {/* Checklist */}
+            <div className="modal-section">
+              <div className="modal-section-title">Checklist</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 20px'}}>
+                {/* Review state cycle button */}
+                <div style={{display:'flex',alignItems:'center',gap:8,fontSize:'0.84rem'}}>
+                  <button type="button"
+                    onClick={()=>{ const cur=form.reviewState===true?2:form.reviewState===false?0:(form.reviewState||0); set('reviewState',(cur+1)%3); }}
+                    style={{background:'transparent',border:'1px solid var(--border)',borderRadius:4,width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:'0.9rem',padding:0}}>
+                    {(()=>{const s=form.reviewState===true?2:form.reviewState===false?0:(form.reviewState||0);
+                      if(s===1)return<span style={{color:'var(--warning)'}}>⚑</span>;
+                      if(s===2)return<span style={{color:'var(--success)'}}>✓</span>;
+                      return<span style={{color:'var(--text-muted)'}}>○</span>;
+                    })()}
+                  </button>
+                  <span style={{color:'var(--text-muted)',fontSize:'0.78rem'}}>
+                    {(()=>{const s=form.reviewState===true?2:form.reviewState===false?0:(form.reviewState||0);
+                      return['No review','Needs Review','Reviewed'][s];
+                    })()}
+                  </span>
+                </div>
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.84rem'}}>
+                  <input type="checkbox" checked={!!form.woComplete} onChange={e=>set('woComplete',e.target.checked)} style={{accentColor:'var(--success)',width:14,height:14}}/>
+                  <span>WO Complete</span>
+                </label>
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.84rem'}}>
+                  <input type="checkbox" checked={!!form.cadAvailable} onChange={e=>set('cadAvailable',e.target.checked)} style={{accentColor:'var(--accent)',width:14,height:14}}/>
+                  <span>CAD Available</span>
+                </label>
+              </div>
             </div>
 
             {/* Notes */}
@@ -555,38 +594,56 @@
     const [modal,setModal]         = useState(null);
     const [confirm,setConfirm]     = useState(null);
     const [search,setSearch]       = useState('');
-    const [fStatus,setFStatus]     = useState([]);
-    const [fDiv,setFDiv]           = useState([]);
+    const [fStatus,setFStatus]     = useState(()=>DRAFTING_STATUS.map(s=>s.value));
+    const [fDiv,setFDiv]           = useState(()=>DIVISIONS.map(d=>d.value));
     const [sortBy,setSortBy]       = useState('pri');
     const [sortDir,setSortDir]     = useState('asc');
     const [syncStatus,setSyncStatus] = useState('loading'); // 'loading'|'ok'|'saving'|'error'
     const [syncMsg,setSyncMsg]       = useState('Connecting to Google Sheets…');
-    const [reportUnlocked,setReportUnlocked] = useState(false);
-    const [pwInput,setPwInput]       = useState('');
-    const [pwErr,setPwErr]           = useState(false);
     const saveTimer = useRef(null);
+    const syncingFromServer = useRef(false);
+    const REFRESH_INTERVAL = 300000; // 5 minutes
 
-    // Load from GAS on mount
-    useEffect(()=>{
-      setSyncStatus('loading');
-      setSyncMsg('Loading from Google Sheets…');
-      gasGet()
+    // Pull data from GAS (used on load and by interval)
+    function pullFromServer(isSilent){
+      if(!isSilent){ setSyncStatus('loading'); setSyncMsg('Loading from Google Sheets…'); }
+      return gasGet()
         .then(data=>{
+          syncingFromServer.current = true;
           setProjects(data);
           saveCache(data);
-          setSyncStatus('ok');
-          setSyncMsg('Synced with Google Sheets');
+          syncingFromServer.current = false;
+          if(!isSilent){ setSyncStatus('ok'); setSyncMsg('Synced with Google Sheets'); }
+          return data;
         })
         .catch(()=>{
+          if(!isSilent) return;
           setSyncStatus('error');
           setSyncMsg('Could not reach Google Sheets — showing cached data');
         });
+    }
+
+    // Load from GAS on mount
+    useEffect(()=>{ pullFromServer(false); },[]);
+
+    // Auto-refresh interval
+    useEffect(()=>{
+      const id = setInterval(()=>{
+        setSyncMsg('Auto-refreshing…');
+        pullFromServer(true).then(()=>{
+          const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+          setSyncStatus('ok');
+          setSyncMsg('Auto-synced at '+t);
+        }).catch(()=>{});
+      }, REFRESH_INTERVAL);
+      return ()=>clearInterval(id);
     },[]);
 
     // Debounced save to GAS whenever projects change (skip on first mount)
     const isFirstRender = useRef(true);
     useEffect(()=>{
       if(isFirstRender.current){ isFirstRender.current=false; return; }
+      if(syncingFromServer.current) return; // skip save when updating from server pull
       saveCache(projects);
       setSyncStatus('saving');
       setSyncMsg('Saving…');
@@ -594,9 +651,9 @@
       saveTimer.current = setTimeout(()=>{
         gasSet(projects)
           .then(()=>{
-            setSyncStatus('ok');
             const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-            setSyncMsg('Saved to Google Sheets at ' + t);
+            setSyncStatus('ok');
+            setSyncMsg('Saved to Google Sheets at '+t);
           })
           .catch(err=>{
             console.error('GAS save error:', err);
@@ -624,7 +681,6 @@
     function handleExport(){ const b=new Blob([JSON.stringify(projects,null,2)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=`drafting-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u); }
     function handleImport(e){ const f=e.target.files[0];if(!f)return; const r=new FileReader(); r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(Array.isArray(d)){setProjects(d);}else alert('Invalid format.');}catch{alert('Could not parse file.');}}; r.readAsText(f);e.target.value=''; }
 
-    function handlePwSubmit(e){ e.preventDefault(); if(pwInput===REPORT_PASSWORD){setReportUnlocked(true);setPwErr(false);setPwInput('');}else{setPwErr(true);setPwInput('');} }
 
     const active   = useMemo(()=>projects.filter(p=>!p.archived),[projects]);
     const archived = useMemo(()=>projects.filter(p=>p.archived),[projects]);
@@ -633,8 +689,8 @@
     const displayed = useMemo(()=>{
       let list=[...base];
       if(search.trim()){ const q=search.toLowerCase(); list=list.filter(p=>[p.name,p.jobNumber,p.pe,p.pm,p.estimator,p.division,p.projectType].some(v=>(v??'').toLowerCase().includes(q))); }
-      if(fStatus.length) list=list.filter(p=>fStatus.includes(p.draftingStatus));
-      if(fDiv.length)    list=list.filter(p=>fDiv.includes(p.division));
+      if(fStatus.length < DRAFTING_STATUS.length) list=list.filter(p=>fStatus.includes(p.draftingStatus));
+      if(fDiv.length < DIVISIONS.length) list=list.filter(p=>fDiv.includes(p.division));
       list.sort((a,b)=>{
         let c=0;
         switch(sortBy){
@@ -657,7 +713,7 @@
       return out;
     },[active]);
 
-    const hasF=fStatus.length||fDiv.length||search.trim();
+    const hasF=fStatus.length<DRAFTING_STATUS.length||fDiv.length<DIVISIONS.length||search.trim();
 
     /* Detailed table */
     function DetailedTable(){
@@ -668,19 +724,18 @@
               <tr>
                 <th className="sortable" onClick={()=>handleSort('pri')}>PRI <SA f="pri" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('name')}>Project <SA f="name" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th className="sortable" onClick={()=>handleSort('jobNumber')}>Job # <SA f="jobNumber" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th>Division</th>
                 <th>Type</th>
-                <th>PE</th>
+                <th className="sortable" onClick={()=>handleSort('pe')}>PE <SA f="pe" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th>PM</th>
                 <th className="sortable" onClick={()=>handleSort('status')}>Status <SA f="status" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('dueDate')}>Due <SA f="dueDate" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th>Progress</th>
-                <th>Details</th>
-                <th>Elevs</th>
+                <th title="Review state — click to cycle: none → flag → checked">Rev</th>
+                <th title="CAD Available">CAD</th>
                 <th>WO</th>
                 <th>Plans</th>
                 <th>Notes</th>
+                <th>Price</th>
                 <th style={{textAlign:'right'}}>Actions</th>
               </tr>
             </thead>
@@ -692,34 +747,50 @@
                   const ov=isOverdue(p.dueDate,p.draftingStatus);
                   const pct=calcPct(p);
                   const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
-                  const tot=(+p.detailsTotal||0)+(+p.elevationsTotal||0);
+                  const tot=+p.detailsTotal||0;
                   return(
                     <tr key={p.id} onClick={()=>setModal({mode:'edit',project:p})} title="Click to edit">
                       <td style={{color:'var(--text-muted)',fontWeight:600,textAlign:'center'}}>{p.pri||'—'}</td>
-                      <td style={{maxWidth:160}}>
+                      <td style={{maxWidth:250}}>
                         <span style={{display:'block',overflow:'hidden',textOverflow:'ellipsis',fontWeight:500}}>{p.name}</span>
-                        {p.price&&<span style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{p.price}</span>}
                       </td>
-                      <td style={{color:'var(--text-muted)',fontSize:'0.78rem'}}>{p.jobNumber||'—'}</td>
-                      <td>{p.division?<Badge val={p.division} arr={DIVISIONS}/>:<span style={{color:'var(--text-muted)'}}>—</span>}</td>
-                      <td style={{fontSize:'0.78rem',color:'var(--text-muted)',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis'}}>{p.projectType||'—'}</td>
+                      
+                      <td>{p.division?<Badge val={p.division} arr={DIVISIONS}/>:<span style={{color:'var(--text-muted)',maxWidth:40}}>—</span>}</td>
+                      <td style={{fontSize:'0.78rem',color:'var(--text-muted)',maxWidth:100,overflow:'hidden',textOverflow:'ellipsis'}}>{p.projectType||'—'}</td>
                       <td style={{fontSize:'0.8rem'}}>{p.pe||'—'}</td>
                       <td style={{fontSize:'0.8rem'}}>{p.pm||'—'}</td>
                       <td><Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/></td>
                       <td style={{whiteSpace:'nowrap'}}>
                         <span style={{color:ov?'var(--danger)':'inherit'}}>{fmtDate(p.dueDate)}</span>
-                        {ov&&<span className="overdue-tag">overdue</span>}
+                        {ov&&<span className="overdue-tag">!</span>}
                       </td>
-                      <td>
-                        {tot?(<div className="prog-bar"><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`,background:fill}}/></div><span className="prog-label">{pct}%</span></div>):<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}
+
+
+                      <td style={{textAlign:'center'}} onClick={e=>{
+                          e.stopPropagation();
+                          const cur = p.reviewState===true?2 : p.reviewState===false?0 : (p.reviewState||0);
+                          const next = (cur+1)%3;
+                          setProjects(ps=>ps.map(x=>x.id===p.id?{...x,reviewState:next,updatedAt:new Date().toISOString()}:x));
+                        }}
+                        title={['Click to flag for review','Click to mark as reviewed','Click to clear review state'][(p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0))]}>
+                        {(()=>{const s=p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0);
+                          if(s===1)return<span style={{color:'var(--warning)',fontSize:'0.95rem',cursor:'pointer'}}>⚑</span>;
+                          if(s===2)return<span style={{color:'var(--success)',fontSize:'1rem',cursor:'pointer'}}>✓</span>;
+                          return<span style={{color:'var(--border)',fontSize:'0.9rem',cursor:'pointer'}}>○</span>;
+                        })()}
                       </td>
-                      <td style={{fontSize:'0.78rem',textAlign:'center'}}>{(+p.detailsTotal||0)?`${+p.detailsDone||0}/${+p.detailsTotal}`:'—'}</td>
-                      <td style={{fontSize:'0.78rem',textAlign:'center'}}>{(+p.elevationsTotal||0)?`${+p.elevationsDone||0}/${+p.elevationsTotal}`:'—'}</td>
+                      <td style={{textAlign:'center'}} onClick={e=>{e.stopPropagation();setProjects(ps=>ps.map(x=>x.id===p.id?{...x,cadAvailable:!p.cadAvailable,updatedAt:new Date().toISOString()}:x));}}
+                          title={p.cadAvailable?'CAD Available — click to unmark':'Click to mark CAD available'}>
+                        {p.cadAvailable?<span style={{color:'var(--accent)',fontSize:'1rem',cursor:'pointer'}}>✓</span>:<span style={{color:'var(--border)',fontSize:'0.9rem',cursor:'pointer'}}>○</span>}
+                      </td>
                       <td onClick={e=>e.stopPropagation()}>{p.woLink?<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link">WO ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
                       <td onClick={e=>e.stopPropagation()}>{p.plansLink?<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link">Plans ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
                       <td style={{fontSize:'0.75rem',color:'var(--text-muted)',textAlign:'center'}}>{p.notes?.length?<span style={{color:'var(--accent)'}}>{p.notes.length}</span>:'—'}</td>
+                      <td style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{fmtCurrency(p.price)}</td>
+                      
+                      
                       <td style={{textAlign:'right',whiteSpace:'nowrap'}} onClick={e=>e.stopPropagation()}>
-                        <button className="btn-icon" onClick={()=>setModal({mode:'edit',project:p})}>Edit</button>
+
                         {tab==='active'
                           ?<button className="btn-icon btn-warning" style={{marginLeft:4}} onClick={()=>setConfirm({type:'archive',project:p})}>Archive</button>
                           :<button className="btn-icon btn-success" style={{marginLeft:4}} onClick={()=>doRestore(p)}>Restore</button>}
@@ -743,7 +814,7 @@
       const ov=isOverdue(p.dueDate,p.draftingStatus);
       const pct=calcPct(p);
       const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
-      const tot=(+p.detailsTotal||0)+(+p.elevationsTotal||0);
+      const tot=+p.detailsTotal||0;
       return(
         <div className="quick-card" onClick={()=>setModal({mode:'edit',project:p})}>
           <div className="quick-card-header">
@@ -752,27 +823,13 @@
           </div>
           <div style={{marginBottom:8}}>
             <Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/>
-            {p.division&&<span style={{marginLeft:6}}><Badge val={p.division} arr={DIVISIONS}/></span>}
           </div>
-          <div className="quick-card-row"><span>PE</span><span>{p.pe||'—'}</span></div>
+          <div className="quick-card-row"><span>Project Manager</span><span>{p.pm||'—'}</span></div>
           <div className="quick-card-row">
             <span>Due</span>
             <span style={{color:ov?'var(--danger)':'var(--text)'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag">!</span>}</span>
           </div>
-          {tot>0&&(
-            <div style={{marginTop:8}}>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'var(--text-muted)',marginBottom:3}}>
-                <span>Progress</span><span>{pct}%</span>
-              </div>
-              <div className="prog-track" style={{height:6}}>
-                <div className="prog-fill" style={{width:`${pct}%`,background:fill,height:'100%'}}/>
-              </div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.7rem',color:'var(--text-muted)',marginTop:3}}>
-                <span>Details {+p.detailsDone||0}/{+p.detailsTotal||0}</span>
-                <span>Elevs {+p.elevationsDone||0}/{+p.elevationsTotal||0}</span>
-              </div>
-            </div>
-          )}
+
         </div>
       );
     }
@@ -805,169 +862,11 @@
       );
     }
 
-    /* PE Report — password gated */
-    function PEReport(){
-      if(!reportUnlocked) return(
-        <div className="pw-overlay">
-          <div className="pw-box">
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-              <h2 style={{margin:0}}>PE Report</h2>
-              <button
-                onClick={()=>setView('detailed')}
-                style={{background:'transparent',border:'none',color:'var(--text-muted)',fontSize:'1.1rem',cursor:'pointer',padding:'2px 6px',lineHeight:1}}
-                title="Back to Detailed view"
-              >✕</button>
-            </div>
-            <p>This view is restricted. Enter the password to continue.</p>
-            <form onSubmit={handlePwSubmit}>
-              <input type="password" value={pwInput} onChange={e=>{setPwInput(e.target.value);setPwErr(false);}} placeholder="Password" autoFocus/>
-              {pwErr&&<span className="pw-err">Incorrect password.</span>}
-              <button type="submit" className="btn-primary" style={{width:'100%',marginTop:4}}>Unlock</button>
-            </form>
-            <button onClick={()=>setView('detailed')} style={{width:'100%',marginTop:8,fontSize:'0.8rem',color:'var(--text-muted)',background:'transparent',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:'6px',cursor:'pointer'}}>
-              ← Back
-            </button>
-          </div>
-        </div>
-      );
-
-      const peNames=[...new Set(active.map(p=>p.pe||'Unassigned'))].sort();
-      function parsePrice(s){ if(!s)return 0; const n=parseFloat(s.replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; }
-      const PALETTE=['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16','#f97316','#6366f1','#14b8a6','#e11d48','#7c3aed','#0ea5e9','#65a30d','#d97706'];
-      const peColor=pe=>PALETTE[peNames.indexOf(pe)%PALETTE.length];
-
-      const peData=peNames.map(pe=>{
-        const projs=active.filter(p=>(p.pe||'Unassigned')===pe);
-        const finished=projs.filter(p=>p.draftingStatus==='Finished'||p.draftingStatus==='Approved');
-        const totalDetails=projs.reduce((a,p)=>a+(+p.detailsTotal||0),0);
-        const doneDetails=projs.reduce((a,p)=>a+(+p.detailsDone||0),0);
-        const totalElevs=projs.reduce((a,p)=>a+(+p.elevationsTotal||0),0);
-        const doneElevs=projs.reduce((a,p)=>a+(+p.elevationsDone||0),0);
-        const totalValue=projs.reduce((a,p)=>a+parsePrice(p.price),0);
-        const overdue=projs.filter(p=>isOverdue(p.dueDate,p.draftingStatus)).length;
-        const statusBreak={};
-        projs.forEach(p=>{statusBreak[p.draftingStatus]=(statusBreak[p.draftingStatus]||0)+1;});
-        return{pe,count:projs.length,finished:finished.length,totalDetails,doneDetails,totalElevs,doneElevs,totalValue,overdue,statusBreak,projs};
-      }).filter(d=>d.count>0);
-
-      if(peData.length===0) return <div style={{textAlign:'center',padding:'60px',color:'var(--text-muted)'}}>No active projects to report on.</div>;
-
-      function fmtDollar(v){ if(!v)return'$0'; if(v>=1000000)return`$${(v/1000000).toFixed(1)}M`; if(v>=1000)return`$${(v/1000).toFixed(0)}k`; return`$${v.toFixed(0)}`; }
-
-      function HBarChart({title,data,fmt}){
-        const max=Math.max(...data.map(d=>d.val),1);
-        return(
-          <div className="chart-section">
-            <div className="chart-title">{title}</div>
-            {data.map(d=>(
-              <div key={d.label} className="hbar-row">
-                <span className="hbar-label" title={d.label}>{d.label}</span>
-                <div className="hbar-track">
-                  {d.val>0
-                    ?<div className="hbar-fill" style={{width:`${Math.max(4,(d.val/max)*100)}%`,background:d.color}}>
-                       <span>{fmt?fmt(d.val):d.val}</span>
-                     </div>
-                    :<span className="hbar-zero">0</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      }
-
-      const hasValue=peData.some(d=>d.totalValue>0);
-
-      return(
-        <div className="pe-report">
-          <div style={{display:'flex',justifyContent:'flex-end'}}>
-            <button className="btn-icon btn-warning" onClick={()=>setReportUnlocked(false)}>🔒 Lock Report</button>
-          </div>
-          {/* Stat cards */}
-          <div>
-            <div style={{fontSize:'0.72rem',textTransform:'uppercase',letterSpacing:'0.1em',color:'var(--text-muted)',marginBottom:10,fontWeight:600}}>PE Summary</div>
-            <div className="pe-stat-grid">
-              {peData.map(d=>{
-                const detPct=d.totalDetails?Math.round((d.doneDetails/d.totalDetails)*100):0;
-                const elvPct=d.totalElevs?Math.round((d.doneElevs/d.totalElevs)*100):0;
-                const c=peColor(d.pe);
-                return(
-                  <div key={d.pe} className="pe-stat-card" style={{borderColor:c+'44'}}>
-                    <div className="pe-stat-card-name" style={{color:c}}>{d.pe}</div>
-                    <div className="pe-stat-row"><span>Active Projects</span><span>{d.count}</span></div>
-                    <div className="pe-stat-row"><span>Completed</span><span style={{color:'var(--success)'}}>{d.finished}</span></div>
-                    {d.overdue>0&&<div className="pe-stat-row"><span>Overdue</span><span style={{color:'var(--danger)'}}>{d.overdue}</span></div>}
-                    {d.totalDetails>0&&<div className="pe-stat-row"><span>Details</span><span>{d.doneDetails}/{d.totalDetails} <span style={{color:'var(--text-muted)',fontWeight:400}}>({detPct}%)</span></span></div>}
-                    {d.totalElevs>0&&<div className="pe-stat-row"><span>Elevations</span><span>{d.doneElevs}/{d.totalElevs} <span style={{color:'var(--text-muted)',fontWeight:400}}>({elvPct}%)</span></span></div>}
-                    {d.totalValue>0&&<div className="pe-stat-row"><span>Total Value</span><span style={{color:'var(--warning)'}}>{fmtDollar(d.totalValue)}</span></div>}
-                    <div style={{marginTop:8,display:'flex',gap:2,height:4,borderRadius:2,overflow:'hidden'}}>
-                      {Object.entries(d.statusBreak).map(([s,n])=>(
-                        <div key={s} title={`${s}: ${n}`} style={{flex:n,background:colorOf(s,DRAFTING_STATUS),minWidth:2}}/>
-                      ))}
-                    </div>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:'4px 8px',marginTop:5}}>
-                      {Object.entries(d.statusBreak).map(([s,n])=>(
-                        <span key={s} style={{fontSize:'0.65rem',color:colorOf(s,DRAFTING_STATUS)}}>{s}: {n}</span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          {/* Charts */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-            <HBarChart title="Active Projects per PE"  data={peData.map(d=>({label:d.pe,val:d.count,color:peColor(d.pe)}))}/>
-            <HBarChart title="Details Drawn per PE"    data={peData.map(d=>({label:d.pe,val:d.doneDetails,color:peColor(d.pe)}))}/>
-            <HBarChart title="Elevations Drawn per PE" data={peData.map(d=>({label:d.pe,val:d.doneElevs,color:peColor(d.pe)}))}/>
-            {hasValue&&<HBarChart title="Total Project Value per PE" data={peData.map(d=>({label:d.pe,val:d.totalValue,color:peColor(d.pe)}))} fmt={fmtDollar}/>}
-          </div>
-          {/* Per-PE project tables */}
-          <div>
-            <div style={{fontSize:'0.72rem',textTransform:'uppercase',letterSpacing:'0.1em',color:'var(--text-muted)',marginBottom:10,fontWeight:600}}>Projects by PE</div>
-            {peData.map(d=>(
-              <div key={d.pe} style={{marginBottom:16}}>
-                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-                  <span style={{fontWeight:700,color:peColor(d.pe),fontSize:'0.88rem'}}>{d.pe}</span>
-                  <div style={{flex:1,height:1,background:peColor(d.pe)+'44'}}/>
-                  <span style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{d.count} project{d.count!==1?'s':''}</span>
-                </div>
-                <div className="table-wrap">
-                  <table className="table" style={{fontSize:'0.78rem'}}>
-                    <thead><tr><th>PRI</th><th>Project</th><th>Status</th><th>Due</th><th>Details</th><th>Elevs</th><th>Progress</th>{d.projs.some(p=>p.price)&&<th>Value</th>}</tr></thead>
-                    <tbody>
-                      {d.projs.sort((a,b)=>(parseInt(a.pri)||9999)-(parseInt(b.pri)||9999)).map(p=>{
-                        const pct=calcPct(p);
-                        const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
-                        const tot=(+p.detailsTotal||0)+(+p.elevationsTotal||0);
-                        const ov=isOverdue(p.dueDate,p.draftingStatus);
-                        return(
-                          <tr key={p.id} onClick={()=>setModal({mode:'edit',project:p})} title="Click to edit">
-                            <td style={{color:'var(--text-muted)',textAlign:'center'}}>{p.pri||'—'}</td>
-                            <td style={{fontWeight:500,maxWidth:180,overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</td>
-                            <td><Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/></td>
-                            <td style={{whiteSpace:'nowrap',color:ov?'var(--danger)':'inherit'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag">!</span>}</td>
-                            <td style={{textAlign:'center'}}>{(+p.detailsTotal||0)?`${+p.detailsDone||0}/${+p.detailsTotal}`:'—'}</td>
-                            <td style={{textAlign:'center'}}>{(+p.elevationsTotal||0)?`${+p.elevationsDone||0}/${+p.elevationsTotal}`:'—'}</td>
-                            <td style={{minWidth:80}}>{tot?(<div className="prog-bar"><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`,background:fill}}/></div><span className="prog-label">{pct}%</span></div>):<span style={{color:'var(--text-muted)'}}>—</span>}</td>
-                            {d.projs.some(pp=>pp.price)&&<td style={{color:'var(--warning)',fontSize:'0.76rem'}}>{p.price||'—'}</td>}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
     return(
       <>
         <header className="app-header">
           <div className="app-title">
-            <h1>Northshore Exteriors — Drafting Tracker</h1>
+            <h1>Drafting Tracker - Northshore Exteriors | NorthClad Rainscreen</h1>
             <span className="app-subtitle">Synced to Google Sheets · Export JSON as backup</span>
           </div>
           <div className="app-actions">
@@ -995,7 +894,7 @@
               {DRAFTING_STATUS.map(s=>(
                 <label key={s.value} className="filter-row">
                   <input type="checkbox" checked={fStatus.includes(s.value)} onChange={()=>toggleF(fStatus,setFStatus,s.value)}/>
-                  <span style={{color:fStatus.includes(s.value)?s.color:'var(--text-muted)',fontSize:'0.8rem'}}>{s.value}</span>
+                  <span style={{color:fStatus.includes(s.value)?s.color:'var(--text-muted)',fontSize:'0.8rem',textDecoration:fStatus.includes(s.value)?'none':'line-through',opacity:fStatus.includes(s.value)?1:0.4}}>{s.value}</span>
                   <span className="filter-count">{active.filter(p=>p.draftingStatus===s.value).length}</span>
                 </label>
               ))}
@@ -1006,13 +905,13 @@
               {DIVISIONS.map(d=>(
                 <label key={d.value} className="filter-row">
                   <input type="checkbox" checked={fDiv.includes(d.value)} onChange={()=>toggleF(fDiv,setFDiv,d.value)}/>
-                  <span style={{color:fDiv.includes(d.value)?d.color:'var(--text-muted)'}}>{d.value}</span>
+                  <span style={{color:fDiv.includes(d.value)?d.color:'var(--text-muted)',textDecoration:fDiv.includes(d.value)?'none':'line-through',opacity:fDiv.includes(d.value)?1:0.4}}>{d.value}</span>
                   <span className="filter-count">{active.filter(p=>p.division===d.value).length}</span>
                 </label>
               ))}
             </div>
 
-            {hasF&&<button onClick={()=>{setFStatus([]);setFDiv([]);setSearch('');}} style={{fontSize:'0.78rem',color:'var(--text-muted)'}}>✕ Clear Filters</button>}
+            {hasF&&<button onClick={()=>{setFStatus(DRAFTING_STATUS.map(s=>s.value));setFDiv(DIVISIONS.map(d=>d.value));setSearch('');}} style={{fontSize:'0.78rem',color:'var(--text-muted)'}}>✕ Reset Filters</button>}
 
             <h2>Sort By</h2>
             <div className="panel" style={{padding:'8px'}}>
@@ -1024,20 +923,7 @@
               ))}
             </div>
 
-            <h2>Stats</h2>
-            <div className="panel">
-              <div className="stat-row" style={{marginBottom:8}}><span style={{color:'var(--text)',fontWeight:600}}>Active</span><span style={{fontWeight:700}}>{stats.total}</span></div>
-              {DRAFTING_STATUS.map(s=>(
-                <div key={s.value} className="stat-row">
-                  <span style={{color:'var(--text-muted)',fontSize:'0.78rem'}}>{s.value}</span>
-                  <span style={{color:s.color,fontWeight:600}}>{stats[s.value]||0}</span>
-                </div>
-              ))}
-              <div className="stat-row" style={{marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
-                <span style={{color:'var(--text-muted)'}}>Archived</span>
-                <span style={{color:'var(--warning)',fontWeight:600}}>{archived.length}</span>
-              </div>
-            </div>
+
           </section>
 
           {/* Content */}
@@ -1051,17 +937,15 @@
                 {displayed.length!==base.length&&<span style={{color:'var(--text-muted)',fontSize:'0.8rem'}}>{displayed.length} of {base.length}</span>}
                 <div className="view-toggle">
                   <button className={`view-toggle-btn ${view==='detailed'?'active':''}`} onClick={()=>setView('detailed')}>⊞ Detailed</button>
-                  <button className={`view-toggle-btn ${view==='quick'?'active':''}`} onClick={()=>setView('quick')}>◫ Quick</button>
-                  <button className={`view-toggle-btn ${view==='report'?'active':''}`} onClick={()=>setView('report')}>📊 PE Report</button>
-                </div>
+                  <button className={`view-toggle-btn ${view==='quick'?'active':''}`} onClick={()=>setView('quick')}>◫ Quick</button>                </div>
               </div>
             </div>
 
-            {view==='detailed'?<DetailedTable/>:view==='quick'?<QuickView/>:<PEReport/>}
+            {view==='detailed'?<DetailedTable/>:<QuickView/>}
           </section>
         </main>
 
-        <footer className="app-footer">Northshore Exteriors — Drafting Tracker · Synced to Google Sheets · Export JSON as additional backup</footer>
+        <footer className="app-footer">Northshore Exteriors | NorthClad Rainscreen Drafting Tracker · Synced to Google Sheets · Export JSON as additional backup</footer>
 
         {modal&&<ProjectModal project={modal.mode==='edit'?modal.project:null} onSave={handleSave} onClose={()=>setModal(null)}/>}
 
