@@ -210,10 +210,11 @@
       const totalDetails=projs.reduce((a,p)=>a+(+p.detailsTotal||0),0);
       const doneDetails=projs.reduce((a,p)=>a+(+p.detailsDone||0),0);
       const totalValue=projs.reduce((a,p)=>a+parsePrice(p.price),0);
+        const totalSqft=projs.reduce((a,p)=>a+(+p.sqftTotal||0),0);
       const overdue=projs.filter(p=>isOverdue(p.dueDate,p.draftingStatus)).length;
       const statusBreak={};
       projs.forEach(p=>{statusBreak[p.draftingStatus]=(statusBreak[p.draftingStatus]||0)+1;});
-      return{pe,count:projs.length,finished:finished.length,totalDetails,doneDetails,totalValue,overdue,statusBreak,projs};
+      return{pe,count:projs.length,finished:finished.length,totalDetails,doneDetails,totalValue,totalSqft,overdue,statusBreak,projs};
     }).filter(d=>d.count>0);
 
     // Toggle PE selection
@@ -223,6 +224,7 @@
     const isSelected = pe=>selectedPEs.length===0||selectedPEs.includes(pe);
     const detailData = selectedPEs.length===0 ? allPEData : allPEData.filter(d=>selectedPEs.includes(d.pe));
     const hasValue   = allPEData.some(d=>d.totalValue>0);
+    const hasSqft    = allPEData.some(d=>d.totalSqft>0);
 
     function HBarChart({title,data,fmt}){
       const filtered = selectedPEs.length===0?data:data.filter(d=>selectedPEs.includes(d.label));
@@ -292,6 +294,7 @@
                   {d.overdue>0&&<div className="pe-stat-row"><span>Overdue</span><span style={{color:'var(--danger)'}}>{d.overdue}</span></div>}
                   {d.totalDetails>0&&<div className="pe-stat-row"><span>Details</span><span>{d.doneDetails}/{d.totalDetails}<span style={{color:'var(--text-muted)',fontWeight:400}}> ({detPct}%)</span></span></div>}
                   {d.totalValue>0&&<div className="pe-stat-row"><span>Value</span><span style={{color:'var(--warning)'}}>{fmtCurrency(d.totalValue)}</span></div>}
+                  {d.totalSqft>0&&<div className="pe-stat-row"><span>Sq Ft</span><span style={{color:'var(--accent)'}}>{d.totalSqft.toLocaleString()}</span></div>}
                   <div style={{marginTop:8,display:'flex',gap:2,height:4,borderRadius:2,overflow:'hidden'}}>
                     {Object.entries(d.statusBreak).map(([s,n])=>(
                       <div key={s} title={`${s}: ${n}`} style={{flex:n,background:colorOf(s,DRAFTING_STATUS),minWidth:2}}/>
@@ -313,6 +316,7 @@
             <HBarChart title="Projects" data={allPEData.map(d=>({label:d.pe,val:d.count,color:peColor(d.pe)}))}/>
             <HBarChart title="Details Drawn" data={allPEData.map(d=>({label:d.pe,val:d.doneDetails,color:peColor(d.pe)}))}/>
             {hasValue&&<HBarChart title="Total Project Value" data={allPEData.map(d=>({label:d.pe,val:d.totalValue,color:peColor(d.pe)}))} fmt={fmtCurrency}/>}
+            {hasSqft&&<HBarChart title="Total Square Footage" data={allPEData.map(d=>({label:d.pe,val:d.totalSqft,color:peColor(d.pe)}))} fmt={v=>v.toLocaleString()+' sqft'}/>}
           </div>
 
           {/* Detailed tables — only for selected PEs (or all if none selected) */}

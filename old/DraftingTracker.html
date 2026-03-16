@@ -80,21 +80,14 @@
     .table-empty{text-align:center;padding:40px 8px;color:var(--text-muted);font-size:0.9rem;}
 
     /* Quick view cards */
-    .quick-grid{display:flex;flex-direction:column;gap:8px;}
-    .quick-card{border-radius:var(--radius-lg);padding:13px 16px;cursor:pointer;transition:box-shadow 120ms,opacity 120ms;border-width:2px;border-style:solid;}
-    .quick-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.5);opacity:0.95;}
-    .qc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px;}
-    .qc-title{display:flex;align-items:baseline;gap:10px;flex:1;flex-wrap:wrap;}
-    .qc-name{font-size:1.05rem;font-weight:700;line-height:1.3;}
-    .qc-job{font-size:1.05rem;font-weight:700;color:var(--text-muted);}
-    .qc-badges{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-    .qc-pri{font-size:0.72rem;font-weight:700;color:var(--text-muted);background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:4px;padding:1px 6px;white-space:nowrap;}
-    .qc-info{font-size:0.78rem;color:var(--text-muted);margin-bottom:3px;}
-    .qc-info span{color:var(--text);}
-    .qc-bottom{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:8px;}
-    .qc-stat{display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--text-muted);cursor:pointer;white-space:nowrap;}
-    .qc-stat span{color:var(--text);}
-    .qc-links{display:flex;align-items:center;gap:8px;margin-left:auto;}
+    .quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+    .quick-card{background:radial-gradient(circle at top left,#111827 0,#020617 80%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;cursor:pointer;transition:border-color 120ms,box-shadow 120ms;}
+    .quick-card:hover{border-color:rgba(59,130,246,0.5);box-shadow:0 0 0 1px rgba(59,130,246,0.15);}
+    .quick-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+    .quick-card-name{font-weight:600;font-size:0.88rem;line-height:1.3;flex:1;}
+    .quick-card-pri{font-size:0.7rem;font-weight:700;color:var(--text-muted);background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:4px;padding:1px 6px;white-space:nowrap;}
+    .quick-card-row{display:flex;align-items:center;justify-content:space-between;margin-top:5px;font-size:0.78rem;color:var(--text-muted);}
+    .quick-card-row span:last-child{color:var(--text);}
 
     /* Form */
     .field{margin-bottom:12px;}.field:last-child{margin-bottom:0;}
@@ -238,7 +231,6 @@
     { value:'Approved',               color:'#4ade80' },
     { value:'Hold',                   color:'#a83254' },
     { value:'Approved as Noted',      color:'#4ade80' },
-    { value:'Revise and Resubmit',    color:'#fb7185' },
     { value:'NO SHOPS',               color:'#9ca3af' },
         { value:'Complete',               color:'#86efac' },
   ];
@@ -262,10 +254,10 @@
   ];
 
   const DEFAULT_FORM = {
-    pri:'',name:'',jobNumber:'',division:'',projectType:'',
+    pri:'',name:'',jobNumber:'',division:'Northshore',projectType:'',
     pe:'',pm:'',estimator:'',
     draftingStatus:'Ready',dueDate:'',
-    sqftTotal:'',woLink:'',plansLink:'',
+    woLink:'',plansLink:'',
     price:'',
     reviewState:0,
     woComplete:false,cadAvailable:false,
@@ -396,7 +388,7 @@
         </div>
         <div className="note-add">
           <textarea ref={ref} value={text} onChange={e=>setText(e.target.value)} onKeyDown={onKey} placeholder="Add note… (Ctrl+Enter to save)" rows={2}/>
-          <button type="button" className="btn-primary btn-icon" onClick={add} style={{alignSelf:'flex-end',whiteSpace:'nowrap'}}>+ Add</button>
+          <button className="btn-primary btn-icon" onClick={add} style={{alignSelf:'flex-end',whiteSpace:'nowrap'}}>+ Add</button>
         </div>
       </div>
     );
@@ -416,21 +408,19 @@
     },[]);
     function set(k,v){setForm(f=>({...f,[k]:v}));if(errors[k])setErrors(e=>({...e,[k]:null}));}
     function num(k,v){set(k,Math.max(0,parseInt(v)||0));}
-    function trySave(){
-      if(!form.name.trim()){setErrors(e=>({...e,name:'Required'}));return;}
-      onSave({...form,name:form.name.trim()});
-    }
     function submit(e){
       e.preventDefault();
-      trySave();
+      const errs={};if(!form.name.trim())errs.name='Required';
+      if(Object.keys(errs).length){setErrors(errs);return;}
+      onSave({...form,name:form.name.trim()});
     }
     const mo=['',...TEAM];
     return(
-      <div className="modal-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)trySave();}}>
+      <div className="modal-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
         <div className="modal-panel">
           <div className="modal-header">
             <h2>{isEdit?'Edit Project':'Add Project'}</h2>
-            <button className="modal-close" type="button" onClick={trySave}>✕</button>
+            <button className="modal-close" onClick={onClose}>✕</button>
           </div>
           <form onSubmit={submit} className="modal-body">
 
@@ -465,24 +455,18 @@
                   <input type="text" value={form.projectType} onChange={e=>set('projectType',e.target.value)} placeholder="e.g. Panel, Cladding…"/>
                 </div>
               </div>
-              <div className="field-row">
-                <div className="field">
-                  <label>Price</label>
-                  <input
-                    type="text"
-                    value={form.price}
-                    onChange={e=>set('price',e.target.value)}
-                    onBlur={e=>{
-                      const n=parseCurrency(e.target.value);
-                      if(n!=='') set('price', n);
-                    }}
-                    placeholder="$0.00"
-                  />
-                </div>
-                <div className="field">
-                  <label>Square Foot</label>
-                  <input type="number" min="0" value={form.sqftTotal} onChange={e=>set('sqftTotal',e.target.value)} placeholder="0"/>
-                </div>
+              <div className="field">
+                <label>Price</label>
+                <input
+                  type="text"
+                  value={form.price}
+                  onChange={e=>set('price',e.target.value)}
+                  onBlur={e=>{
+                    const n=parseCurrency(e.target.value);
+                    if(n!=='') set('price', n);
+                  }}
+                  placeholder="$0.00"
+                />
               </div>
             </div>
 
@@ -752,7 +736,6 @@
                 <th>Plans</th>
                 <th>Notes</th>
                 <th>Price</th>
-                <th>Sq Ft</th>
                 <th style={{textAlign:'right'}}>Actions</th>
               </tr>
             </thead>
@@ -769,7 +752,7 @@
                     <tr key={p.id} onClick={()=>setModal({mode:'edit',project:p})} title="Click to edit">
                       <td style={{color:'var(--text-muted)',fontWeight:600,textAlign:'center'}}>{p.pri||'—'}</td>
                       <td style={{maxWidth:250}}>
-                        <span style={{display:'block',overflow:'hidden',textOverflow:'ellipsis',fontWeight:500}}>{p.name} {p.jobNumber}</span>
+                        <span style={{display:'block',overflow:'hidden',textOverflow:'ellipsis',fontWeight:500}}>{p.name}</span>
                       </td>
                       
                       <td>{p.division?<Badge val={p.division} arr={DIVISIONS}/>:<span style={{color:'var(--text-muted)',maxWidth:40}}>—</span>}</td>
@@ -804,7 +787,6 @@
                       <td onClick={e=>e.stopPropagation()}>{p.plansLink?<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link">Plans ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
                       <td style={{fontSize:'0.75rem',color:'var(--text-muted)',textAlign:'center'}}>{p.notes?.length?<span style={{color:'var(--accent)'}}>{p.notes.length}</span>:'—'}</td>
                       <td style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{fmtCurrency(p.price)}</td>
-                      <td style={{fontSize:'0.72rem',color:'var(--text-muted)',textAlign:'center'}}>{p.sqftTotal?Number(p.sqftTotal).toLocaleString():'—'}</td>
                       
                       
                       <td style={{textAlign:'right',whiteSpace:'nowrap'}} onClick={e=>e.stopPropagation()}>
@@ -827,74 +809,25 @@
     // QuickView defined above with PE grouping
 
 
-    /* Quick card component — full width row */
+    /* Quick card component */
     function QuickCard({p}){
       const ov=isOverdue(p.dueDate,p.draftingStatus);
-      const reviewState=p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0);
-      const divColor=colorOf(p.division,DIVISIONS)||'#4ade80';
-      const statusColor=colorOf(p.draftingStatus,DRAFTING_STATUS)||'var(--border)';
-      const bgStyle={
-        background:p.division?`radial-gradient(circle at top left,${divColor}18 0,#020617 55%)`:'radial-gradient(circle at top left,#111827 0,#020617 80%)',
-        borderColor:statusColor,
-      };
-      const revIcon=(()=>{
-        if(reviewState===1)return<span style={{color:'var(--warning)',fontSize:'1rem'}}>⚑</span>;
-        if(reviewState===2)return<span style={{color:'var(--success)',fontSize:'0.9rem'}}>✓</span>;
-        return<span style={{color:'var(--border)',fontSize:'0.9rem'}}>○</span>;
-      })();
+      const pct=calcPct(p);
+      const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
+      const tot=+p.detailsTotal||0;
       return(
-        <div className="quick-card" style={bgStyle} onClick={()=>setModal({mode:'edit',project:p})}>
-
-          {/* Header: Name + Job# left · Badges right */}
-          <div className="qc-header">
-            <div className="qc-title">
-              {p.pri&&<span className="qc-pri">#{p.pri}</span>}
-              <span className="qc-name">{p.name}</span>
-              {p.jobNumber&&<span className="qc-job">({p.jobNumber})</span>}
-            </div>
-            <div className="qc-badges">
-              {p.draftingStatus&&<Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/>}
-              {p.division&&<Badge val={p.division} arr={DIVISIONS}/>}
-            </div>
+        <div className="quick-card" onClick={()=>setModal({mode:'edit',project:p})}>
+          <div className="quick-card-header">
+            <span className="quick-card-name">{p.name}</span>
+            {p.pri&&<span className="quick-card-pri">#{p.pri}</span>}
           </div>
-
-          {/* Info rows */}
-          {p.projectType&&<div className="qc-info"><span>{p.projectType}</span></div>}
-          <div className="qc-info">
-            {p.pm&&<span>PM: <span>{p.pm}</span></span>}
-            {p.dueDate&&<span style={{marginLeft:p.pm?12:0,color:ov?'var(--danger)':'var(--text-muted)'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag">!</span>}</span>}
+          <div style={{marginBottom:8}}>
+            <Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/>
           </div>
-
-          {/* Bottom bar: Price · SqFt · Review · CAD · WO · Plans · Notes | Actions */}
-          <div className="qc-bottom" onClick={e=>e.stopPropagation()}>
-            {p.price&&<span style={{fontSize:'0.82rem',color:'var(--warning)',fontWeight:600}}>{fmtCurrency(p.price)}</span>}
-            {p.sqftTotal&&<span className="qc-stat"><span>{Number(p.sqftTotal).toLocaleString()}</span> sqft</span>}
-            <ProgBar project={p}/>
-
-            <span className="qc-stat"
-              onClick={e=>{e.stopPropagation();const cur=p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0);const next=(cur+1)%3;setProjects(ps=>ps.map(x=>x.id===p.id?{...x,reviewState:next,updatedAt:new Date().toISOString()}:x));}}
-              title={['Flag for review','Mark as reviewed','Clear review'][reviewState]}>
-              Review {revIcon}
-            </span>
-
-            <span className="qc-stat"
-              onClick={e=>{e.stopPropagation();setProjects(ps=>ps.map(x=>x.id===p.id?{...x,cadAvailable:!p.cadAvailable,updatedAt:new Date().toISOString()}:x));}}
-              title="Toggle CAD available">
-              CAD {p.cadAvailable?<span style={{color:'var(--accent)',fontSize:'0.9rem'}}>✓</span>:<span style={{color:'var(--border)',fontSize:'0.9rem'}}>○</span>}
-            </span>
-
-            <div className="qc-links">
-              {p.woLink&&<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>WO ↗</a>}
-              {p.plansLink&&<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>Plans ↗</a>}
-              {!!p.notes?.length&&<span style={{fontSize:'0.76rem',color:'var(--accent)'}}>{p.notes.length} note{p.notes.length!==1?'s':''}</span>}
-            </div>
-
-            <div style={{display:'flex',gap:4}}>
-              {tab==='active'
-                ?<button className="btn-icon btn-warning" onClick={()=>setConfirm({type:'archive',project:p})}>Archive</button>
-                :<button className="btn-icon btn-success" onClick={()=>doRestore(p)}>Restore</button>}
-              <button className="btn-icon btn-danger" onClick={()=>setConfirm({type:'delete',project:p})}>Delete</button>
-            </div>
+          <div className="quick-card-row"><span>Project Manager</span><span>{p.pm||'—'}</span></div>
+          <div className="quick-card-row">
+            <span>Due</span>
+            <span style={{color:ov?'var(--danger)':'var(--text)'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag">!</span>}</span>
           </div>
 
         </div>
