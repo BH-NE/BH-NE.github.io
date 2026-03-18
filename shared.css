@@ -1,0 +1,101 @@
+/* ═══════════════════════════════════════════════════
+   shared.css — Common styles for Drafting Tracker & PE Report
+   ═══════════════════════════════════════════════════ */
+
+/* ─── CSS Variables (dark mode default) ─── */
+:root {
+  --bg: #070b10;
+  --bg-elevated: #131821;
+  --bg-panel: #181d28;
+  --accent: #3b82f6;
+  --accent-soft: rgba(59,130,246,0.12);
+  --border: #242a37;
+  --border-subtle: #1b202b;
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --danger: #f97373;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --radius-lg: 10px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+  --shadow-soft: 0 18px 45px rgba(0,0,0,0.6);
+  --shadow-subtle: 0 1px 0 rgba(255,255,255,0.02);
+  --font: system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+
+/* ─── Reset ─── */
+*,*::before,*::after { box-sizing: border-box; }
+html,body { margin: 0; padding: 0; height: 100%; }
+body { font-family: var(--font); color: var(--text); min-height: 100vh; }
+
+/* ─── Header ─── */
+.app-header { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:linear-gradient(to right,rgba(15,23,42,0.96),rgba(15,23,42,0.9)); border-bottom:1px solid var(--border); }
+.app-title h1 { margin:0; font-size:1.1rem; letter-spacing:0.06em; text-transform:uppercase; }
+.app-subtitle { font-size:0.75rem; color:var(--text-muted); }
+
+/* ─── Sync bar ─── */
+.sync-bar { display:flex; align-items:center; gap:8px; padding:5px 18px; font-size:0.76rem; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.95); }
+.sync-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.sync-dot.ok  { background:var(--success); }
+.sync-dot.busy{ background:var(--warning); animation:pulse 1s infinite; }
+.sync-dot.err { background:var(--danger); }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+.sync-msg { color:var(--text-muted); }
+
+/* ─── Buttons (base) ─── */
+button { font: inherit; }
+.btn-primary { background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.65); color:#93c5fd; border-radius:var(--radius-md); padding:8px 14px; font:inherit; font-size:0.85rem; cursor:pointer; transition:background 120ms; }
+.btn-primary:hover { background:rgba(59,130,246,0.25); }
+
+/* ─── Tab bar ─── */
+.tab-bar { display:flex; gap:6px; }
+.tab-btn { padding:6px 18px; font-size:0.84rem; border-radius:var(--radius-md); border:1px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; transition:all 120ms; }
+.tab-btn:hover { border-color:var(--accent); color:var(--text); }
+.tab-btn.active { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.65); color:#93c5fd; }
+
+/* ─── Badge ─── */
+.badge { display:inline-flex; align-items:center; padding:2px 7px; border-radius:999px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+
+/* ─── Progress bar ─── */
+.prog-bar { display:flex; align-items:center; gap:5px; min-width:80px; }
+.prog-track { flex:1; height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:3px; }
+.prog-label { font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
+
+/* ─── Overdue tag ─── */
+.overdue-tag { font-size:0.66rem; color:var(--danger); margin-left:4px; font-weight:600; }
+
+/* ─── Table ─── */
+.table-wrap { overflow-x:auto; border-radius:var(--radius-lg); box-shadow:var(--shadow-soft); margin-bottom:20px; }
+.table { width:100%; border-collapse:collapse; font-size:0.82rem; white-space:nowrap; }
+.table thead { background:#020617; }
+.table th,.table td { padding:7px 10px; border-bottom:1px solid rgba(31,41,55,0.9); text-align:left; }
+.table th { font-weight:500; color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; }
+.table tbody tr { background:rgba(15,23,42,0.96); }
+.table tbody tr:nth-child(even) { background:rgba(2,6,23,0.98); }
+
+/* ─── PE stat grid ─── */
+.pe-stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-bottom:24px; }
+.pe-stat-card { background:radial-gradient(circle at top left,#111827 0,#020617 80%); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; }
+.pe-stat-card-name { font-size:0.9rem; font-weight:700; margin-bottom:10px; }
+.pe-stat-row { display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:4px; }
+.pe-stat-row span:first-child { color:var(--text-muted); }
+.pe-stat-row span:last-child { font-weight:600; }
+
+/* ─── Charts ─── */
+.charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+.chart-section { background:radial-gradient(circle at top left,#111827 0,#020617 80%); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px 20px; }
+.chart-title { font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:14px; font-weight:600; }
+.hbar-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.hbar-label { width:90px; font-size:0.78rem; color:var(--text-muted); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+.hbar-track { flex:1; height:18px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; }
+.hbar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; }
+.hbar-fill span { font-size:0.7rem; font-weight:700; color:rgba(255,255,255,0.9); white-space:nowrap; }
+.hbar-zero { font-size:0.7rem; color:var(--text-muted); padding:0 6px; }
+
+/* ─── Section label ─── */
+.section-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:10px; font-weight:600; }
+
+/* ─── Responsive ─── */
+@media(max-width:800px) { .charts-grid { grid-template-columns:1fr; } }
