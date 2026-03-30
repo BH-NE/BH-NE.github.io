@@ -15,7 +15,9 @@
   <script>(function(){var t=localStorage.getItem('dt-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
     /* ─── Dark mode body/layout ─── */
+    html,body{height:100%;margin:0;}
     body{background:radial-gradient(circle at top left,#0f172a 0,#020617 55%,#000 100%);display:flex;flex-direction:column;}
+    #root{flex:1;display:flex;flex-direction:column;min-height:100%;}
     .app-header{box-shadow:var(--shadow-subtle);flex-shrink:0;}
     .app-title h1{font-size:1.25rem;}
     .app-subtitle{font-size:0.78rem;}
@@ -41,11 +43,15 @@
     .file-button:hover span{background:rgba(15,23,42,0.98);border-color:var(--accent);box-shadow:0 0 0 1px rgba(59,130,246,0.2);}
 
     /* ─── Layout ─── */
-    .app-main{display:grid;grid-template-columns:240px minmax(0,1fr);flex:1;overflow:hidden;}
-    .sidebar{border-right:1px solid var(--border);padding:14px;background:linear-gradient(to bottom,rgba(15,23,42,0.98),rgba(15,23,42,0.96));display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
-    .sidebar h2{margin:4px 0 2px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);}
+    .app-main{display:flex;flex:1;overflow:hidden;}
+    .sidebar{border-right:1px solid var(--border);padding:14px;background:linear-gradient(to bottom,rgba(15,23,42,0.98),rgba(15,23,42,0.96));display:flex;flex-direction:column;gap:10px;overflow-y:auto;width:240px;flex-shrink:0;transition:width 240ms cubic-bezier(.4,0,.2,1),padding 240ms cubic-bezier(.4,0,.2,1),opacity 200ms ease,border-color 240ms ease;}
+    .sidebar.collapsed{width:0;padding-left:0;padding-right:0;opacity:0;border-color:transparent;overflow:hidden;}
+    .sidebar h2{margin:4px 0 2px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);white-space:nowrap;}
+    .sidebar-inner{display:flex;flex-direction:column;gap:10px;min-width:212px;}
+    .sidebar-toggle{position:relative;z-index:10;flex-shrink:0;padding:6px 9px;font-size:1rem;line-height:1;border-radius:var(--radius-md);border:1px solid var(--border);background:rgba(15,23,42,0.9);color:var(--text-muted);cursor:pointer;align-self:flex-start;}
+    .sidebar-toggle:hover{border-color:var(--accent);color:var(--text);box-shadow:none;}
     .panel{background:radial-gradient(circle at top left,#111827 0,#020617 70%);border-radius:var(--radius-lg);padding:10px 12px;border:1px solid var(--border);box-shadow:var(--shadow-soft);font-size:0.84rem;}
-    .content{padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+    .content{padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;}
     .sync-bar{flex-shrink:0;}
 
     /* ─── Inputs ─── */
@@ -142,8 +148,8 @@
     .app-footer{padding:6px 18px 8px;font-size:0.78rem;color:var(--text-muted);background:rgba(15,23,42,0.96);border-top:1px solid var(--border);flex-shrink:0;}
 
     @media(max-width:900px){
-      .app-main{grid-template-columns:1fr;}
-      .sidebar{border-right:none;border-bottom:1px solid var(--border);flex-direction:row;flex-wrap:wrap;gap:10px;}
+      .app-main{flex-direction:column;}
+      .sidebar{width:100%!important;border-right:none;border-bottom:1px solid var(--border);}
       .sidebar>*{flex:1 1 160px;}
       .field-row,.field-row3{grid-template-columns:1fr;}
     }
@@ -794,8 +800,9 @@
     const [modal,setModal]         = useState(null);
     const [confirm,setConfirm]     = useState(null);
     const [search,setSearch]       = useState('');
-    const [fStatus,setFStatus]     = useState(()=>DRAFTING_STATUS.map(s=>s.value));
-    const [fDiv,setFDiv]           = useState(()=>DIVISIONS.map(d=>d.value));
+    const [sidebarOpen,setSidebarOpen] = useState(()=>{ try{return localStorage.getItem('dt-sidebarOpen')!=='false';}catch{return true;} });
+    const [fStatus,setFStatus]     = useState(()=>{ try{const s=localStorage.getItem('dt-fStatus');return s?JSON.parse(s):DRAFTING_STATUS.map(s=>s.value);}catch{return DRAFTING_STATUS.map(s=>s.value);} });
+    const [fDiv,setFDiv]           = useState(()=>{ try{const s=localStorage.getItem('dt-fDiv');return s?JSON.parse(s):DIVISIONS.map(d=>d.value);}catch{return DIVISIONS.map(d=>d.value);} });
     const [sortBy,setSortBy]       = useState('pri');
     const [sortDir,setSortDir]     = useState('asc');
     const [syncStatus,setSyncStatus] = useState('loading'); // 'loading'|'ok'|'saving'|'error'
@@ -803,6 +810,11 @@
     const saveTimer = useRef(null);
     const syncingFromServer = useRef(false);
     const REFRESH_INTERVAL = 300000; // 5 minutes
+
+    // Persist filter state
+    useEffect(()=>{ try{localStorage.setItem('dt-fStatus',JSON.stringify(fStatus));}catch{} },[fStatus]);
+    useEffect(()=>{ try{localStorage.setItem('dt-fDiv',JSON.stringify(fDiv));}catch{} },[fDiv]);
+    useEffect(()=>{ try{localStorage.setItem('dt-sidebarOpen',String(sidebarOpen));}catch{} },[sidebarOpen]);
 
     // Pull data from GAS (used on load and by interval)
     function pullFromServer(isSilent){
@@ -1139,7 +1151,8 @@
 
         <main className="app-main">
           {/* Sidebar */}
-          <section className="sidebar">
+          <section className={`sidebar ${sidebarOpen?'':'collapsed'}`}>
+            <div className="sidebar-inner">
             <h2>Search</h2>
             <input type="search" placeholder="Name, job #, PE…" value={search} onChange={e=>setSearch(e.target.value)} style={{width:'100%'}}/>
 
@@ -1176,16 +1189,18 @@
                 </button>
               ))}
             </div>
-
-
+            </div>
           </section>
 
           {/* Content */}
           <section className="content">
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
-              <div className="tab-bar">
-                <button className={`tab-btn ${tab==='active'?'active':''}`} onClick={()=>setTab('active')}>Active ({active.length})</button>
-                <button className={`tab-btn ${tab==='archived'?'active':''}`} onClick={()=>setTab('archived')}>Archived ({archived.length})</button>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <button className="sidebar-toggle" title={sidebarOpen?'Collapse sidebar':'Expand sidebar'} onClick={()=>setSidebarOpen(o=>!o)}>☰</button>
+                <div className="tab-bar">
+                  <button className={`tab-btn ${tab==='active'?'active':''}`} onClick={()=>setTab('active')}>Active ({active.length})</button>
+                  <button className={`tab-btn ${tab==='archived'?'active':''}`} onClick={()=>setTab('archived')}>Archived ({archived.length})</button>
+                </div>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:10}}>
                 {displayed.length!==base.length&&<span style={{color:'var(--text-muted)',fontSize:'0.8rem'}}>{displayed.length} of {base.length}</span>}
