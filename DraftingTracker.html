@@ -399,7 +399,7 @@
 <script type="text/babel">
   const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxnntbkAJ_z_gckX_NUeaH21qUhlxtjLDCOqugWLEEb5Me1mITTAcYBrR48Q3W_Ws1uiw/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyAeTt-Do8PXsiR7dUFxdlMXeJDUtjZyVCuck82lyQEsQ7iIhyeiitXn3H_9mQ7lUIS/exec';
   const LOCAL_KEY = 'northshore-drafting-offline'; // fallback cache
 
   // Data now stored in Google Sheets via GAS. LOCAL_KEY is cache only.
@@ -484,8 +484,8 @@
     });
   }
 
-  // Hidden iframe form POST — works from file:// (forms bypass CORS)
-  function gasSet(data){
+  // Hidden iframe form POST — works from GitHub Pages (forms bypass CORS)
+  function gasPost(body){
     return new Promise((resolve) => {
       const frameName = 'gasFrame_' + Date.now();
       const iframe = document.createElement('iframe');
@@ -502,7 +502,7 @@
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = 'data';
-      input.value = JSON.stringify(data);
+      input.value = JSON.stringify(body);
       form.appendChild(input);
       document.body.appendChild(form);
 
@@ -513,10 +513,13 @@
       };
 
       iframe.onload = cleanup;
-      setTimeout(cleanup, 8000); // fallback timeout
+      setTimeout(cleanup, 8000);
       form.submit();
     });
   }
+
+  function gasUpsert(project){ return gasPost({ action:'upsert', project }); }
+  function gasDelete(id){      return gasPost({ action:'delete', id }); }
   function fmtDate(s){ if(!s)return'—'; const[y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
   function isOverdue(d,s){ if(!d||s==='Finished'||s==='Approved'||s==='NO SHOPS') return false; const t=new Date();t.setHours(0,0,0,0);const[y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd)<t; }
   function colorOf(val,arr){ return arr.find(o=>o.value===val)?.color??'#9ca3af'; }
@@ -807,9 +810,8 @@
     const [sortDir,setSortDir]     = useState('asc');
     const [syncStatus,setSyncStatus] = useState('loading'); // 'loading'|'ok'|'saving'|'error'
     const [syncMsg,setSyncMsg]       = useState('Connecting to Google Sheets…');
-    const saveTimer = useRef(null);
     const syncingFromServer = useRef(false);
-    const REFRESH_INTERVAL = 300000; // 5 minutes
+    const REFRESH_INTERVAL = 60000; // 1 minute
 
     // Persist filter state
     useEffect(()=>{ try{localStorage.setItem('dt-fStatus',JSON.stringify(fStatus));}catch{} },[fStatus]);
@@ -851,41 +853,78 @@
       return ()=>clearInterval(id);
     },[]);
 
-    // Debounced save to GAS whenever projects change (skip on first mount)
-    const isFirstRender = useRef(true);
-    useEffect(()=>{
-      if(isFirstRender.current){ isFirstRender.current=false; return; }
-      if(syncingFromServer.current) return; // skip save when updating from server pull
-      saveCache(projects);
+    // Debounced save is removed — saves are now per-project (see saveProject/deleteProject below)
+
+    function saveProject(project){
+      saveCache(projects); // keep local cache current
       setSyncStatus('saving');
       setSyncMsg('Saving…');
-      clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(()=>{
-        gasSet(projects)
-          .then(()=>{
-            const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-            setSyncStatus('ok');
-            setSyncMsg('Saved to Google Sheets at '+t);
-          })
-          .catch(err=>{
-            console.error('GAS save error:', err);
-            setSyncStatus('error');
-            setSyncMsg('Save failed — check console. Data cached locally.');
-          });
-      }, 800);
-    },[projects]);
+      gasUpsert(project)
+        .then(()=>{
+          const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+          setSyncStatus('ok');
+          setSyncMsg('Saved to Google Sheets at '+t);
+        })
+        .catch(err=>{
+          console.error('GAS save error:', err);
+          setSyncStatus('error');
+          setSyncMsg('Save failed — check console. Data cached locally.');
+        });
+    }
 
     function handleSave(fd){
+      let saved;
       if(modal.mode==='add'){
-        setProjects(p=>[...p,{id:uid(),...fd,archived:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}]);
+        saved = {id:uid(),...fd,archived:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+        setProjects(p=>[...p,saved]);
       } else {
-        setProjects(p=>p.map(x=>x.id===modal.project.id?{...x,...fd,updatedAt:new Date().toISOString()}:x));
+        saved = {...modal.project,...fd,updatedAt:new Date().toISOString()};
+        setProjects(p=>p.map(x=>x.id===saved.id?saved:x));
       }
       setModal(null);
+      saveProject(saved);
     }
-    function doArchive(p){ setProjects(ps=>ps.map(x=>x.id===p.id?{...x,archived:true,updatedAt:new Date().toISOString()}:x)); setConfirm(null); }
-    function doRestore(p){ setProjects(ps=>ps.map(x=>x.id===p.id?{...x,archived:false,updatedAt:new Date().toISOString()}:x)); }
-    function doDelete(p){  setProjects(ps=>ps.filter(x=>x.id!==p.id)); setConfirm(null); }
+
+    function doArchive(p){
+      const updated = {...p,archived:true,updatedAt:new Date().toISOString()};
+      setProjects(ps=>ps.map(x=>x.id===p.id?updated:x));
+      setConfirm(null);
+      saveProject(updated);
+    }
+    function doRestore(p){
+      const updated = {...p,archived:false,updatedAt:new Date().toISOString()};
+      setProjects(ps=>ps.map(x=>x.id===p.id?updated:x));
+      saveProject(updated);
+    }
+    function doDelete(p){
+      setProjects(ps=>ps.filter(x=>x.id!==p.id));
+      setConfirm(null);
+      setSyncStatus('saving');
+      setSyncMsg('Deleting…');
+      gasDelete(p.id)
+        .then(()=>{
+          const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+          setSyncStatus('ok');
+          setSyncMsg('Deleted at '+t);
+        })
+        .catch(()=>{
+          setSyncStatus('error');
+          setSyncMsg('Delete may not have synced — refresh to check.');
+        });
+    }
+
+    // Inline flag toggles (Rev, CAD) — also per-project saves
+    function toggleReviewState(p){
+      const cur = p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0);
+      const updated = {...p,reviewState:(cur+1)%3,updatedAt:new Date().toISOString()};
+      setProjects(ps=>ps.map(x=>x.id===p.id?updated:x));
+      saveProject(updated);
+    }
+    function toggleCad(p){
+      const updated = {...p,cadAvailable:!p.cadAvailable,updatedAt:new Date().toISOString()};
+      setProjects(ps=>ps.map(x=>x.id===p.id?updated:x));
+      saveProject(updated);
+    }
 
     function handleSort(f){ if(sortBy===f) setSortDir(d=>d==='asc'?'desc':'asc'); else{setSortBy(f);setSortDir('asc');} }
     function toggleF(arr,set,v){ set(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); }
@@ -981,9 +1020,7 @@
 
                       <td style={{textAlign:'center'}} onClick={e=>{
                           e.stopPropagation();
-                          const cur = p.reviewState===true?2 : p.reviewState===false?0 : (p.reviewState||0);
-                          const next = (cur+1)%3;
-                          setProjects(ps=>ps.map(x=>x.id===p.id?{...x,reviewState:next,updatedAt:new Date().toISOString()}:x));
+                          toggleReviewState(p);
                         }}
                         title={['Click to flag for review','Click to mark as reviewed','Click to clear review state'][(p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0))]}>
                         {(()=>{const s=p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0);
@@ -992,7 +1029,7 @@
                           return<span style={{color:'var(--border)',fontSize:'0.9rem',cursor:'pointer'}}>○</span>;
                         })()}
                       </td>
-                      <td style={{textAlign:'center'}} onClick={e=>{e.stopPropagation();setProjects(ps=>ps.map(x=>x.id===p.id?{...x,cadAvailable:!p.cadAvailable,updatedAt:new Date().toISOString()}:x));}}
+                      <td style={{textAlign:'center'}} onClick={e=>{e.stopPropagation();toggleCad(p);}}
                           title={p.cadAvailable?'CAD Available — click to unmark':'Click to mark CAD available'}>
                         {p.cadAvailable?<span style={{color:'var(--accent)',fontSize:'1rem',cursor:'pointer'}}>✓</span>:<span style={{color:'var(--border)',fontSize:'0.9rem',cursor:'pointer'}}>○</span>}
                       </td>
@@ -1068,13 +1105,13 @@
             <ProgBar project={p}/>
 
             <span className="qc-stat"
-              onClick={e=>{e.stopPropagation();const cur=p.reviewState===true?2:p.reviewState===false?0:(p.reviewState||0);const next=(cur+1)%3;setProjects(ps=>ps.map(x=>x.id===p.id?{...x,reviewState:next,updatedAt:new Date().toISOString()}:x));}}
+              onClick={e=>{e.stopPropagation();toggleReviewState(p);}}
               title={['Flag for review','Mark as reviewed','Clear review'][reviewState]}>
               Review {revIcon}
             </span>
 
             <span className="qc-stat"
-              onClick={e=>{e.stopPropagation();setProjects(ps=>ps.map(x=>x.id===p.id?{...x,cadAvailable:!p.cadAvailable,updatedAt:new Date().toISOString()}:x));}}
+              onClick={e=>{e.stopPropagation();toggleCad(p);}}
               title="Toggle CAD available">
               CAD {p.cadAvailable?<span style={{color:'var(--accent)',fontSize:'0.9rem'}}>✓</span>:<span style={{color:'var(--border)',fontSize:'0.9rem'}}>○</span>}
             </span>

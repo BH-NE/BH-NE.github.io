@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Drafting Tracker — Migration Tool</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;padding:32px;max-width:860px;margin:0 auto;}
+    h1{font-size:1.2rem;margin-bottom:4px;}
+    .sub{color:#64748b;font-size:0.85rem;margin-bottom:32px;}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:20px;margin-bottom:20px;}
+    .card h2{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;color:#64748b;margin:0 0 14px;}
+    button{background:#1e40af;border:none;color:#fff;padding:9px 18px;border-radius:6px;font-size:0.9rem;cursor:pointer;}
+    button:disabled{opacity:0.4;cursor:not-allowed;}
+    button.danger{background:#991b1b;}
+    .status{margin-top:14px;font-size:0.85rem;line-height:1.7;}
+    .ok{color:#4ade80;} .err{color:#f87171;} .warn{color:#fbbf24;}
+    table{width:100%;border-collapse:collapse;font-size:0.78rem;margin-top:10px;}
+    th{text-align:left;color:#64748b;padding:4px 8px;border-bottom:1px solid #334155;}
+    td{padding:4px 8px;border-bottom:1px solid #1e293b;color:#cbd5e1;}
+    .count{font-size:1.8rem;font-weight:700;color:#38bdf8;}
+    .steps{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+    .step{flex:1;min-width:160px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:14px;text-align:center;}
+    .step-num{font-size:1.4rem;font-weight:700;color:#38bdf8;}
+    .step-label{font-size:0.75rem;color:#94a3b8;margin-top:4px;}
+    .step.done{border-color:#4ade80;} .step.done .step-num{color:#4ade80;}
+    .step.active{border-color:#38bdf8;}
+  </style>
+</head>
+<body>
+
+<h1>Drafting Tracker — Migration Tool</h1>
+<p class="sub">One-time tool. Reads existing data → previews → writes to new sheet. Run once then discard.</p>
+
+<div class="steps">
+  <div class="step" id="s1"><div class="step-num">1</div><div class="step-label">Fetch old data</div></div>
+  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">Review</div></div>
+  <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">Write to new sheet</div></div>
+  <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">Verify</div></div>
+</div>
+
+<div class="card">
+  <h2>Step 1 — Fetch from old endpoint</h2>
+  <button id="btnFetch" onclick="fetchOld()">Fetch Old Data</button>
+  <div class="status" id="fetchStatus"></div>
+</div>
+
+<div class="card" id="previewCard" style="display:none">
+  <h2>Step 2 — Preview</h2>
+  <div id="previewContent"></div>
+</div>
+
+<div class="card" id="migrateCard" style="display:none">
+  <h2>Step 3 — Write to new sheet</h2>
+  <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:14px;">
+    This will <strong style="color:#fbbf24">clear</strong> the new sheet and write all fetched projects. 
+    The old sheet is never touched.
+  </p>
+  <button class="danger" id="btnMigrate" onclick="doMigrate()">Write to New Sheet</button>
+  <div class="status" id="migrateStatus"></div>
+</div>
+
+<div class="card" id="verifyCard" style="display:none">
+  <h2>Step 4 — Verify new sheet</h2>
+  <button id="btnVerify" onclick="doVerify()">Read Back from New Sheet</button>
+  <div class="status" id="verifyStatus"></div>
+</div>
+
+<script>
+  const OLD_URL = 'https://script.google.com/macros/s/AKfycbxnntbkAJ_z_gckX_NUeaH21qUhlxtjLDCOqugWLEEb5Me1mITTAcYBrR48Q3W_Ws1uiw/exec';
+  const NEW_URL = 'https://script.google.com/macros/s/AKfycbyAeTt-Do8PXsiR7dUFxdlMXeJDUtjZyVCuck82lyQEsQ7iIhyeiitXn3H_9mQ7lUIS/exec';
+
+  let fetchedProjects = null;
+
+  function setStep(n) {
+    [1,2,3,4].forEach(i => {
+      const el = document.getElementById('s'+i);
+      el.classList.remove('active','done');
+      if(i < n) el.classList.add('done');
+      if(i === n) el.classList.add('active');
+    });
+  }
+
+  function jsonp(url) {
+    return new Promise((resolve, reject) => {
+      const cb = '__mig_' + Date.now();
+      const s = document.createElement('script');
+      window[cb] = (data) => { delete window[cb]; s.remove(); resolve(data); };
+      s.onerror = () => { delete window[cb]; s.remove(); reject(new Error('JSONP failed')); };
+      s.src = url + '?callback=' + cb + '&t=' + Date.now();
+      document.head.appendChild(s);
+    });
+  }
+
+  function iframePost(url, body) {
+    return new Promise((resolve) => {
+      const frameName = 'mig_' + Date.now();
+      const iframe = document.createElement('iframe');
+      iframe.name = frameName;
+      iframe.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(iframe);
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = url;
+      form.target = frameName;
+      form.style.display = 'none';
+
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'data';
+      input.value = JSON.stringify(body);
+      form.appendChild(input);
+      document.body.appendChild(form);
+
+      const cleanup = () => {
+        try { form.remove(); } catch(e){}
+        try { iframe.remove(); } catch(e){}
+        resolve();
+      };
+      iframe.onload = cleanup;
+      setTimeout(cleanup, 10000);
+      form.submit();
+    });
+  }
+
+  async function fetchOld() {
+    document.getElementById('btnFetch').disabled = true;
+    document.getElementById('fetchStatus').innerHTML = '<span class="warn">Fetching…</span>';
+    setStep(1);
+    try {
+      const res = await jsonp(OLD_URL);
+      if(!res.ok) throw new Error('GAS returned ok:false');
+      fetchedProjects = res.data || [];
+
+      document.getElementById('fetchStatus').innerHTML =
+        `<span class="ok">✓ Fetched <strong>${fetchedProjects.length}</strong> projects from old sheet.</span>`;
+
+      showPreview();
+    } catch(e) {
+      document.getElementById('fetchStatus').innerHTML = `<span class="err">✗ Error: ${e.message}</span>`;
+      document.getElementById('btnFetch').disabled = false;
+    }
+  }
+
+  function showPreview() {
+    setStep(2);
+    const active   = fetchedProjects.filter(p => !p.archived);
+    const archived = fetchedProjects.filter(p => p.archived);
+
+    let html = `
+      <div style="display:flex;gap:24px;margin-bottom:16px;">
+        <div><div class="count">${fetchedProjects.length}</div><div style="font-size:0.78rem;color:#64748b;">Total</div></div>
+        <div><div class="count" style="color:#4ade80">${active.length}</div><div style="font-size:0.78rem;color:#64748b;">Active</div></div>
+        <div><div class="count" style="color:#94a3b8">${archived.length}</div><div style="font-size:0.78rem;color:#64748b;">Archived</div></div>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Job #</th><th>Division</th><th>PE</th><th>Status</th><th>Archived</th><th>Notes</th></tr></thead>
+        <tbody>
+    `;
+    fetchedProjects.forEach(p => {
+      html += `<tr>
+        <td style="color:#475569;font-size:0.7rem">${(p.id||'').slice(0,10)}…</td>
+        <td>${p.name||'—'}</td>
+        <td>${p.jobNumber||'—'}</td>
+        <td>${p.division||'—'}</td>
+        <td>${p.pe||'—'}</td>
+        <td>${p.draftingStatus||'—'}</td>
+        <td>${p.archived?'Yes':'No'}</td>
+        <td>${(p.notes||[]).length}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+
+    document.getElementById('previewContent').innerHTML = html;
+    document.getElementById('previewCard').style.display = 'block';
+    document.getElementById('migrateCard').style.display = 'block';
+  }
+
+  async function doMigrate() {
+    document.getElementById('btnMigrate').disabled = true;
+    document.getElementById('migrateStatus').innerHTML = '<span class="warn">Writing to new sheet… (this may take 10–20 seconds)</span>';
+    setStep(3);
+
+    try {
+      await iframePost(NEW_URL, { action: 'bulkInsert', projects: fetchedProjects });
+      document.getElementById('migrateStatus').innerHTML =
+        '<span class="ok">✓ Write complete. Verify below to confirm.</span>';
+      document.getElementById('verifyCard').style.display = 'block';
+      setStep(4);
+    } catch(e) {
+      document.getElementById('migrateStatus').innerHTML = `<span class="err">✗ Error: ${e.message}</span>`;
+      document.getElementById('btnMigrate').disabled = false;
+    }
+  }
+
+  async function doVerify() {
+    document.getElementById('btnVerify').disabled = true;
+    document.getElementById('verifyStatus').innerHTML = '<span class="warn">Reading back from new sheet…</span>';
+
+    try {
+      const res = await jsonp(NEW_URL);
+      if(!res.ok) throw new Error('GAS returned ok:false');
+      const newProjects = res.data || [];
+      const match = newProjects.length === fetchedProjects.length;
+
+      document.getElementById('verifyStatus').innerHTML = `
+        <span class="${match?'ok':'err'}">
+          ${match ? '✓' : '✗'} New sheet has <strong>${newProjects.length}</strong> projects. 
+          Original had <strong>${fetchedProjects.length}</strong>.
+          ${match ? 'All good — migration complete!' : 'Count mismatch — check the sheet manually.'}
+        </span>
+      `;
+      if(match) setStep(5); // all done
+    } catch(e) {
+      document.getElementById('verifyStatus').innerHTML = `<span class="err">✗ Error: ${e.message}</span>`;
+      document.getElementById('btnVerify').disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
