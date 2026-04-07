@@ -12,7 +12,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <!-- Apply saved theme immediately to avoid flash -->
-  <script>(function(){var t=localStorage.getItem('dt-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <script>(function(){try{var t=localStorage.getItem('dt-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
   <style>
     /* ─── Dark mode body/layout ─── */
     html,body{height:100%;margin:0;}
@@ -790,11 +790,11 @@
 
   /* App */
   function App(){
-    const [theme,setTheme] = useState(()=>localStorage.getItem('dt-theme')||'dark');
+    const [theme,setTheme] = useState(()=>{ try{return localStorage.getItem('dt-theme')||'dark';}catch{return 'dark';} });
 
     useEffect(()=>{
       document.documentElement.setAttribute('data-theme',theme);
-      localStorage.setItem('dt-theme',theme);
+      try{localStorage.setItem('dt-theme',theme);}catch{}
     },[theme]);
 
     const [projects,setProjects]   = useState(loadCache);
