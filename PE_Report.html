@@ -43,9 +43,9 @@
 <script type="text/babel">
   const { useState, useEffect, useRef } = React;
 
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxnntbkAJ_z_gckX_NUeaH21qUhlxtjLDCOqugWLEEb5Me1mITTAcYBrR48Q3W_Ws1uiw/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyAeTt-Do8PXsiR7dUFxdlMXeJDUtjZyVCuck82lyQEsQ7iIhyeiitXn3H_9mQ7lUIS/exec';
   const CLOWNBYNE = 'clown';
-  const REFRESH_MS = 300000;
+  const REFRESH_MS = 60000;
 
   const DRAFTING_STATUS = [
     { value:'Ready',                  color:'#56d7e8' },
@@ -194,7 +194,7 @@
         <header className="app-header">
           <div className="app-title">
             <h1>📊 PE Report — Northshore | NorthClad</h1>
-            <span className="app-subtitle">Read-only · Auto-refreshes every 5 minutes</span>
+            <span className="app-subtitle">Read-only · Auto-refreshes every minute</span>
           </div>
           <button onClick={()=>pull(false)} style={{background:'transparent',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',color:'var(--text-muted)',padding:'6px 12px',fontSize:'0.8rem',cursor:'pointer'}}>↻ Refresh</button>
         </header>
