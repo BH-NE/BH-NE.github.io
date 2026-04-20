@@ -391,6 +391,7 @@
     }
     [data-theme="light"] .app-header .theme-toggle:hover {
       background: rgba(255,255,255,0.18);
+      background: rgba(42, 177, 114, 0.18);
     }
   </style>
 </head>
@@ -417,13 +418,15 @@
     { value:'In Progress',            color:'#3b82f6' },
     { value:'Internal Review',    color:'#fb923c' },
     { value:'External Review',        color:'#e879f9' },
-
+    
     { value:'Approved',               color:'#4ade80' },
     { value:'Hold',                   color:'#a83254' },
     { value:'Approved as Noted',      color:'#4ade80' },
     { value:'Revise and Resubmit',    color:'#fb7185' },
+    { value:'Order Processing',               color:'#eb34c3' },
     { value:'NO SHOPS',               color:'#9ca3af' },
         { value:'Complete',               color:'#86efac' },
+        
   ];
 
   const DIVISIONS = [
@@ -442,6 +445,7 @@
     {value:'status',    label:'Drafting Status'},
     {value:'name',      label:'Project Name'},
     {value:'jobNumber', label:'Job Number'},
+    {value:'pm', label:'Project Manager'},
   ];
 
   const DEFAULT_FORM = {
@@ -950,6 +954,7 @@
           case 'jobNumber': c=(a.jobNumber||'').localeCompare(b.jobNumber||''); break;
           case 'dueDate':   if(!a.dueDate&&!b.dueDate)c=0;else if(!a.dueDate)c=1;else if(!b.dueDate)c=-1;else c=a.dueDate.localeCompare(b.dueDate); break;
           case 'status':    c=(STATUS_ORDER[a.draftingStatus]??99)-(STATUS_ORDER[b.draftingStatus]??99); break;
+          case 'pm':        c=(a.pm||'').localeCompare(b.pm||''); break;
           default:          c=(a.pe||'').localeCompare(b.pe||''); break;
         }
         return sortDir==='asc'?c:-c;
@@ -978,7 +983,7 @@
                 <th>Division</th>
                 <th>Type</th>
                 <th className="sortable" onClick={()=>handleSort('pe')}>PE <SA f="pe" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th>PM</th>
+                <th className="sortable" onClick={()=>handleSort('pm')}>PM <SA f="pm" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('status')}>Status <SA f="status" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('dueDate')}>Due <SA f="dueDate" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th title="Review state — click to cycle: none → flag → checked">Rev</th>
