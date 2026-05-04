@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NENC — Sheet Nesting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ee;
+  --surface:#ffffff;
+  --surface2:#f7f7f4;
+  --border:#e0e0d8;
+  --border-strong:#c8c8c0;
+  --text:#1a1a1a;
+  --text2:#55554e;
+  --text3:#999990;
+  --accent:#1e3a8a;
+  --accent-light:#dbeafe;
+  --accent-mid:#3b82f6;
+  --success-bg:#d1fae5;
+  --success-fg:#065f46;
+  --warn-bg:#fef3c7;
+  --warn-fg:#92400e;
+  --danger-bg:#fee2e2;
+  --danger-fg:#991b1b;
+  --mono:'Space Mono','Consolas',monospace;
+  --sans:'Outfit',system-ui,sans-serif;
+  --r:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 8px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.logo{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--accent);letter-spacing:.08em}
+.logo em{font-style:normal;font-weight:400;font-size:12px;color:var(--text3);margin-left:10px;letter-spacing:0}
+#jobBadge{font-family:var(--mono);font-size:12px;color:var(--text3)}
+
+/* ── TABS ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0}
+.tab-btn{padding:13px 18px;border:none;background:none;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── LAYOUT ── */
+main{max-width:1100px;margin:0 auto;padding:24px}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:16px;padding-bottom:11px;border-bottom:1px solid var(--border)}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ── FORM ── */
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+input[type=text],input[type=number],input[type=date],select,textarea{font-family:var(--sans);font-size:13px;padding:7px 10px;border:1px solid var(--border-strong);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+input[type=number]{font-family:var(--mono)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+input:disabled,select:disabled{opacity:.45;cursor:not-allowed;background:var(--surface2)}
+
+/* ── TOGGLE ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:14px}
+.toggle-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border-strong);border-radius:11px;cursor:pointer;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked+.toggle-slider{background:var(--accent-mid)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px)}
+.toggle input:disabled+.toggle-slider{opacity:.4;cursor:not-allowed}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover:not(:disabled){background:#1e40af}
+.btn-secondary{background:var(--surface2);color:var(--text);border-color:var(--border-strong)}
+.btn-secondary:hover:not(:disabled){background:var(--border)}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover:not(:disabled){background:#047857}
+.btn-lg{padding:11px 26px;font-size:15px}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-ghost-danger{background:none;border:1px solid var(--border-strong);color:var(--danger-fg);font-size:12px;padding:3px 9px;cursor:pointer;border-radius:var(--r);font-family:var(--sans);transition:all .15s}
+.btn-ghost-danger:hover{background:var(--danger-bg);border-color:#fca5a5}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;font-family:var(--mono);font-size:12px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--accent-light)}
+td.pid{font-weight:700;color:var(--accent);font-family:var(--mono)}
+td.dim{color:var(--text2)}
+td.final{font-weight:700}
+
+/* ── DROP ZONE ── */
+.drop-zone{border:2px dashed var(--border-strong);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent-mid);background:var(--accent-light)}
+.drop-icon{font-size:28px;margin-bottom:6px}
+.drop-zone p{font-size:13px;color:var(--text2)}
+
+/* ── SHEET SIZE ITEMS ── */
+.sheet-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.sheet-item:last-child{border-bottom:none}
+.sheet-lbl{font-family:var(--mono);font-size:14px;font-weight:700;min-width:100px}
+.sheet-sqft{font-size:12px;color:var(--text3);min-width:70px}
+.sheet-limit{display:flex;align-items:center;gap:8px;margin-left:auto}
+.sheet-limit label{font-size:11px;color:var(--text3);white-space:nowrap;text-transform:none;letter-spacing:0;font-weight:400}
+.sheet-limit input{width:64px}
+.unlim{font-size:11px;color:var(--text3)}
+
+/* ── ALERTS ── */
+.alert{padding:10px 14px;border-radius:var(--r);font-size:13px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.alert-warn{background:var(--warn-bg);color:var(--warn-fg);border:1px solid #fcd34d}
+.alert-danger{background:var(--danger-bg);color:var(--danger-fg);border:1px solid #fca5a5}
+.alert-ok{background:var(--success-bg);color:var(--success-fg);border:1px solid #6ee7b7}
+
+/* ── STAT CARDS ── */
+.stats-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.stat{flex:1;min-width:110px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.stat-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1}
+.stat-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-top:4px}
+
+/* ── SHEET RESULTS ── */
+.sheet-result{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.sheet-result-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.sheet-num-lbl{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent)}
+.sheet-meta{display:flex;gap:16px;font-size:11px;color:var(--text2);font-family:var(--mono)}
+.scrap-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+.scrap-good{background:var(--success-bg);color:var(--success-fg)}
+.scrap-warn{background:var(--warn-bg);color:var(--warn-fg)}
+.scrap-bad{background:var(--danger-bg);color:var(--danger-fg)}
+canvas{display:block;max-width:100%;border:1px solid var(--border);border-radius:4px;background:#fafafa}
+
+/* ── SECTION TITLES ── */
+.sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:24px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+
+/* ── BREAKDOWN ── */
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.bk-row:last-child{border-bottom:none}
+.bk-lbl{color:var(--text2);font-size:13px}
+.bk-val{font-family:var(--mono);font-weight:600;font-size:13px}
+
+/* ── MISC ── */
+.hidden{display:none!important}
+.flex{display:flex}
+.gap-2{gap:8px}
+.gap-3{gap:12px}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mt-4{margin-top:16px}
+.text-sm{font-size:12px;color:var(--text3)}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;font-family:var(--mono)}
+.badge-blue{background:var(--accent-light);color:var(--accent)}
+.badge-gray{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+textarea.paste{height:110px;font-family:var(--mono);font-size:11px;resize:vertical;border-style:dashed}
+textarea.paste:focus{border-style:solid}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">NENC <em>Sheet Nesting</em></span>
+  <span id="jobBadge">No job loaded</span>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="setup">① Setup</button>
+  <button class="tab-btn" data-tab="parts">② Parts</button>
+  <button class="tab-btn" data-tab="sheets">③ Sheets</button>
+  <button class="tab-btn" data-tab="output">④ Nest &amp; Output</button>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════
+     TAB 1 — SETUP
+══════════════════════════════════════ -->
+<section id="tab-setup" class="tab-content active">
+
+  <div class="card">
+    <div class="card-title">Job Information</div>
+    <div class="g3">
+      <div class="field"><label>Job Name</label><input type="text" id="jobName" placeholder="e.g. We Care Daily Clinic"></div>
+      <div class="field"><label>Job Number</label><input type="text" id="jobNumber" placeholder="e.g. 6755"></div>
+      <div class="field"><label>Date</label><input type="date" id="jobDate"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Material</div>
+    <div class="g2">
+      <div class="field">
+        <label>Material</label>
+        <select id="material">
+          <option value="AL">Aluminum (AL)</option>
+          <option value="ACM">ACM</option>
+          <option value="STL">Steel (STL)</option>
+          <option value="SS">Stainless Steel (SS)</option>
+          <option value="CU">Copper (CU)</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Thickness (in)</label><input type="number" id="thickness" placeholder="0.125" step="0.001" min="0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Nesting Settings</div>
+    <div class="g4" style="margin-bottom:16px">
+      <div class="field"><label>Horizontal Addition (in)</label><input type="number" id="hAdd" value="2" step="0.125" min="0"></div>
+      <div class="field"><label>Vertical Addition (in)</label><input type="number" id="vAdd" value="2" step="0.125" min="0"></div>
+      <div class="field"><label>Part Spacing (in)</label><input type="number" id="spacing" value="0.125" step="0.0625" min="0"></div>
+      <div class="field"><label>&nbsp;</label><div class="text-sm" style="padding-top:10px">Min gap between parts</div></div>
+    </div>
+    <div class="toggle-row">
+      <div><div class="toggle-label">Allow Part Rotation</div><div class="toggle-sub">Parts may be rotated 90° to improve fit</div></div>
+      <label class="toggle"><input type="checkbox" id="rotation" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><div class="toggle-label">Grain Direction Lock</div><div class="toggle-sub">Locks part orientation — disables rotation</div></div>
+      <label class="toggle"><input type="checkbox" id="grain"><span class="toggle-slider"></span></label>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end">
+    <button class="btn btn-primary" onclick="goTab('parts')">Next: Parts →</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TAB 2 — PARTS
+══════════════════════════════════════ -->
+<section id="tab-parts" class="tab-content">
+
+  <div class="card">
+    <div class="card-title">Import Parts</div>
+    <div class="g2" style="gap:24px;align-items:start">
+
+      <div>
+        <p class="text-sm" style="margin-bottom:8px"><strong style="color:var(--text2)">Option 1 — Upload Excel (.xlsx)</strong></p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-icon">📂</div>
+          <p><strong>Click to browse</strong> or drag &amp; drop</p>
+          <p class="text-sm" style="margin-top:4px">.xlsx / .xls only</p>
+          <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+        </div>
+      </div>
+
+      <div>
+        <p class="text-sm" style="margin-bottom:8px"><strong style="color:var(--text2)">Option 2 — Paste from Excel</strong></p>
+        <p class="text-sm" style="margin-bottom:6px">Columns: Panel Name · Qty · W1 · W2 · W3 · W4 · H · SR · Area <em>(optional)</em></p>
+        <textarea class="paste" id="pasteArea" placeholder="Paste Excel cells here (Ctrl+V)..."></textarea>
+        <button class="btn btn-secondary mt-2" onclick="parsePaste()">Parse Pasted Data</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:600">Parts List</span>
+        <span id="partsCount" class="badge badge-gray">0 parts</span>
+      </div>
+      <button class="btn-ghost-danger" onclick="clearParts()">Clear All</button>
+    </div>
+    <div class="tbl-wrap">
+      <table id="partsTable">
+        <thead>
+          <tr>
+            <th>Panel ID</th><th>Qty</th>
+            <th>W1</th><th>W2</th><th>W3</th><th>W4</th>
+            <th>H</th><th>SR</th>
+            <th>Final W</th><th>Final H</th>
+            <th>Area</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="partsBody">
+          <tr><td colspan="12" style="text-align:center;padding:28px;color:var(--text3);font-family:var(--sans)">No parts loaded — import or paste data above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between">
+    <button class="btn btn-secondary" onclick="goTab('setup')">← Setup</button>
+    <button class="btn btn-primary" onclick="goTab('sheets')">Next: Sheets →</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TAB 3 — SHEETS
+══════════════════════════════════════ -->
+<section id="tab-sheets" class="tab-content">
+
+  <div class="card">
+    <div class="card-title">Standard Sheet Sizes</div>
+    <p class="text-sm" style="margin-bottom:14px">Enable sizes available for this job. Set a count limit or leave at 0 for unlimited.</p>
+    <div id="standardSheets"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Add Custom Size</div>
+    <div class="g4" style="align-items:end">
+      <div class="field"><label>Width (in)</label><input type="number" id="customW" placeholder="120" min="1" step="0.5"></div>
+      <div class="field"><label>Height (in)</label><input type="number" id="customH" placeholder="48" min="1" step="0.5"></div>
+      <div class="field"><label>Count Limit (0 = unlimited)</label><input type="number" id="customLimit" value="0" min="0"></div>
+      <button class="btn btn-secondary" onclick="addCustomSheet()">+ Add Size</button>
+    </div>
+    <div id="customSheets" style="margin-top:16px"></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between">
+    <button class="btn btn-secondary" onclick="goTab('parts')">← Parts</button>
+    <button class="btn btn-primary" onclick="goTab('output')">Next: Nest →</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TAB 4 — NEST & OUTPUT
+══════════════════════════════════════ -->
+<section id="tab-output" class="tab-content">
+
+  <div class="card">
+    <div class="flex gap-3" style="align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary btn-lg" id="nestBtn" onclick="runNesting()">▶ Run Nesting</button>
+      <button class="btn btn-success" id="pdfBtn" onclick="exportPDF()" style="display:none">⬇ Export PDF</button>
+      <span id="nestStatus" class="text-sm"></span>
+    </div>
+  </div>
+
+  <!-- Flagged -->
+  <div id="flaggedSection" class="hidden">
+    <div class="sec-title">⚠ Flagged Parts — Too Large for Available Sheets</div>
+    <div id="flaggedList"></div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsSection" class="hidden">
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="sec-title">Sheet Count by Size</div>
+    <div class="card" id="sheetBreakdown"></div>
+
+    <div class="sec-title">Sheet Layouts</div>
+    <div id="sheetLayouts"></div>
+
+    <div class="sec-title">Panel Index</div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table id="panelIndexTable">
+          <thead>
+            <tr>
+              <th>Panel ID</th><th>Instance</th><th>Sheet #</th>
+              <th>X, Y Position</th><th>W × H</th><th>Rotated</th><th>Area</th>
+            </tr>
+          </thead>
+          <tbody id="panelIndexBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+const S = {
+  parts: [],
+  sheets: [
+    {w:96,  h:48, label:'96 × 48',  enabled:true, limit:0, custom:false},
+    {w:96,  h:60, label:'96 × 60',  enabled:true, limit:0, custom:false},
+    {w:120, h:48, label:'120 × 48', enabled:true, limit:0, custom:false},
+    {w:120, h:60, label:'120 × 60', enabled:true, limit:0, custom:false},
+  ],
+  result: null,
+};
+
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function goTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+}
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => goTab(btn.dataset.tab)));
+
+// ════════════════════════════════════════════
+// SETUP
+// ════════════════════════════════════════════
+document.getElementById('jobDate').value = new Date().toISOString().split('T')[0];
+
+['jobName','jobNumber'].forEach(id => document.getElementById(id).addEventListener('input', updateBadge));
+function updateBadge() {
+  const n = document.getElementById('jobName').value;
+  const num = document.getElementById('jobNumber').value;
+  document.getElementById('jobBadge').textContent = (num || n) ? [num,n].filter(Boolean).join(' — ') : 'No job loaded';
+}
+
+// Grain locks rotation
+document.getElementById('grain').addEventListener('change', function() {
+  const r = document.getElementById('rotation');
+  r.checked = false;
+  r.disabled = this.checked;
+});
+
+// Re-calc dims when H/V add changes
+['hAdd','vAdd'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+  if (!S.parts.length) return;
+  const ha = +document.getElementById('hAdd').value || 0;
+  const va = +document.getElementById('vAdd').value || 0;
+  S.parts = S.parts.map(p => ({...p, fw: p.w1+p.w2+p.w3+p.w4+ha, fh: p.h+p.sr+va}));
+  renderPartsTable();
+}));
+
+// ════════════════════════════════════════════
+// FILE IMPORT
+// ════════════════════════════════════════════
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) parseXLSX(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) parseXLSX(e.target.files[0]); });
+
+function parseXLSX(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      // Skip header row if first cell is non-numeric
+      let start = 0;
+      for (let i = 0; i < Math.min(5, data.length); i++) {
+        if (data[i].some(c => /panel|name|qty/i.test(String(c)))) { start = i+1; break; }
+      }
+      processRows(data.slice(start).filter(r => r[0] !== ''));
+    } catch(err) { alert('Error reading file: ' + err.message); }
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function parsePaste() {
+  let text = document.getElementById('pasteArea').value.trim();
+  if (!text) return;
+  let rows = text.split('\n').map(l => l.replace('\r','').split('\t').map(c => c.trim()));
+  if (rows.length && isNaN(rows[0][0])) rows = rows.slice(1);
+  processRows(rows.filter(r => r[0]));
+}
+
+function processRows(rows) {
+  const ha = +document.getElementById('hAdd').value || 0;
+  const va = +document.getElementById('vAdd').value || 0;
+  const parts = [];
+  for (const r of rows) {
+    const id = String(r[0]||'').trim();
+    if (!id) continue;
+    const qty = parseInt(r[1])||1;
+    const w1 = parseFloat(r[2])||0, w2 = parseFloat(r[3])||0;
+    const w3 = parseFloat(r[4])||0, w4 = parseFloat(r[5])||0;
+    const h  = parseFloat(r[6])||0, sr = parseFloat(r[7])||0;
+    const area = String(r[8]||'').trim() || 'unassigned';
+    parts.push({id, qty, w1, w2, w3, w4, h, sr, area, fw: w1+w2+w3+w4+ha, fh: h+sr+va});
+  }
+  if (!parts.length) { alert('No valid parts found.\nExpected columns: Panel Name, Qty, W1, W2, W3, W4, H, SR, Area (optional)'); return; }
+  S.parts = parts;
+  renderPartsTable();
+}
+
+// ════════════════════════════════════════════
+// PARTS TABLE
+// ════════════════════════════════════════════
+function renderPartsTable() {
+  const tbody = document.getElementById('partsBody');
+  const count = document.getElementById('partsCount');
+  const total = S.parts.reduce((s,p)=>s+p.qty,0);
+  count.textContent = `${S.parts.length} parts · ${total} pieces`;
+
+  if (!S.parts.length) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--text3);font-family:var(--sans)">No parts loaded.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = S.parts.map((p,i) => `
+    <tr>
+      <td class="pid">${p.id}</td>
+      <td>${p.qty}</td>
+      <td class="dim">${p.w1||'—'}</td>
+      <td class="dim">${p.w2||'—'}</td>
+      <td class="dim">${p.w3||'—'}</td>
+      <td class="dim">${p.w4||'—'}</td>
+      <td class="dim">${p.h}</td>
+      <td class="dim">${p.sr||'—'}</td>
+      <td class="final">${p.fw.toFixed(3)}</td>
+      <td class="final">${p.fh.toFixed(3)}</td>
+      <td style="font-family:var(--sans);font-size:12px;color:${p.area==='unassigned'?'var(--text3)':'var(--accent)'}">${p.area}</td>
+      <td><button class="btn-ghost-danger" onclick="removePart(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function removePart(i) { S.parts.splice(i,1); renderPartsTable(); }
+function clearParts() {
+  if (!S.parts.length) return;
+  if (!confirm('Clear all parts?')) return;
+  S.parts = [];
+  renderPartsTable();
+  document.getElementById('pasteArea').value = '';
+}
+
+// ════════════════════════════════════════════
+// SHEET MANAGEMENT
+// ════════════════════════════════════════════
+function renderStandardSheets() {
+  document.getElementById('standardSheets').innerHTML = S.sheets.filter(s=>!s.custom).map((s,_) => {
+    const i = S.sheets.indexOf(s);
+    return `<div class="sheet-item">
+      <label class="toggle">
+        <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleSheet(${i},this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="sheet-lbl">${s.label}"</span>
+      <span class="sheet-sqft">${(s.w*s.h/144).toFixed(1)} sq ft</span>
+      <div class="sheet-limit">
+        <label>Max sheets:</label>
+        <input type="number" value="${s.limit}" min="0" ${!s.enabled?'disabled':''} onchange="setLimit(${i},this.value)">
+        <span class="unlim">${s.limit===0?'(unlimited)':''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCustomSheets() {
+  const customs = S.sheets.filter(s=>s.custom);
+  const el = document.getElementById('customSheets');
+  if (!customs.length) { el.innerHTML = '<p class="text-sm">No custom sizes added.</p>'; return; }
+  el.innerHTML = customs.map(s => {
+    const i = S.sheets.indexOf(s);
+    return `<div class="sheet-item">
+      <label class="toggle">
+        <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleSheet(${i},this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="sheet-lbl">${s.label}"</span>
+      <span class="sheet-sqft">${(s.w*s.h/144).toFixed(1)} sq ft</span>
+      <div class="sheet-limit">
+        <label>Max:</label>
+        <input type="number" value="${s.limit}" min="0" onchange="setLimit(${i},this.value)">
+      </div>
+      <button class="btn-ghost-danger" onclick="removeCustom(${i})">Remove</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleSheet(i, val) { S.sheets[i].enabled = val; renderStandardSheets(); renderCustomSheets(); }
+function setLimit(i, val) { S.sheets[i].limit = parseInt(val)||0; }
+function addCustomSheet() {
+  const w = parseFloat(document.getElementById('customW').value);
+  const h = parseFloat(document.getElementById('customH').value);
+  const lim = parseInt(document.getElementById('customLimit').value)||0;
+  if (!w||!h) { alert('Enter valid width and height.'); return; }
+  S.sheets.push({w,h,label:`${w} × ${h}`,enabled:true,limit:lim,custom:true});
+  document.getElementById('customW').value = '';
+  document.getElementById('customH').value = '';
+  renderCustomSheets();
+}
+function removeCustom(i) { S.sheets.splice(i,1); renderCustomSheets(); }
+
+// ════════════════════════════════════════════
+// MAX RECTS ALGORITHM
+// ════════════════════════════════════════════
+class MaxRects {
+  constructor(W, H) {
+    this.W = W; this.H = H;
+    this.free = [{x:0,y:0,w:W,h:H}];
+    this.used = [];
+  }
+
+  insert(pw, ph, allowRot) {
+    let best = null, bs1 = Infinity, bs2 = Infinity, bRot = false;
+    for (const r of this.free) {
+      if (r.w >= pw && r.h >= ph) {
+        const s1 = Math.min(r.w-pw, r.h-ph), s2 = Math.max(r.w-pw, r.h-ph);
+        if (s1 < bs1 || (s1===bs1 && s2<bs2)) { best={x:r.x,y:r.y,w:pw,h:ph}; bs1=s1; bs2=s2; bRot=false; }
+      }
+      if (allowRot && r.w >= ph && r.h >= pw) {
+        const s1 = Math.min(r.w-ph, r.h-pw), s2 = Math.max(r.w-ph, r.h-pw);
+        if (s1 < bs1 || (s1===bs1 && s2<bs2)) { best={x:r.x,y:r.y,w:ph,h:pw}; bs1=s1; bs2=s2; bRot=true; }
+      }
+    }
+    if (!best) return null;
+    best.rotated = bRot;
+    this._place(best);
+    return best;
+  }
+
+  _place(node) {
+    const next = [];
+    for (const r of this.free) {
+      if (!this._hit(r,node)) { next.push(r); continue; }
+      if (node.y > r.y)                next.push({x:r.x, y:r.y,       w:r.w,           h:node.y-r.y});
+      if (node.y+node.h < r.y+r.h)    next.push({x:r.x, y:node.y+node.h, w:r.w,        h:(r.y+r.h)-(node.y+node.h)});
+      if (node.x > r.x)                next.push({x:r.x, y:r.y,       w:node.x-r.x,    h:r.h});
+      if (node.x+node.w < r.x+r.w)    next.push({x:node.x+node.w, y:r.y, w:(r.x+r.w)-(node.x+node.w), h:r.h});
+    }
+    this.free = next.filter((a,ai) => !next.some((b,bi) => bi!==ai && this._in(b,a)));
+    this.used.push(node);
+  }
+
+  _hit(a,b){ return !(b.x>=a.x+a.w||b.x+b.w<=a.x||b.y>=a.y+a.h||b.y+b.h<=a.y); }
+  _in(a,b) { return b.x>=a.x&&b.y>=a.y&&b.x+b.w<=a.x+a.w&&b.y+b.h<=a.y+a.h; }
+  usedArea(){ return this.used.reduce((s,r)=>s+r.w*r.h,0); }
+}
+
+// ════════════════════════════════════════════
+// NESTING ENGINE
+// ════════════════════════════════════════════
+async function runNesting() {
+  const statusEl = document.getElementById('nestStatus');
+
+  // Validate
+  if (!S.parts.length) { alert('No parts to nest. Add parts in Tab ②.'); return; }
+  const enabled = S.sheets.filter(s=>s.enabled);
+  if (!enabled.length) { alert('No sheet sizes enabled. Enable at least one in Tab ③.'); return; }
+
+  statusEl.textContent = 'Running…'; statusEl.style.color = 'var(--text3)';
+  document.getElementById('nestBtn').disabled = true;
+
+  // Yield helper — gives the browser a frame to breathe
+  const yieldFrame = () => new Promise(resolve => setTimeout(resolve, 0));
+
+  try {
+    const sp = +document.getElementById('spacing').value || 0;
+    const rot = document.getElementById('rotation').checked && !document.getElementById('grain').checked;
+    const mat = document.getElementById('material').value;
+    const thick = document.getElementById('thickness').value||'—';
+
+    // Group parts by area — each area nests onto its own sheets
+    const areaGroups = {};
+    for (const p of S.parts) {
+      const a = p.area || 'unassigned';
+      if (!areaGroups[a]) areaGroups[a] = [];
+      areaGroups[a].push(p);
+    }
+
+    const resultSheets = [], flagged = [];
+    let sheetNum = 1;
+
+    for (const [area, groupParts] of Object.entries(areaGroups)) {
+      // Expand by qty, sort largest area first
+      let pieces = [];
+      for (const p of groupParts)
+        for (let i = 0; i < p.qty; i++)
+          pieces.push({id:p.id, inst:i+1, w:p.fw, h:p.fh, area});
+      pieces.sort((a,b) => (b.w*b.h)-(a.w*a.h));
+
+      const sizes = S.sheets.map(s => ({...s, used:0}));
+
+      // Pre-filter: flag any piece that geometrically can't fit ANY enabled sheet
+      // regardless of count limits — flag them individually so they don't kill the whole run
+      const canFitSomewhere = (p) => S.sheets.some(s =>
+        s.enabled && ((p.w<=s.w && p.h<=s.h) || (rot && p.h<=s.w && p.w<=s.h))
+      );
+      flagged.push(...pieces.filter(p => !canFitSomewhere(p)));
+      let remaining = pieces.filter(p => canFitSomewhere(p));
+      const totalPieces = remaining.length;
+
+      while (remaining.length) {
+        // Progress update + yield every sheet so browser stays responsive
+        const done = totalPieces - remaining.length;
+        statusEl.textContent = `Nesting${Object.keys(areaGroups).length > 1 ? ` [${area}]` : ''} — ${done} of ${totalPieces} pieces placed, ${resultSheets.length} sheet${resultSheets.length!==1?'s':''}…`;
+        await yieldFrame();
+
+        const largest = remaining[0];
+        const valid = sizes.filter(s => {
+          if (!s.enabled) return false;
+          if (s.limit > 0 && s.used >= s.limit) return false;
+          return (largest.w<=s.w && largest.h<=s.h) || (rot && largest.h<=s.w && largest.w<=s.h);
+        });
+
+        // No valid sizes — count limits exhausted, flag what remains
+        if (!valid.length) { flagged.push(...remaining); break; }
+
+        // Simulate to pick best size
+        const simPcs = remaining.slice(0, Math.min(80, remaining.length));
+        let bestSize = valid[0], bestUtil = -1;
+        for (const sz of valid) {
+          const sim = new MaxRects(sz.w+sp, sz.h+sp);
+          let ua = 0;
+          for (const p of simPcs) { if (sim.insert(p.w+sp, p.h+sp, rot)) ua += p.w*p.h; }
+          const util = ua / (sz.w*sz.h);
+          if (util > bestUtil) { bestUtil = util; bestSize = sz; }
+        }
+
+        // Pack
+        const packer = new MaxRects(bestSize.w+sp, bestSize.h+sp);
+        const placed = [], nextRem = [];
+        for (const pc of remaining) {
+          const res = packer.insert(pc.w+sp, pc.h+sp, rot);
+          if (res) placed.push({...pc, x:res.x, y:res.y,
+            w: res.rotated ? pc.h : pc.w,
+            h: res.rotated ? pc.w : pc.h,
+            rotated: res.rotated||false});
+          else nextRem.push(pc);
+        }
+
+        if (!placed.length) { flagged.push(...remaining); break; }
+
+        const sa = bestSize.w * bestSize.h;
+        const ua = placed.reduce((s,p)=>s+p.w*p.h, 0);
+        bestSize.used++;
+        resultSheets.push({
+          num: sheetNum++,
+          area,
+          size: {w:bestSize.w, h:bestSize.h, label:bestSize.label},
+          material: mat, thickness: thick,
+          placed, sa, ua,
+          scrap: (sa-ua)/sa*100,
+        });
+        remaining = nextRem;
+      }
+    }
+
+    S.result = {sheets: resultSheets, flagged};
+    renderResults();
+
+    const msg = `Complete — ${resultSheets.length} sheet${resultSheets.length!==1?'s':''}`
+      + (flagged.length ? `, ${flagged.length} flagged` : ', 0 flagged');
+    statusEl.textContent = msg;
+    statusEl.style.color = flagged.length ? 'var(--danger-fg)' : 'var(--success-fg)';
+
+  } catch(e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    statusEl.style.color = 'var(--danger-fg)';
+    console.error(e);
+  }
+  document.getElementById('nestBtn').disabled = false;
+}
+
+// ════════════════════════════════════════════
+// RENDER RESULTS
+// ════════════════════════════════════════════
+function renderResults() {
+  const {sheets, flagged} = S.result;
+
+  // Flagged
+  const flagSec = document.getElementById('flaggedSection');
+  if (flagged.length) {
+    flagSec.classList.remove('hidden');
+    document.getElementById('flaggedList').innerHTML = flagged.map(p =>
+      `<div class="alert alert-danger">⚠ <strong>Part ${p.id}</strong> (instance ${p.inst}) — ${p.w.toFixed(3)}" × ${p.h.toFixed(3)}" — does not fit any available sheet size</div>`
+    ).join('');
+  } else { flagSec.classList.add('hidden'); }
+
+  document.getElementById('resultsSection').classList.remove('hidden');
+  document.getElementById('pdfBtn').style.display = 'inline-flex';
+
+  // Stats
+  const totalA = sheets.reduce((s,sh)=>s+sh.sa,0);
+  const usedA  = sheets.reduce((s,sh)=>s+sh.ua,0);
+  const pieces = sheets.reduce((s,sh)=>s+sh.placed.length,0);
+  document.getElementById('statsRow').innerHTML = [
+    [`${sheets.length}`, 'Total Sheets'],
+    [`${pieces}`, 'Parts Nested'],
+    [`${flagged.length}`, 'Flagged'],
+    [`${(totalA/144).toFixed(1)}`, 'Total Sq Ft'],
+    [`${((totalA-usedA)/totalA*100).toFixed(1)}%`, 'Overall Scrap'],
+  ].map(([v,l])=>`<div class="stat"><div class="stat-val">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+
+  // Breakdown by size
+  const bySz = {};
+  for (const sh of sheets) { const k=sh.size.label; bySz[k]=(bySz[k]||0)+1; }
+  document.getElementById('sheetBreakdown').innerHTML = Object.entries(bySz).map(([lbl,cnt])=>
+    `<div class="bk-row"><span class="bk-lbl">${lbl}"</span><span class="bk-val">${cnt} sheet${cnt!==1?'s':''} &nbsp;·&nbsp; ${(cnt*sheets.find(s=>s.size.label===lbl).sa/144).toFixed(1)} sq ft</span></div>`
+  ).join('');
+
+  // Sheet layouts — grouped by area with section headers
+  const layoutsEl = document.getElementById('sheetLayouts');
+  layoutsEl.innerHTML = '';
+
+  // Get unique areas in order of first appearance
+  const areaOrder = [...new Set(sheets.map(sh => sh.area))];
+  const multiArea = areaOrder.length > 1;
+
+  for (const area of areaOrder) {
+    const areaSheets = sheets.filter(sh => sh.area === area);
+
+    // Area group header (only show if more than one area)
+    if (multiArea) {
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'margin:20px 0 10px;padding:8px 14px;background:var(--accent);color:#fff;border-radius:var(--r);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;display:inline-block';
+      hdr.textContent = `Area: ${area}  ·  ${areaSheets.length} sheet${areaSheets.length!==1?'s':''}`;
+      layoutsEl.appendChild(hdr);
+    }
+
+    for (const sh of areaSheets) {
+      const div = document.createElement('div');
+      div.className = 'sheet-result';
+      const sc = sh.scrap < 15 ? 'scrap-good' : sh.scrap < 30 ? 'scrap-warn' : 'scrap-bad';
+      div.innerHTML = `
+        <div class="sheet-result-hdr">
+          <span class="sheet-num-lbl">Sheet ${sh.num}</span>
+          <div class="sheet-meta">
+            <span>${sh.size.label}"</span>
+            <span>${sh.material}</span>
+            <span>${sh.thickness}"</span>
+            <span>${sh.placed.length} part${sh.placed.length!==1?'s':''}</span>
+            ${multiArea ? `<span style="color:var(--accent);font-weight:700">${sh.area}</span>` : ''}
+          </div>
+          <span class="scrap-badge ${sc}">Scrap: ${sh.scrap.toFixed(1)}%</span>
+        </div>`;
+      const cv = document.createElement('canvas');
+      cv.id = `cv-${sh.num}`;
+      cv.dataset.sheetNum = sh.num;
+      // Placeholder height so layout doesn't collapse before draw
+      cv.style.cssText = 'min-height:120px;background:#f9f9f7;border:1px solid var(--border);border-radius:4px;display:block;max-width:100%';
+      div.appendChild(cv);
+      layoutsEl.appendChild(div);
+      // Lazy draw via IntersectionObserver — only render when scrolled into view
+      lazyObserver.observe(cv);
+    }
+  }
+
+  // Panel index
+  const rows = [];
+  for (const sh of sheets) for (const p of sh.placed) rows.push({...p, sheetNum:sh.num, area:sh.area});
+  rows.sort((a,b) => a.area.localeCompare(b.area) || String(a.id).localeCompare(String(b.id)) || a.inst-b.inst);
+  document.getElementById('panelIndexBody').innerHTML = rows.map(r => `
+    <tr>
+      <td class="pid">${r.id}</td>
+      <td style="text-align:center;color:var(--text3)">${r.inst}</td>
+      <td style="text-align:center;font-weight:700">${r.sheetNum}</td>
+      <td class="dim">${r.x.toFixed(3)}, ${r.y.toFixed(3)}</td>
+      <td>${r.w.toFixed(3)} × ${r.h.toFixed(3)}</td>
+      <td style="text-align:center">${r.rotated?'↻':'—'}</td>
+      <td style="font-family:var(--sans);font-size:12px;color:${r.area==='unassigned'?'var(--text3)':'var(--accent)'}">${r.area}</td>
+    </tr>`).join('');
+
+  document.getElementById('resultsSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ════════════════════════════════════════════
+// CANVAS DRAWING
+// ════════════════════════════════════════════
+const FILLS   = ['#dbeafe','#dcfce7','#fef9c3','#fce7f3','#e0e7ff','#fff7ed','#ccfbf1','#f3e8ff','#ecfccb','#fee2e2'];
+const BORDERS = ['#3b82f6','#22c55e','#eab308','#ec4899','#6366f1','#f97316','#14b8a6','#a855f7','#84cc16','#ef4444'];
+
+function partColor(id) {
+  let h = 0;
+  for (const c of String(id)) h = (h*31 + c.charCodeAt(0)) % FILLS.length;
+  return {fill:FILLS[h], stroke:BORDERS[h]};
+}
+
+function drawSheet(cv, sh) {
+  const parent = cv.parentElement;
+  const maxW = Math.min(820, (parent ? parent.offsetWidth : 820) - 36);
+  const scale = Math.min(maxW / sh.size.w, 480 / sh.size.h, 9);
+
+  cv.width  = Math.round(sh.size.w * scale);
+  cv.height = Math.round(sh.size.h * scale);
+
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#f9f9f7';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  // Grid (12" spacing)
+  const gs = 12 * scale;
+  ctx.strokeStyle = '#e4e4dc'; ctx.lineWidth = .5;
+  for (let x = 0; x <= cv.width; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,cv.height); ctx.stroke(); }
+  for (let y = 0; y <= cv.height; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke(); }
+
+  // Parts
+  for (const p of sh.placed) {
+    const {fill, stroke} = partColor(p.id);
+    const x=p.x*scale, y=p.y*scale, w=p.w*scale, h=p.h*scale;
+    ctx.fillStyle = fill;
+    ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle = stroke; ctx.lineWidth = 1.5;
+    ctx.strokeRect(x+.75,y+.75,w-1.5,h-1.5);
+
+    // Label — ID + W×H (actual part size, no spacing)
+    const fs = Math.max(7, Math.min(13, w/5, h/2));
+    const dimFs = Math.max(6, fs - 2);
+    const twoLines = h > fs * 3.5;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x+2,y+2,w-4,h-4); ctx.clip();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    // ID line
+    const idY = twoLines ? y+h/2 - fs*0.65 : y+h/2;
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = `600 ${fs}px 'Space Mono',monospace`;
+    ctx.fillText(String(p.id), x+w/2, idY);
+
+    // Dimension line
+    if (twoLines) {
+      ctx.font = `${dimFs}px 'Space Mono',monospace`;
+      ctx.fillStyle = '#444';
+      ctx.fillText(`${p.w.toFixed(2)}" x ${p.h.toFixed(2)}"`, x+w/2, idY + fs*1.35);
+    }
+
+    // Rotation icon
+    if (p.rotated) {
+      ctx.font = `${Math.max(6,fs-3)}px 'Space Mono',monospace`;
+      ctx.fillStyle = stroke;
+      const rotY = twoLines ? idY + fs*2.6 : y+h/2 + fs*.9;
+      ctx.fillText('↻', x+w/2, rotY);
+    }
+    ctx.restore();
+  }
+
+  // Sheet border
+  ctx.strokeStyle = '#666'; ctx.lineWidth = 2;
+  ctx.strokeRect(1,1,cv.width-2,cv.height-2);
+
+  // Corner dimension labels
+  ctx.fillStyle = '#888';
+  ctx.font = `10px 'Space Mono',monospace`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(`${sh.size.w}"`, 4, 4);
+  ctx.save();
+  ctx.translate(6, cv.height-6);
+  ctx.rotate(-Math.PI/2);
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(`${sh.size.h}"`, 0, 0);
+  ctx.restore();
+}
+
+// ════════════════════════════════════════════
+// PDF EXPORT
+// ════════════════════════════════════════════
+function exportPDF() {
+  if (!S.result) return;
+  const {sheets, flagged} = S.result;
+
+  // Ensure all canvases are drawn (synchronous)
+  for (const sh of sheets) {
+    const cv = document.getElementById(`cv-${sh.num}`);
+    if (cv) drawSheet(cv, sh);
+  }
+
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'landscape', unit:'pt', format:'letter'});
+  const PW = doc.internal.pageSize.getWidth();
+  const PH = doc.internal.pageSize.getHeight();
+
+  const jobName = document.getElementById('jobName').value || 'Untitled';
+  const jobNum  = document.getElementById('jobNumber').value || '';
+  const jobDate = document.getElementById('jobDate').value || '';
+  const mat     = document.getElementById('material').value;
+  const thick   = document.getElementById('thickness').value || '—';
+
+  function hdr(title) {
+    doc.setFillColor(247,247,244); doc.rect(0,0,PW,48,'F');
+    doc.setDrawColor(220,220,210); doc.line(0,48,PW,48);
+    doc.setFont('helvetica','bold'); doc.setFontSize(16);
+    doc.setTextColor(30,58,138); doc.text('NENC',28,31);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    doc.setTextColor(80,80,80); doc.text(title,70,31);
+    doc.setFontSize(9);
+    doc.text(`${jobNum?'#'+jobNum+' — ':''}${jobName}  |  ${jobDate}`, PW-28, 31, {align:'right'});
+  }
+
+  // ── Summary page
+  hdr('Task Layout Summary');
+  const ta = sheets.reduce((s,sh)=>s+sh.sa,0);
+  const ua = sheets.reduce((s,sh)=>s+sh.ua,0);
+  let y = 64;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,20,20);
+  doc.text(`${jobNum?'Job #'+jobNum+' — ':''}${jobName}`, 28, y); y+=16;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70,70,70);
+  doc.text(`Material: ${mat}  |  Thickness: ${thick}"  |  Sheets: ${sheets.length}  |  Overall Scrap: ${((ta-ua)/ta*100).toFixed(1)}%  |  Total Area: ${(ta/144).toFixed(1)} sq ft`, 28, y); y+=22;
+
+  // Breakdown table
+  const bySz = {};
+  for (const sh of sheets) { const k=sh.size.label; bySz[k]=(bySz[k]||0)+1; }
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(20,20,20);
+  doc.text('Sheet Sizes:', 28, y); y+=14;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  for (const [lbl,cnt] of Object.entries(bySz)) {
+    doc.text(`  ${lbl}"  ——  ${cnt} sheet${cnt!==1?'s':''}`, 28, y); y+=12;
+  }
+
+  if (flagged.length) {
+    y+=8; doc.setTextColor(153,27,27); doc.setFont('helvetica','bold');
+    doc.text('Flagged Parts (too large for available sheets):', 28, y); y+=12;
+    doc.setFont('helvetica','normal');
+    for (const p of flagged) { doc.text(`  Part ${p.id} — inst. ${p.inst} — ${p.w.toFixed(3)}" × ${p.h.toFixed(3)}"`, 28, y); y+=11; }
+  }
+
+  // ── Sheet pages
+  for (const sh of sheets) {
+    doc.addPage();
+    hdr(`Sheet ${sh.num} of ${sheets.length}`);
+
+    let sy = 64;
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(30,58,138);
+    doc.text(`Sheet ${sh.num}`, 28, sy); sy+=16;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(60,60,60);
+    [
+      `Size: ${sh.size.w}" × ${sh.size.h}"`,
+      `Material: ${sh.material}`,
+      `Thickness: ${sh.thickness}"`,
+      `Parts: ${sh.placed.length}`,
+      `Scrap: ${sh.scrap.toFixed(1)}%`,
+      `Used: ${(sh.ua/144).toFixed(2)} sq ft`,
+    ].forEach(line => { doc.text(line, 28, sy); sy+=12; });
+
+    const cv = document.getElementById(`cv-${sh.num}`);
+    if (cv) {
+      const imgData = cv.toDataURL('image/png');
+      const lx = 170, ly = 56, aw = PW-lx-20, ah = PH-ly-20;
+      const asp = sh.size.w/sh.size.h;
+      let iw=aw, ih=aw/asp;
+      if (ih>ah) { ih=ah; iw=ih*asp; }
+      doc.addImage(imgData,'PNG',lx,ly,iw,ih);
+    }
+  }
+
+  // ── Panel index
+  doc.addPage();
+  hdr('Panel Index');
+  const cols = [28,110,190,260,360,450];
+  let iy = 62;
+  doc.setFillColor(242,242,238); doc.rect(22,iy-9,PW-44,14,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(80,80,80);
+  ['Panel ID','Instance','Sheet #','X, Y Position','W × H','Rotated'].forEach((h,i)=>doc.text(h,cols[i],iy));
+  iy+=14;
+
+  const pidxRows = [];
+  for (const sh of sheets) for (const p of sh.placed) pidxRows.push({...p,sn:sh.num});
+  pidxRows.sort((a,b)=>String(a.id).localeCompare(String(b.id))||a.inst-b.inst);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  for (const r of pidxRows) {
+    if (iy > PH-20) { doc.addPage(); hdr('Panel Index (cont.)'); iy=62; }
+    doc.setTextColor(30,58,138); doc.text(String(r.id),cols[0],iy);
+    doc.setTextColor(60,60,60);
+    doc.text(String(r.inst),cols[1],iy);
+    doc.setFont('helvetica','bold'); doc.text(String(r.sn),cols[2],iy); doc.setFont('helvetica','normal');
+    doc.text(`${r.x.toFixed(3)}, ${r.y.toFixed(3)}`,cols[3],iy);
+    doc.text(`${r.w.toFixed(3)} × ${r.h.toFixed(3)}`,cols[4],iy);
+    doc.text(r.rotated?'Yes':'—',cols[5],iy);
+    doc.setDrawColor(228,228,220); doc.line(22,iy+3,PW-22,iy+3);
+    iy+=13;
+  }
+
+  const fn = `NENC_${jobNum||'nest'}_${jobDate||'output'}.pdf`;
+  doc.save(fn);
+}
+
+// ════════════════════════════════════════════
+// LAZY CANVAS OBSERVER
+// ════════════════════════════════════════════
+// Draws sheet canvases only when they scroll into view — prevents
+// flooding the main thread with 50+ simultaneous draw calls
+const lazyObserver = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    const cv = entry.target;
+    const num = parseInt(cv.dataset.sheetNum);
+    if (!S.result) continue;
+    const sh = S.result.sheets.find(s => s.num === num);
+    if (sh) drawSheet(cv, sh);
+    lazyObserver.unobserve(cv);
+  }
+}, { rootMargin: '200px' }); // pre-load 200px before visible
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+renderStandardSheets();
+renderCustomSheets();
+renderPartsTable();
+</script>
+</body>
+</html>
