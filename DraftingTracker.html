@@ -16,7 +16,7 @@
   <style>
     /* ─── Dark mode body/layout ─── */
     html,body{height:100%;margin:0;}
-    body{background:radial-gradient(circle at top left,#0f172a 0,#020617 55%,#000 100%);display:flex;flex-direction:column;}
+    body{background:#020617;display:flex;flex-direction:column;}
     #root{flex:1;display:flex;flex-direction:column;min-height:100%;}
     .app-header{box-shadow:var(--shadow-subtle);flex-shrink:0;}
     .app-title h1{font-size:1.25rem;}
@@ -44,13 +44,13 @@
 
     /* ─── Layout ─── */
     .app-main{display:flex;flex:1;overflow:hidden;}
-    .sidebar{border-right:1px solid var(--border);padding:14px;background:linear-gradient(to bottom,rgba(15,23,42,0.98),rgba(15,23,42,0.96));display:flex;flex-direction:column;gap:10px;overflow-y:auto;width:240px;flex-shrink:0;transition:width 240ms cubic-bezier(.4,0,.2,1),padding 240ms cubic-bezier(.4,0,.2,1),opacity 200ms ease,border-color 240ms ease;}
+    .sidebar{border-right:1px solid var(--border);padding:14px;background:#0f172a;display:flex;flex-direction:column;gap:10px;overflow-y:auto;width:240px;flex-shrink:0;transition:width 240ms cubic-bezier(.4,0,.2,1),padding 240ms cubic-bezier(.4,0,.2,1),opacity 200ms ease,border-color 240ms ease;}
     .sidebar.collapsed{width:0;padding-left:0;padding-right:0;opacity:0;border-color:transparent;overflow:hidden;}
     .sidebar h2{margin:4px 0 2px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);white-space:nowrap;}
     .sidebar-inner{display:flex;flex-direction:column;gap:10px;min-width:212px;}
     .sidebar-toggle{position:relative;z-index:10;flex-shrink:0;padding:6px 9px;font-size:1rem;line-height:1;border-radius:var(--radius-md);border:1px solid var(--border);background:rgba(15,23,42,0.9);color:var(--text-muted);cursor:pointer;align-self:flex-start;}
     .sidebar-toggle:hover{border-color:var(--accent);color:var(--text);box-shadow:none;}
-    .panel{background:radial-gradient(circle at top left,#111827 0,#020617 70%);border-radius:var(--radius-lg);padding:10px 12px;border:1px solid var(--border);box-shadow:var(--shadow-soft);font-size:0.84rem;}
+    .panel{background:#111827;border-radius:var(--radius-lg);padding:10px 12px;border:1px solid var(--border);box-shadow:var(--shadow-soft);font-size:0.84rem;}
     .content{padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;}
     .sync-bar{flex-shrink:0;}
 
@@ -97,7 +97,7 @@
 
     /* ─── View nav ─── */
     .view-btn{width:100%;justify-content:flex-start;background:transparent;border-radius:var(--radius-md);border-color:transparent;color:var(--text-muted);margin-bottom:3px;}
-    .view-btn--active{background:radial-gradient(circle at top left,var(--accent-soft),transparent 70%);color:var(--text);border-color:rgba(59,130,246,0.65);}
+    .view-btn--active{background:var(--accent-soft);color:var(--text);border-color:rgba(59,130,246,0.65);}
     .tab-bar{flex-wrap:wrap;}
     .tab-btn{padding:5px 14px;font-size:0.82rem;}
     .tab-btn:hover{box-shadow:none;}
@@ -134,7 +134,7 @@
 
     /* ─── Modal ─── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px);padding:20px;}
-    .modal-panel{background:radial-gradient(circle at top left,#111827 0,#020617 70%);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft),0 0 0 1px rgba(59,130,246,0.08);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:modal-in 140ms ease;}
+    .modal-panel{background:#111827;border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft),0 0 0 1px rgba(59,130,246,0.08);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:modal-in 140ms ease;}
     @keyframes modal-in{from{opacity:0;transform:scale(0.97) translateY(-6px);}to{opacity:1;transform:scale(1) translateY(0);}}
     .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
     .modal-header h2{margin:0;font-size:0.95rem;letter-spacing:0.04em;}
@@ -152,6 +152,47 @@
       .sidebar{width:100%!important;border-right:none;border-bottom:1px solid var(--border);}
       .sidebar>*{flex:1 1 160px;}
       .field-row,.field-row3{grid-template-columns:1fr;}
+    }
+
+    /* ─── Mobile tile grid ─── */
+    .tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+    @media(max-width:640px){
+      .tile-grid{grid-template-columns:1fr 1fr;gap:8px;}
+    }
+    @media(max-width:400px){
+      .tile-grid{grid-template-columns:1fr;gap:8px;}
+    }
+    .tile-card{position:relative;border-radius:var(--radius-lg);padding:10px 12px;cursor:pointer;border-width:2px;border-style:solid;transition:box-shadow 120ms,opacity 120ms;display:flex;flex-direction:column;gap:6px;min-height:120px;}
+    .tile-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.5);opacity:0.95;}
+    .tile-pri{position:absolute;top:8px;right:10px;font-size:0.65rem;font-weight:700;color:var(--text-muted);background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+    .tile-name{font-size:0.88rem;font-weight:700;line-height:1.3;padding-right:28px;word-break:break-word;}
+    .tile-job{font-size:0.74rem;color:var(--text-muted);margin-top:-3px;}
+    .tile-badges{display:flex;flex-wrap:wrap;gap:4px;}
+    .tile-meta{font-size:0.72rem;color:var(--text-muted);line-height:1.5;}
+    .tile-meta span{color:var(--text);}
+    .tile-due-overdue{color:var(--danger)!important;}
+    .tile-footer{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:4px;border-top:1px solid rgba(255,255,255,0.05);}
+    .tile-actions{display:flex;gap:4px;}
+    .tile-actions button{padding:3px 7px;font-size:0.7rem;}
+
+    /* ─── Mobile header ─── */
+    @media(max-width:640px){
+      .app-header{flex-wrap:wrap;gap:6px;padding:10px 12px;}
+      .app-title h1{font-size:0.9rem;}
+      .app-actions .hide-mobile{display:none;}
+      .sidebar{padding:10px;}
+      .sidebar.collapsed{max-height:0;padding-top:0;padding-bottom:0;overflow:hidden;border-bottom-color:transparent;}
+      .sidebar:not(.collapsed){max-height:600px;overflow-y:auto;}
+      .content{padding:10px;}
+      .modal-panel{max-width:100%;margin:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+      .modal-overlay{align-items:flex-end;padding:0;}
+    }
+
+    /* ─── Mobile filter drawer toggle ─── */
+    .mobile-filter-btn{display:none;}
+    @media(max-width:640px){
+      .mobile-filter-btn{display:inline-flex;}
+      .sidebar-toggle{display:none;}
     }
 
     /* ════════════════════════════════════════════════════
@@ -814,6 +855,16 @@
     const [sortDir,setSortDir]     = useState('asc');
     const [syncStatus,setSyncStatus] = useState('loading'); // 'loading'|'ok'|'saving'|'error'
     const [syncMsg,setSyncMsg]       = useState('Connecting to Google Sheets…');
+
+    // Mobile detection
+    const [isMobile,setIsMobile] = useState(()=>window.innerWidth<=640);
+    useEffect(()=>{
+      const mq=window.matchMedia('(max-width:640px)');
+      const handler=e=>{ setIsMobile(e.matches); if(e.matches) setView('tile'); };
+      mq.addEventListener('change',handler);
+      if(mq.matches){ setView('tile'); setSidebarOpen(false); }
+      return()=>mq.removeEventListener('change',handler);
+    },[]);
     const syncingFromServer = useRef(false);
     const REFRESH_INTERVAL = 60000; // 1 minute
 
@@ -1072,7 +1123,7 @@
       const divColor=colorOf(p.division,DIVISIONS)||'#4ade80';
       const statusColor=colorOf(p.draftingStatus,DRAFTING_STATUS)||'var(--border)';
       const bgStyle={
-        background:p.division?`radial-gradient(circle at top left,${divColor}18 0,#020617 55%)`:'radial-gradient(circle at top left,#111827 0,#020617 80%)',
+        background:p.division?`${divColor}14`:'#111827',
         borderColor:statusColor,
       };
       const revIcon=(()=>{
@@ -1167,6 +1218,69 @@
       );
     }
 
+    /* Mobile tile card */
+    function TileCard({p}){
+      const ov=isOverdue(p.dueDate,p.draftingStatus);
+      const divColor=colorOf(p.division,DIVISIONS)||'#4ade80';
+      const statusColor=colorOf(p.draftingStatus,DRAFTING_STATUS)||'var(--border)';
+      const pct=calcPct(p);
+      const fill=pct===100?'var(--success)':pct>50?'var(--accent)':'#f59e0b';
+      const tot=+p.detailsTotal||0;
+      const bgStyle={
+        background:p.division?`${divColor}14`:'#111827',
+        borderColor:statusColor,
+      };
+      return(
+        <div className="tile-card" style={bgStyle} onClick={()=>setModal({mode:'edit',project:p})}>
+          {p.pri&&<span className="tile-pri">#{p.pri}</span>}
+
+          <div className="tile-name">{p.name}</div>
+          {p.jobNumber&&<div className="tile-job">{p.jobNumber}</div>}
+
+          <div className="tile-badges">
+            {p.draftingStatus&&<Badge val={p.draftingStatus} arr={DRAFTING_STATUS}/>}
+            {p.division&&<Badge val={p.division} arr={DIVISIONS}/>}
+          </div>
+
+          <div className="tile-meta">
+            {p.pe&&<div>PE: <span>{p.pe}</span></div>}
+            {p.dueDate&&<div className={ov?'tile-due-overdue':''}>Due: <span style={{color:ov?'var(--danger)':'var(--text)'}}>{fmtDate(p.dueDate)}{ov&&<span className="overdue-tag"> !</span>}</span></div>}
+          </div>
+
+          {tot>0&&(
+            <div className="prog-bar" style={{marginTop:2}}>
+              <div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`,background:fill}}/></div>
+              <span className="prog-label">{pct}%</span>
+            </div>
+          )}
+
+          <div className="tile-footer" onClick={e=>e.stopPropagation()}>
+            <div style={{display:'flex',gap:6,fontSize:'0.7rem',color:'var(--text-muted)'}}>
+              {p.woLink&&<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>WO ↗</a>}
+              {p.plansLink&&<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>Plans ↗</a>}
+              {!!p.notes?.length&&<span style={{color:'var(--accent)',fontSize:'0.7rem'}}>{p.notes.length}📝</span>}
+            </div>
+            <div className="tile-actions">
+              {tab==='active'
+                ?<button className="btn-icon btn-warning" onClick={e=>{e.stopPropagation();setConfirm({type:'archive',project:p});}}>Archive</button>
+                :<button className="btn-icon btn-success" onClick={e=>{e.stopPropagation();doRestore(p);}}>Restore</button>}
+              <button className="btn-icon btn-danger" onClick={e=>{e.stopPropagation();setConfirm({type:'delete',project:p});}}>Del</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* Tile view — flat grid, no grouping */
+    function TileView(){
+      if(displayed.length===0) return <div style={{textAlign:'center',padding:'40px',color:'var(--text-muted)'}}>{base.length===0?(tab==='active'?'No active projects.':'No archived projects.'):'No projects match the filters.'}</div>;
+      return(
+        <div className="tile-grid">
+          {displayed.map(p=><TileCard key={p.id} p={p}/>)}
+        </div>
+      );
+    }
+
     return(
       <>
         <header className="app-header">
@@ -1178,9 +1292,10 @@
             <button className="theme-toggle btn-icon" title={theme==='dark'?'Switch to light mode':'Switch to dark mode'} onClick={()=>setTheme(t=>t==='dark'?'light':'dark')}>
               {theme==='dark'?'☀':'🌙'}
             </button>
-            <label className="file-button"><input type="file" accept="application/json" onChange={handleImport}/><span>↑ Import</span></label>
-            <button onClick={handleExport}>↓ Export</button>
-            <button className="btn-primary" onClick={()=>setModal({mode:'add'})}>+ Add Project</button>
+            <label className="file-button hide-mobile"><input type="file" accept="application/json" onChange={handleImport}/><span>↑ Import</span></label>
+            <button className="hide-mobile" onClick={handleExport}>↓ Export</button>
+            <button className="mobile-filter-btn btn-icon" title="Filters" onClick={()=>setSidebarOpen(o=>!o)}>⚙ Filters</button>
+            <button className="btn-primary" onClick={()=>setModal({mode:'add'})}>+ Add</button>
           </div>
         </header>
 
@@ -1247,12 +1362,14 @@
               <div style={{display:'flex',alignItems:'center',gap:10}}>
                 {displayed.length!==base.length&&<span style={{color:'var(--text-muted)',fontSize:'0.8rem'}}>{displayed.length} of {base.length}</span>}
                 <div className="view-toggle">
-                  <button className={`view-toggle-btn ${view==='detailed'?'active':''}`} onClick={()=>setView('detailed')}>⊞ Detailed</button>
-                  <button className={`view-toggle-btn ${view==='quick'?'active':''}`} onClick={()=>setView('quick')}>◫ Quick</button>                </div>
+                  {!isMobile&&<button className={`view-toggle-btn ${view==='detailed'?'active':''}`} onClick={()=>setView('detailed')}>⊞ Detailed</button>}
+                  {!isMobile&&<button className={`view-toggle-btn ${view==='quick'?'active':''}`} onClick={()=>setView('quick')}>◫ Quick</button>}
+                  <button className={`view-toggle-btn ${view==='tile'?'active':''}`} onClick={()=>setView('tile')}>▦ Tiles</button>
+                </div>
               </div>
             </div>
 
-            {view==='detailed'?<DetailedTable/>:<QuickView/>}
+            {view==='detailed'?<DetailedTable/>:view==='tile'?<TileView/>:<QuickView/>}
           </section>
         </main>
 
