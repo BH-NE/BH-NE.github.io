@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NENC OFM Generator — Northshore Exteriors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── NF Palette ── */
+:root {
+  --nf-cream:#FAF7F0; --nf-linen:#F0EAD8; --nf-raw-cotton:#DDD5C0;
+  --nf-undyed-wool:#C6B99F; --nf-sand:#B0A088; --nf-jute:#8C7A62;
+  --nf-bark:#5E4B38; --nf-espresso:#2E2118;
+  --nf-moss:#6A7A58; --nf-moss-light:#D4DBC8;
+  --nf-clay:#9C6448; --nf-clay-light:#E8CDBF;
+  --nf-slate:#7A7870; --nf-slate-light:#DDDAD4;
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-body:'Jost',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --radius-sm:2px; --radius-md:6px; --radius-lg:12px; --radius-pill:999px;
+  --border-subtle:1px solid rgba(94,75,56,0.15);
+  --border-mid:1px solid rgba(94,75,56,0.30);
+  --border-strong:1px solid rgba(94,75,56,0.55);
+  --shadow-soft:0 2px 12px rgba(46,33,24,0.08);
+  --shadow-lift:0 6px 24px rgba(46,33,24,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;}
+body{background:var(--nf-cream);color:var(--nf-espresso);font-family:var(--font-body);font-weight:300;line-height:1.6;}
+
+/* ── App Shell ── */
+.app-shell{display:flex;flex-direction:column;min-height:100vh;}
+.app-header{background:var(--nf-espresso);color:var(--nf-cream);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;flex-shrink:0;}
+.app-header-brand{font-family:var(--font-display);font-size:22px;font-weight:300;letter-spacing:0.02em;}
+.app-header-brand span{color:var(--nf-undyed-wool);font-size:12px;font-family:var(--font-mono);font-weight:300;letter-spacing:0.15em;margin-left:16px;text-transform:uppercase;}
+.app-header-right{font-family:var(--font-mono);font-size:11px;color:var(--nf-sand);letter-spacing:0.12em;}
+.stage-nav{background:var(--nf-bark);display:flex;overflow-x:auto;padding:0 32px;flex-shrink:0;}
+.stage-tab{font-family:var(--font-mono);font-size:10px;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;color:var(--nf-undyed-wool);padding:14px 18px;cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.18s;}
+.stage-tab:hover{color:var(--nf-cream);}
+.stage-tab.active{color:var(--nf-cream);border-bottom-color:var(--nf-clay);}
+.stage-tab.completed{color:var(--nf-moss-light);}
+.stage-num{font-size:9px;opacity:0.6;margin-right:6px;}
+.stage-content{flex:1;padding:40px 48px;max-width:1400px;width:100%;margin:0 auto;}
+.stage-title{font-family:var(--font-display);font-size:36px;font-weight:300;color:var(--nf-bark);margin-bottom:6px;}
+.stage-subtitle{font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--nf-sand);margin-bottom:32px;}
+
+/* ── Forms ── */
+.field-group{margin-bottom:20px;}
+.field-label{font-family:var(--font-mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--nf-sand);margin-bottom:6px;display:block;}
+.nf-input{font-family:var(--font-body);font-size:14px;font-weight:300;color:var(--nf-espresso);background:var(--nf-cream);border:var(--border-mid);border-radius:var(--radius-md);padding:9px 14px;width:100%;outline:none;transition:border-color 0.18s;}
+.nf-input:focus{border-color:var(--nf-jute);}
+.nf-input::placeholder{color:var(--nf-undyed-wool);}
+.nf-input[readonly]{background:var(--nf-linen);color:var(--nf-slate);}
+.nf-select{font-family:var(--font-body);font-size:13px;font-weight:300;color:var(--nf-espresso);background:var(--nf-cream);border:var(--border-mid);border-radius:var(--radius-md);padding:8px 12px;outline:none;cursor:pointer;width:100%;}
+.nf-select:focus{border-color:var(--nf-jute);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px 32px;}
+.form-grid-full{grid-column:1/-1;}
+
+/* ── Buttons ── */
+.btn{font-family:var(--font-body);font-size:13px;font-weight:400;letter-spacing:0.03em;padding:9px 20px;border-radius:var(--radius-md);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.18s;border:none;line-height:1;}
+.btn-primary{background:var(--nf-bark);color:var(--nf-cream);}
+.btn-primary:hover{background:var(--nf-espresso);}
+.btn-secondary{background:transparent;color:var(--nf-bark);border:var(--border-strong);}
+.btn-secondary:hover{background:var(--nf-raw-cotton);}
+.btn-ghost{background:transparent;color:var(--nf-jute);border:var(--border-subtle);}
+.btn-ghost:hover{color:var(--nf-bark);}
+.btn-danger{background:transparent;color:#9C4848;border:1px solid rgba(156,72,72,0.35);}
+.btn-danger:hover{background:rgba(156,72,72,0.07);}
+.btn-moss{background:var(--nf-moss);color:var(--nf-cream);}
+.btn-moss:hover{background:#5a6a48;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-xs{padding:3px 8px;font-size:11px;}
+
+/* ── Tables ── */
+.nf-table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:var(--border-subtle);box-shadow:var(--shadow-soft);}
+.nf-table{width:100%;border-collapse:collapse;font-size:13px;}
+.nf-table th{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--nf-sand);background:var(--nf-linen);padding:10px 12px;text-align:left;border-bottom:var(--border-mid);white-space:nowrap;}
+.nf-table td{padding:8px 12px;border-bottom:var(--border-subtle);vertical-align:middle;}
+.nf-table tr:last-child td{border-bottom:none;}
+.nf-table tr:hover td{background:rgba(240,234,216,0.4);}
+.td-mono{font-family:var(--font-mono);font-size:12px;color:var(--nf-slate);}
+.td-num{text-align:right;font-family:var(--font-mono);font-size:12px;}
+.td-input{width:100%;font-family:var(--font-body);font-size:13px;font-weight:300;color:var(--nf-espresso);background:transparent;border:1px solid transparent;border-radius:var(--radius-sm);padding:4px 6px;outline:none;transition:border-color 0.15s;}
+.td-input:focus{border-color:var(--nf-undyed-wool);background:var(--nf-cream);}
+.td-input[readonly]{color:var(--nf-slate);cursor:default;}
+.nf-card{background:var(--nf-cream);border:var(--border-subtle);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-soft);}
+.section-divider{border:none;border-top:var(--border-subtle);margin:24px 0;}
+.tag{font-family:var(--font-body);font-size:11px;padding:2px 9px;border-radius:var(--radius-pill);display:inline-block;}
+.tag-unit{background:var(--nf-clay-light);color:var(--nf-clay);border:1px solid rgba(156,100,72,0.25);}
+.tag-lf{background:var(--nf-moss-light);color:var(--nf-moss);border:1px solid rgba(106,122,88,0.25);}
+.upload-zone{border:2px dashed var(--nf-undyed-wool);border-radius:var(--radius-lg);padding:40px 32px;text-align:center;cursor:pointer;transition:all 0.18s;background:var(--nf-linen);}
+.upload-zone:hover{border-color:var(--nf-jute);background:var(--nf-raw-cotton);}
+.upload-zone input[type=file]{display:none;}
+.split-view{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.panel-label{font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--nf-sand);margin-bottom:10px;}
+.alert{padding:12px 16px;border-radius:var(--radius-md);font-size:13px;margin-bottom:16px;display:flex;align-items:start;gap:10px;}
+.alert-info{background:rgba(212,219,200,0.4);border:1px solid rgba(106,122,88,0.3);color:var(--nf-moss);}
+.alert-warn{background:rgba(232,205,191,0.4);border:1px solid rgba(156,100,72,0.3);color:var(--nf-clay);}
+
+/* ── Stage 5 Detail Assignment ── */
+.s5-layout{display:grid;grid-template-columns:1fr 260px;gap:28px;align-items:start;}
+.s5-detail-list{display:flex;flex-direction:column;gap:8px;}
+.s5-detail-card{background:var(--nf-cream);border:var(--border-subtle);border-radius:var(--radius-md);padding:12px 14px;box-shadow:var(--shadow-soft);}
+.s5-detail-hdr{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.s5-detail-name{font-family:var(--font-mono);font-size:13px;font-weight:400;color:var(--nf-bark);}
+.s5-detail-meas{font-family:var(--font-mono);font-size:12px;color:var(--nf-slate);}
+.s5-slots{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+.s5-slot{background:var(--nf-linen);border:var(--border-subtle);border-radius:var(--radius-sm);padding:8px 10px;min-width:160px;position:relative;}
+.s5-slot-select{width:100%;font-family:var(--font-mono);font-size:12px;background:var(--nf-cream);border:var(--border-mid);border-radius:var(--radius-sm);padding:4px 6px;color:var(--nf-espresso);outline:none;margin-bottom:4px;}
+.s5-slot-meta{font-family:var(--font-mono);font-size:10px;color:var(--nf-jute);line-height:1.7;}
+.s5-slot-calcs{font-family:var(--font-mono);font-size:10px;color:var(--nf-slate);margin-top:2px;}
+.s5-slot-remove{position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:var(--nf-sand);font-size:12px;line-height:1;padding:2px 4px;}
+.s5-slot-remove:hover{color:#9C4848;}
+.mat-summary{background:var(--nf-linen);border:var(--border-subtle);border-radius:var(--radius-lg);padding:18px;position:sticky;top:20px;}
+.mat-summary-title{font-family:var(--font-display);font-size:17px;font-weight:400;color:var(--nf-bark);margin-bottom:12px;}
+.mat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:var(--border-subtle);}
+.mat-row:last-child{border-bottom:none;}
+.mat-sheets{font-family:var(--font-mono);font-size:14px;color:var(--nf-clay);}
+.mat-sub{font-family:var(--font-mono);font-size:10px;color:var(--nf-sand);}
+
+/* ── Stage 6 Screen View ── */
+.ofm-screen-cards{display:grid;gap:24px;}
+.ofm-screen-card{background:#fff;border:var(--border-mid);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lift);}
+.ofm-screen-card-hdr{background:var(--nf-bark);color:var(--nf-cream);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;}
+.ofm-screen-part-id{font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:0.04em;}
+.ofm-screen-card-body{padding:20px;}
+.ofm-screen-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.ofm-screen-field label{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--nf-sand);display:block;margin-bottom:4px;}
+.ofm-screen-val{font-size:13px;color:var(--nf-espresso);}
+.ofm-screen-input{font-family:var(--font-body);font-size:13px;color:var(--nf-espresso);background:var(--nf-linen);border:var(--border-mid);border-radius:var(--radius-sm);padding:6px 10px;width:100%;outline:none;}
+.ofm-screen-input:focus{border-color:var(--nf-jute);}
+.notch-bar{background:var(--nf-linen);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;}
+.notch-bar-label{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--nf-sand);}
+.notch-chk{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;}
+.notch-chk input{accent-color:var(--nf-bark);width:14px;height:14px;cursor:pointer;}
+.notch-num{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--nf-jute);}
+.notch-num input{width:60px;font-family:var(--font-mono);font-size:12px;background:var(--nf-cream);border:var(--border-mid);border-radius:var(--radius-sm);padding:3px 7px;outline:none;}
+
+/* ── Save/Load ── */
+.save-load-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+.sp-panel{background:var(--nf-linen);border:var(--border-subtle);border-radius:var(--radius-lg);padding:22px;}
+.sp-panel-title{font-family:var(--font-display);font-size:18px;font-weight:400;color:var(--nf-bark);margin-bottom:14px;}
+.auth-row{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.auth-dot{width:8px;height:8px;border-radius:50%;}
+.auth-dot.ok{background:var(--nf-moss);}
+.auth-dot.no{background:var(--nf-clay);}
+
+/* ═══════════════════════════════════
+   OFM PRINT SHEET  (matches image)
+═══════════════════════════════════ */
+.ofm-print-root{background:white;}
+.ofm-print-page{
+  background:white;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:11px;
+  color:#000;
+  break-after:page;
+  page-break-after:always;
+  border:2px solid #444;
+  display:flex;
+  flex-direction:column;
+}
+@media screen{
+  .ofm-print-root{padding:32px;max-width:880px;margin:0 auto;}
+  .ofm-print-page{margin-bottom:40px;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
+}
+/* Header table */
+.ofm-hdr-table{width:100%;border-collapse:collapse;border-bottom:1.5px solid #555;}
+.ofm-logo-cell{
+  background:#165E7A;
+  color:#fff;
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:0.06em;
+  text-align:center;
+  padding:10px 8px;
+  border-right:1.5px solid #555;
+  width:130px;
+}
+.ofm-hdr-title-cell{
+  font-size:14px;
+  font-weight:700;
+  text-align:center;
+  padding:6px 10px;
+  vertical-align:middle;
+}
+.ofm-hdr-date-cell{padding:6px 8px;white-space:nowrap;vertical-align:middle;}
+.ofm-hdr-page-cell{padding:6px 10px;text-align:right;white-space:nowrap;vertical-align:middle;}
+.ofm-hdr-info-cell{padding:3px 10px;vertical-align:middle;}
+.ofm-hdr-val{border-bottom:1px solid #aaa;display:inline-block;min-width:180px;padding-bottom:1px;}
+.ofm-hdr-right{text-align:right;}
+/* Body info section */
+.ofm-body-table{width:100%;border-collapse:collapse;border-bottom:1.5px solid #555;}
+.ofm-body-table td{padding:5px 10px;border:none;vertical-align:middle;}
+.ofm-material-cell{border-bottom:1px solid #ccc;border-right:1.5px solid #555;}
+.ofm-material-val{border-bottom:1px solid #aaa;display:inline-block;min-width:340px;}
+.ofm-partnum-cell{
+  border-left:1.5px solid #555;
+  text-align:center;
+  vertical-align:middle;
+  padding:0;
+}
+.ofm-partnum-header{
+  background:#165E7A;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-align:center;
+  padding:5px;
+  border-bottom:1px solid #ddd;
+}
+.ofm-partnum-value{
+  font-size:38px;
+  font-weight:900;
+  color:#000;
+  display:block;
+  text-align:center;
+  padding:8px 12px;
+}
+.ofm-mfg-cell{border-right:1px solid #ccc;border-bottom:1px solid #ccc;border-right:1.5px solid #555;}
+.ofm-qty-cell{border-bottom:1px solid #ccc;border-right:1.5px solid #555;}
+.ofm-notch-cell{padding:6px 10px;border-right:1.5px solid #555;}
+.notch-print-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:11px;}
+.notch-print-chk{display:inline-flex;align-items:center;gap:4px;}
+.notch-box{
+  width:14px;height:14px;border:1.5px solid #444;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;vertical-align:middle;
+}
+.notch-box.checked{background:#FFE066;border-color:#888;}
+.notch-box.checked::after{content:'✓';}
+.notch-input-line{border:none;border-bottom:1px solid #555;width:48px;background:transparent;font-size:11px;text-align:center;outline:none;}
+/* Main body */
+.ofm-main-area{display:flex;flex:1;min-height:320px;border-top:1px solid #ccc;}
+.ofm-drawing-area{
+  flex:3;
+  border-right:1.5px solid #555;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ccc;
+  font-size:10px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  flex-direction:column;
+  gap:8px;
+  padding:16px;
+}
+.ofm-zone-col{flex:1;min-width:130px;display:flex;flex-direction:column;}
+.ofm-zone-tbl{width:100%;border-collapse:collapse;flex:1;}
+.ofm-zone-tbl th{background:#e8e8e8;padding:4px 6px;text-align:center;border-bottom:1px solid #999;font-size:10px;font-weight:700;}
+.ofm-zone-tbl th:first-child{border-right:1px solid #ccc;}
+.ofm-zone-tbl td{padding:3px 6px;text-align:center;border-bottom:1px solid #eee;font-size:10px;color:#165E7A;}
+.ofm-zone-tbl td:first-child{border-right:1px solid #eee;}
+.ofm-zone-tbl tfoot td{background:#eee;font-weight:700;border-top:1px solid #999;font-size:10px;}
+/* Detail breakdown */
+.ofm-detail-section{border-top:1px solid #ddd;padding:6px 10px;}
+.ofm-detail-tbl{width:100%;border-collapse:collapse;font-size:10px;}
+.ofm-detail-tbl th{background:#f5f5f5;padding:3px 8px;text-align:left;border-bottom:1px solid #ccc;font-weight:700;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;}
+.ofm-detail-tbl td{padding:2px 8px;border-bottom:1px solid #f0f0f0;color:#165E7A;}
+/* Footer */
+.ofm-sheet-footer{
+  border-top:1.5px solid #555;
+  padding:8px 10px;
+  text-align:center;
+  font-size:13px;
+  font-weight:700;
+}
+
+/* ── Summary/Assignments print pages ── */
+.print-summary-page{
+  background:white;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:11px;
+  color:#000;
+  break-after:page;
+  page-break-after:always;
+  border:2px solid #444;
+  padding:24px;
+}
+@media screen{
+  .print-summary-page{margin-bottom:40px;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
+}
+.print-page-title{font-size:16px;font-weight:700;margin-bottom:16px;border-bottom:2px solid #165E7A;padding-bottom:6px;color:#165E7A;}
+.print-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.print-tbl th{background:#165E7A;color:white;padding:5px 10px;text-align:left;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;}
+.print-tbl td{padding:4px 10px;border-bottom:1px solid #eee;}
+.print-tbl tr:nth-child(even) td{background:#f8f8f8;}
+.print-tbl tfoot td{background:#e8e8e8;font-weight:700;border-top:1px solid #999;}
+
+/* ── @media print ── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body{margin:0;padding:0;background:white;}
+  .ofm-print-root{padding:0;}
+}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .s5-layout,.split-view,.save-load-grid,.form-grid{grid-template-columns:1fr;}
+  .stage-content{padding:24px 16px;}
+  .ofm-screen-row{grid-template-columns:1fr 1fr;}
+}
+/* ── Drawing Canvas ── */
+.draw-wrap{margin-top:12px;border-top:var(--border-subtle);padding-top:10px;}
+.draw-toolbar{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:7px 10px;background:var(--nf-linen);border-radius:var(--radius-md);border:var(--border-subtle);margin-bottom:6px;}
+.draw-sep{width:1px;height:18px;background:var(--nf-raw-cotton);margin:0 3px;flex-shrink:0;}
+.draw-canvas-row{display:flex;gap:8px;align-items:flex-start;}
+.draw-marks{width:120px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;}
+.draw-mark-item{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--nf-jute);text-transform:uppercase;border:1px solid transparent;}
+.draw-mark-item.sel{background:var(--nf-linen);border-color:var(--nf-undyed-wool);}
+.draw-mark-item button{background:none;border:none;cursor:pointer;color:var(--nf-sand);font-size:11px;padding:0 2px;line-height:1;}
+.draw-mark-item button:hover{color:#9C4848;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+/* ─── HELPERS ──────────────────────────────── */
+const lsGet = (k,d) => { try { const v = localStorage.getItem(k); return v!==null ? JSON.parse(v) : d; } catch { return d; } };
+const lsSet = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const mathCeil  = (v,f) => f > 0 ? Math.ceil(v/f)*f : v;
+const roundUp   = v => Math.ceil(v);
+const roundDown = v => Math.floor(v);
+const genId     = () => Math.random().toString(36).slice(2,9).toUpperCase();
+
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase().trim());
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; }
+      else if (line[i] === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else { cur += line[i]; }
+    }
+    vals.push(cur.trim());
+    const row = {};
+    headers.forEach((h,i) => { row[h] = (vals[i]||'').replace(/^"|"$/g,''); });
+    return row;
+  }).filter(r => Object.values(r).some(v=>v.trim()));
+}
+
+function computePivot(rawRows, rounding) {
+  const map = {};
+  rawRows.forEach(r => {
+    const detail  = (r.detail || '').trim();
+    const area    = (r.area   || '').trim();
+    const meas    = parseFloat(r.measurement || 0) || 0;
+    const count   = parseInt(r.count || 0) || 0;
+    if (!detail) return;
+    if (!map[detail]) map[detail] = { detail, measurement:0, count:0, areas:new Set() };
+    if (count > 0) {
+      map[detail].count += count;
+    } else {
+      map[detail].measurement += mathCeil(meas, rounding||10);
+    }
+    if (area) map[detail].areas.add(area);
+  });
+  return Object.values(map).map(r => ({
+    detail: r.detail,
+    measurement: r.measurement,
+    count: r.count,
+    isUnit: r.count > 0,
+    areas: [...r.areas],
+  })).sort((a,b) => a.detail.localeCompare(b.detail, undefined, {numeric:true}));
+}
+
+function computeSticks(da, material, part) {
+  if (!material || !part) return {sticks:0,pps:0,sheets:0};
+  const length = parseFloat(material.length) || 1;
+  const width  = parseFloat(material.width)  || 0;
+  const so     = parseFloat(part.stretchout) || 1;
+  const sticks = da.isUnit ? (da.count || 1) : roundUp((da.measurement||0) / length);
+  const pps    = roundDown((width * 12) / so);
+  const sheets = pps > 0 ? roundUp(sticks / pps) : 0;
+  return {sticks, pps, sheets};
+}
+
+// Compute OFM by Area from raw bluebeam + assignments (matches VBA logic)
+function computeOFMbyArea(bluebeamData, detailAssignments, settings) {
+  const map = {};
+  bluebeamData.forEach(r => {
+    const area   = (r.area   || '').trim();
+    const detail = (r.detail || '').trim();
+    const meas   = parseFloat(r.measurement || 0) || 0;
+    const count  = parseInt(r.count || 0) || 0;
+    const rounded = count > 0 ? count : mathCeil(meas, settings.materialRounding || 10);
+    const da = detailAssignments.find(d => d.detail === detail);
+    if (!da) return;
+    da.ofms.forEach(slot => {
+      if (!slot.ofmId) return;
+      const key = `${slot.ofmId}|||${area}`;
+      map[key] = (map[key]||0) + rounded;
+    });
+  });
+  return Object.entries(map).map(([key,total]) => {
+    const [ofmId, area] = key.split('|||');
+    return {ofmId, area, total};
+  }).sort((a,b) => a.ofmId.localeCompare(b.ofmId) || a.area.localeCompare(b.area, undefined, {numeric:true}));
+}
+
+function getNoteVal(notes, field) {
+  if (field === 'notch4' && notes[field] === undefined) return true;
+  return notes[field] ?? (field === 'notch4' ? true : '');
+}
+
+/* ─── INITIAL STATE ─────────────────────────── */
+const INIT_STATE = {
+  job: { jobName:'', jobNumber:'', address:'', foreman:'', date:new Date().toISOString().slice(0,10) },
+  settings: { materialRounding:10 },
+  bluebeamData: [],
+  pivotData: [],
+  materials: [],
+  ofmParts: [],
+  detailAssignments: [],
+  ofmSheetNotes: {},
+};
+
+const STAGES = [
+  {id:1,label:'Job Setup'},
+  {id:2,label:'Bluebeam Import'},
+  {id:3,label:'Materials'},
+  {id:4,label:'OFM Parts'},
+  {id:5,label:'Detail Assignment'},
+  {id:6,label:'OFM Output'},
+  {id:7,label:'Save / Load'},
+];
+
+/* ═══════════════════════════════════════════════
+   PRINT COMPONENTS
+═══════════════════════════════════════════════ */
+
+function NotchPrint({ notes }) {
+  const n4   = getNoteVal(notes,'notch4');
+  const n2q  = getNoteVal(notes,'notch2quarter');
+  const tap  = getNoteVal(notes,'taperToLap');
+  const none = getNoteVal(notes,'none');
+  const left = getNoteVal(notes,'left');
+  const right= getNoteVal(notes,'right');
+  return (
+    <div className="notch-print-row">
+      <strong>Notch:</strong>
+      <span className="notch-print-chk">
+        <span className={`notch-box${n4?' checked':''}`}></span> 4"
+      </span>
+      <span className="notch-print-chk">
+        <span className={`notch-box${n2q?' checked':''}`}></span> 2-1/4"
+      </span>
+      <span>Left <input className="notch-input-line" readOnly value={left||''} /></span>
+      <span>Right <input className="notch-input-line" readOnly value={right||''} /></span>
+      <span className="notch-print-chk">
+        <span className={`notch-box${tap?' checked':''}`}></span> Taper to Lap
+      </span>
+      <span className="notch-print-chk">
+        <span className={`notch-box${none?' checked':''}`}></span> None
+      </span>
+    </div>
+  );
+}
+
+function PrintOFMCard({ part, mat, zones, details, notes, pageNum, totalPages, job, manufacture }) {
+  const isUnit = details.some(d => d.isUnit);
+  const qtyLabel = isUnit ? 'ea' : 'LF';
+  const totalQty = zones.reduce((s,z) => s+z.total, 0);
+  return (
+    <div className="ofm-print-page">
+      {/* ── Header ── */}
+      <table className="ofm-hdr-table">
+        <colgroup>
+          <col style={{width:130}} />
+          <col />
+          <col style={{width:160}} />
+          <col style={{width:90}} />
+        </colgroup>
+        <tbody>
+          <tr>
+            <td className="ofm-logo-cell" rowSpan={4}>
+              <div>NORTHSHORE</div>
+            </td>
+            <td className="ofm-hdr-title-cell"><strong>Order for Manufacture</strong></td>
+            <td className="ofm-hdr-date-cell">Date: &nbsp;<strong>{job.date}</strong></td>
+            <td className="ofm-hdr-page-cell">Page: &nbsp;<strong>{pageNum}</strong></td>
+          </tr>
+          <tr>
+            <td className="ofm-hdr-info-cell">
+              Job Name: &nbsp;<span className="ofm-hdr-val">{job.jobName}</span>
+            </td>
+            <td colSpan={2} className="ofm-hdr-right" style={{padding:'3px 10px',verticalAlign:'middle'}}>
+              Job Number: &nbsp;<strong>{job.jobNumber}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td className="ofm-hdr-info-cell" colSpan={3}>
+              Address: &nbsp;<span className="ofm-hdr-val" style={{minWidth:300}}>{job.address}</span>
+            </td>
+          </tr>
+          <tr>
+            <td className="ofm-hdr-info-cell" colSpan={3}>
+              Foreman: &nbsp;<span className="ofm-hdr-val">{job.foreman}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* ── Body Info ── */}
+      <table className="ofm-body-table">
+        <colgroup>
+          <col style={{width:'35%'}} />
+          <col style={{width:'35%'}} />
+          <col style={{width:130}} />
+        </colgroup>
+        <tbody>
+          <tr>
+            <td className="ofm-material-cell" colSpan={2} style={{padding:'5px 10px'}}>
+              Material: &nbsp;<span className="ofm-material-val">{mat ? `[${mat.id}] ${mat.description}` : '—'}</span>
+            </td>
+            <td className="ofm-partnum-cell" rowSpan={3}>
+              <div className="ofm-partnum-header">Part Number</div>
+              <span className="ofm-partnum-value">{part.id}</span>
+            </td>
+          </tr>
+          <tr>
+            <td className="ofm-mfg-cell" style={{padding:'5px 10px'}}>
+              Manufacture: &nbsp;<span className="ofm-hdr-val" style={{minWidth:180}}>{manufacture||''}</span>
+            </td>
+            <td className="ofm-qty-cell" style={{padding:'5px 10px'}}>
+              Quantity: &nbsp;<strong>{totalQty} {qtyLabel}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td className="ofm-notch-cell" colSpan={2}>
+              <NotchPrint notes={notes} />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* ── Main: Drawing + Zones ── */}
+      <div className="ofm-main-area">
+        <div className="ofm-drawing-area" style={{padding:0,overflow:'hidden'}}>
+          <DrawingView drawing={notes.drawing} />
+        </div>
+        <div className="ofm-zone-col">
+          <table className="ofm-zone-tbl">
+            <thead>
+              <tr><th>Zone</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+              {zones.map((z,i) => (
+                <tr key={i}>
+                  <td>{z.area}</td>
+                  <td>{z.total}</td>
+                </tr>
+              ))}
+              {/* Empty rows to fill space like the Excel template */}
+              {Array(Math.max(0, 20 - zones.length)).fill(0).map((_,i) => (
+                <tr key={`e${i}`}><td>&nbsp;</td><td>&nbsp;</td></tr>
+              ))}
+            </tbody>
+            {zones.length > 0 && (
+              <tfoot>
+                <tr><td>Total</td><td>{totalQty}</td></tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+
+      {/* ── Detail Breakdown ── */}
+      {details.length > 0 && (
+        <div className="ofm-detail-section">
+          <table className="ofm-detail-tbl">
+            <thead>
+              <tr>
+                <th>Detail</th>
+                <th>Measurement</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {details.map((d,i) => (
+                <tr key={i}>
+                  <td>{d.detail}</td>
+                  <td>{d.isUnit ? `${d.count} ea` : `${d.measurement} LF`}</td>
+                  <td>{d.isUnit ? 'Unit' : 'LF'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ── Footer ── */}
+      <div className="ofm-sheet-footer">{part.label}</div>
+    </div>
+  );
+}
+
+function PrintSummaryPage({ state }) {
+  const { bluebeamData, detailAssignments, settings, ofmParts, job } = state;
+  const rows = useMemo(() =>
+    computeOFMbyArea(bluebeamData, detailAssignments, settings),
+    [bluebeamData, detailAssignments, settings]
+  );
+  const getName = id => { const p = ofmParts.find(p=>p.id===id); return p ? p.label : id; };
+  return (
+    <div className="print-summary-page">
+      <div style={{marginBottom:8,fontSize:11,color:'#555'}}>
+        {job.jobName} · #{job.jobNumber} · {job.date}
+      </div>
+      <div className="print-page-title">OFM by Area Summary</div>
+      <table className="print-tbl">
+        <thead>
+          <tr><th>OFM Part</th><th>Description</th><th>Area / Zone</th><th style={{textAlign:'right'}}>Total LF / Qty</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((r,i) => (
+            <tr key={i}>
+              <td><strong>{r.ofmId}</strong></td>
+              <td>{getName(r.ofmId)}</td>
+              <td>{r.area}</td>
+              <td style={{textAlign:'right'}}>{r.total}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PrintAssignmentsPage({ state }) {
+  const { detailAssignments, ofmParts, job } = state;
+  const sorted = useMemo(() =>
+    [...detailAssignments].sort((a,b) =>
+      a.detail.localeCompare(b.detail, undefined, {numeric:true})),
+    [detailAssignments]
+  );
+  const getPartName = id => { const p = ofmParts.find(p=>p.id===id); return p ? p.id : ''; };
+  return (
+    <div className="print-summary-page">
+      <div style={{marginBottom:8,fontSize:11,color:'#555'}}>
+        {job.jobName} · #{job.jobNumber} · {job.date}
+      </div>
+      <div className="print-page-title">OFM Detail Assignments</div>
+      <table className="print-tbl">
+        <thead>
+          <tr>
+            <th>Detail</th>
+            <th>Measurement</th>
+            <th>Type</th>
+            <th>OFM Parts Assigned</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((da,i) => {
+            const assigned = da.ofms.filter(s=>s.ofmId).map(s=>s.ofmId);
+            return (
+              <tr key={i}>
+                <td><strong>{da.detail}</strong></td>
+                <td>{da.isUnit ? `${da.count} ea` : `${da.measurement} LF`}</td>
+                <td>{da.isUnit ? 'Unit' : 'LF'}</td>
+                <td>{assigned.length > 0 ? assigned.join(', ') : <em style={{color:'#999'}}>None</em>}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PrintRoot({ state, printTarget }) {
+  const { ofmParts, detailAssignments, materials, job, ofmSheetNotes, bluebeamData, settings } = state;
+
+  const ofmAreaData = useMemo(() =>
+    computeOFMbyArea(bluebeamData, detailAssignments, settings),
+    [bluebeamData, detailAssignments, settings]
+  );
+
+  const buildSheets = () => {
+    return ofmParts.map((part, idx) => {
+      const mat = materials.find(m => m.id === part.materialId) || null;
+      const zones = ofmAreaData.filter(r => r.ofmId === part.id);
+      const details = detailAssignments.filter(da =>
+        da.ofms.some(s => s.ofmId === part.id)
+      );
+      const notes = ofmSheetNotes[part.id] || {};
+      return { part, mat, zones, details, notes, pageNum: idx+1 };
+    });
+  };
+
+  const sheets = buildSheets();
+  const totalOFMPages = ofmParts.length;
+
+  if (printTarget === 'summary') {
+    return (
+      <div className="ofm-print-root">
+        <PrintSummaryPage state={state} />
+        <PrintAssignmentsPage state={state} />
+      </div>
+    );
+  }
+
+  if (printTarget && printTarget !== 'all') {
+    // single card
+    const sh = sheets.find(s => s.part.id === printTarget);
+    if (!sh) return <div>Part not found</div>;
+    return (
+      <div className="ofm-print-root">
+        <PrintOFMCard {...sh} totalPages={totalOFMPages}
+          job={job} manufacture={sh.notes.manufacture||''} />
+      </div>
+    );
+  }
+
+  // 'all'
+  return (
+    <div className="ofm-print-root">
+      <PrintSummaryPage state={state} />
+      <PrintAssignmentsPage state={state} />
+      {sheets.map(sh => (
+        <PrintOFMCard key={sh.part.id} {...sh} totalPages={totalOFMPages}
+          job={job} manufacture={sh.notes.manufacture||''} />
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 1 — JOB SETUP
+═══════════════════════════════════════════════ */
+function Stage1({ state, setState }) {
+  const { job, settings } = state;
+  const setJob = (k,v) => setState(s=>({...s, job:{...s.job,[k]:v}}));
+  const setSetting = (k,v) => setState(s=>({...s, settings:{...s.settings,[k]:v}}));
+  const loadRef = useRef();
+
+  const loadJSON = (file) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const loaded = JSON.parse(e.target.result);
+        setState(loaded);
+      } catch { alert('Invalid JSON file.'); }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div>
+      <h2 className="stage-title">Job Setup</h2>
+      <p className="stage-subtitle">Stage 01 — Project information</p>
+      <div style={{marginBottom:20,display:'flex',gap:10}}>
+        <button className="btn btn-ghost btn-sm" onClick={()=>loadRef.current.click()}>
+          ↑ Load Saved JSON
+        </button>
+        <input ref={loadRef} type="file" accept=".json" style={{display:'none'}}
+          onChange={e=>{if(e.target.files[0])loadJSON(e.target.files[0]);}} />
+      </div>
+      <div className="nf-card">
+        <div className="form-grid">
+          <div className="field-group">
+            <label className="field-label">Job Name</label>
+            <input className="nf-input" value={job.jobName} onChange={e=>setJob('jobName',e.target.value)} placeholder="e.g. Fircrest Nursing Facility" />
+          </div>
+          <div className="field-group">
+            <label className="field-label">Job Number</label>
+            <input className="nf-input" value={job.jobNumber} onChange={e=>setJob('jobNumber',e.target.value)} placeholder="e.g. 6603" />
+          </div>
+          <div className="field-group form-grid-full">
+            <label className="field-label">Address</label>
+            <input className="nf-input" value={job.address} onChange={e=>setJob('address',e.target.value)} placeholder="Site address" />
+          </div>
+          <div className="field-group">
+            <label className="field-label">Foreman</label>
+            <input className="nf-input" value={job.foreman} onChange={e=>setJob('foreman',e.target.value)} placeholder="Foreman name" />
+          </div>
+          <div className="field-group">
+            <label className="field-label">Date</label>
+            <input className="nf-input" type="date" value={job.date} onChange={e=>setJob('date',e.target.value)} />
+          </div>
+        </div>
+        <hr className="section-divider" />
+        <div style={{maxWidth:360}}>
+          <div className="field-group">
+            <label className="field-label">Material Rounding Factor (LF)</label>
+            <input className="nf-input" type="number" min="1" value={settings.materialRounding}
+              onChange={e=>setSetting('materialRounding',parseInt(e.target.value)||10)} />
+            <div style={{fontSize:12,color:'var(--nf-sand)',marginTop:6,fontFamily:'var(--font-mono)'}}>
+              Applied as: CEILING(raw ÷ {settings.materialRounding}) × {settings.materialRounding}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 2 — BLUEBEAM IMPORT
+═══════════════════════════════════════════════ */
+function Stage2({ state, setState }) {
+  const [drag, setDrag] = useState(false);
+  const fileRef = useRef();
+
+  const processFile = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const raw = parseCSV(e.target.result);
+      const pivot = computePivot(raw, state.settings.materialRounding);
+      // Merge: keep existing assignments, add new details, update measurements
+      setState(s => {
+        const existing = {};
+        s.detailAssignments.forEach(da => { existing[da.detail] = da; });
+        const newDas = pivot.map(p => {
+          if (existing[p.detail]) {
+            return {
+              ...existing[p.detail],
+              measurement: p.measurement,
+              count: p.count,
+              isUnit: p.isUnit,
+              areas: p.areas,
+            };
+          }
+          return {
+            id: genId(),
+            detail: p.detail,
+            measurement: p.measurement,
+            count: p.count,
+            isUnit: p.isUnit,
+            areas: p.areas,
+            ofms: [],
+          };
+        });
+        return { ...s, bluebeamData: raw, pivotData: pivot, detailAssignments: newDas };
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  const clearData = () => {
+    if (!confirm('Clear all imported data? Existing detail assignments will be removed.')) return;
+    setState(s => ({ ...s, bluebeamData:[], pivotData:[], detailAssignments:[] }));
+  };
+
+  const updateRaw = (i, field, val) => {
+    setState(s => {
+      const rows = [...s.bluebeamData];
+      rows[i] = { ...rows[i], [field]: val };
+      const pivot = computePivot(rows, s.settings.materialRounding);
+      const existing = {};
+      s.detailAssignments.forEach(da => { existing[da.detail] = da; });
+      const newDas = pivot.map(p => existing[p.detail]
+        ? { ...existing[p.detail], measurement:p.measurement, count:p.count, isUnit:p.isUnit, areas:p.areas }
+        : { id:genId(), detail:p.detail, measurement:p.measurement, count:p.count, isUnit:p.isUnit, areas:p.areas, ofms:[] }
+      );
+      return { ...s, bluebeamData:rows, pivotData:pivot, detailAssignments:newDas };
+    });
+  };
+
+  const addRawRow = () => {
+    setState(s => ({ ...s, bluebeamData:[...s.bluebeamData, {area:'',detail:'',measurement:'',count:''}] }));
+  };
+
+  return (
+    <div>
+      <h2 className="stage-title">Bluebeam Import</h2>
+      <p className="stage-subtitle">Stage 02 — CSV upload · auto-pivot by detail · all cells editable</p>
+
+      <div
+        className="upload-zone"
+        style={drag ? {borderColor:'var(--nf-jute)'} : {}}
+        onDragOver={e=>{e.preventDefault();setDrag(true);}}
+        onDragLeave={()=>setDrag(false)}
+        onDrop={e=>{e.preventDefault();setDrag(false);processFile(e.dataTransfer.files[0]);}}
+        onClick={()=>fileRef.current.click()}>
+        <input ref={fileRef} type="file" accept=".csv" onChange={e=>processFile(e.target.files[0])} />
+        <div style={{fontSize:28,marginBottom:8,opacity:0.5}}>⬆</div>
+        <div style={{fontFamily:'var(--font-mono)',fontSize:11,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--nf-jute)'}}>
+          Drop CSV or click to browse
+        </div>
+        <div style={{fontSize:12,color:'var(--nf-sand)',fontFamily:'var(--font-mono)',marginTop:6}}>
+          Columns: Area, Detail, Measurement, Count
+        </div>
+      </div>
+
+      {state.bluebeamData.length > 0 && (
+        <>
+          <div style={{display:'flex',gap:10,marginTop:20,marginBottom:8}}>
+            <button className="btn btn-ghost btn-sm" onClick={addRawRow}>+ Add Row</button>
+            <button className="btn btn-danger btn-sm" onClick={clearData}>✕ Clear All</button>
+            <span style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--nf-sand)',alignSelf:'center'}}>
+              {state.bluebeamData.length} rows · pivot auto-updates on edit
+            </span>
+          </div>
+          <div className="split-view">
+            <div>
+              <div className="panel-label">Raw Import (editable)</div>
+              <div className="nf-table-wrap" style={{maxHeight:460,overflowY:'auto'}}>
+                <table className="nf-table">
+                  <thead><tr><th>Area</th><th>Detail</th><th>Measurement</th><th>Count</th></tr></thead>
+                  <tbody>
+                    {state.bluebeamData.map((r,i) => (
+                      <tr key={i}>
+                        <td><input className="td-input" value={r.area||''} onChange={e=>updateRaw(i,'area',e.target.value)} /></td>
+                        <td><input className="td-input" value={r.detail||''} onChange={e=>updateRaw(i,'detail',e.target.value)} /></td>
+                        <td><input className="td-input" type="number" style={{width:90}} value={r.measurement||''} onChange={e=>updateRaw(i,'measurement',e.target.value)} /></td>
+                        <td><input className="td-input" type="number" style={{width:70}} value={r.count||''} onChange={e=>updateRaw(i,'count',e.target.value)} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div className="panel-label">Pivot by Detail ({state.pivotData.length} unique)</div>
+              <div className="nf-table-wrap" style={{maxHeight:460,overflowY:'auto'}}>
+                <table className="nf-table">
+                  <thead><tr><th>Detail</th><th>Measurement</th><th>Count</th><th>Type</th></tr></thead>
+                  <tbody>
+                    {state.pivotData.map((r,i) => (
+                      <tr key={i}>
+                        <td className="td-mono">{r.detail}</td>
+                        <td className="td-num">{r.measurement > 0 ? `${r.measurement} LF` : '—'}</td>
+                        <td className="td-num">{r.count > 0 ? r.count : '—'}</td>
+                        <td><span className={`tag ${r.isUnit?'tag-unit':'tag-lf'}`}>{r.isUnit?'Unit':'LF'}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {state.bluebeamData.length === 0 && (
+        <div className="alert alert-info" style={{marginTop:20}}>
+          <span>ℹ</span>
+          <span>No data yet. Rows with Count &gt; 0 are treated as unit quantities. Re-importing preserves existing detail assignments.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 3 — MATERIALS
+═══════════════════════════════════════════════ */
+function Stage3({ state, setState }) {
+  const { materials, ofmParts, detailAssignments } = state;
+
+  const addRow = () => setState(s => ({
+    ...s,
+    materials: [...s.materials, {
+      id: 'M' + String(s.materials.length+1).padStart(2,'0'),
+      description: '',
+      width: '4',
+      length: '10',
+    }]
+  }));
+
+  const removeRow = idx => setState(s => ({ ...s, materials: s.materials.filter((_,i)=>i!==idx) }));
+
+  const update = (idx,field,val) => setState(s => {
+    const m = [...s.materials];
+    m[idx] = { ...m[idx], [field]:val };
+    return { ...s, materials:m };
+  });
+
+  const matSummary = useMemo(() => {
+    const map = {};
+    detailAssignments.forEach(da => {
+      da.ofms.forEach(slot => {
+        if (!slot.ofmId) return;
+        const part = ofmParts.find(p=>p.id===slot.ofmId);
+        if (!part) return;
+        const mat = materials.find(m=>m.id===part.materialId);
+        if (!mat) return;
+        const { sticks, pps, sheets } = computeSticks(da, mat, part);
+        if (!map[mat.id]) map[mat.id] = { sticks:0, sheets:0 };
+        map[mat.id].sticks += sticks;
+        map[mat.id].sheets += sheets;
+      });
+    });
+    return map;
+  }, [detailAssignments, ofmParts, materials]);
+
+  return (
+    <div>
+      <h2 className="stage-title">Materials</h2>
+      <p className="stage-subtitle">Stage 03 — Sheet stock · defaults 4ft × 10ft</p>
+      <div style={{marginBottom:14}}>
+        <button className="btn btn-secondary" onClick={addRow}>+ Add Material</button>
+      </div>
+      <div className="nf-table-wrap">
+        <table className="nf-table">
+          <thead><tr>
+            <th>ID</th><th>Description</th><th>Width (ft)</th><th>Length (ft)</th>
+            <th>Total Sticks</th><th>Total Sheets</th><th style={{width:44}}></th>
+          </tr></thead>
+          <tbody>
+            {materials.length === 0 && (
+              <tr><td colSpan={7} style={{textAlign:'center',color:'var(--nf-sand)',fontFamily:'var(--font-mono)',fontSize:12,padding:'24px'}}>
+                No materials. Add one above.
+              </td></tr>
+            )}
+            {materials.map((m,i) => {
+              const s = matSummary[m.id] || {sticks:0,sheets:0};
+              return (
+                <tr key={i}>
+                  <td><input className="td-input" style={{width:68}} value={m.id} onChange={e=>update(i,'id',e.target.value)} /></td>
+                  <td><input className="td-input" value={m.description} onChange={e=>update(i,'description',e.target.value)} placeholder='e.g. Galv 26ga 36"' /></td>
+                  <td><input className="td-input" type="number" style={{width:72}} min="0" step="0.25" value={m.width} onChange={e=>update(i,'width',e.target.value)} /></td>
+                  <td><input className="td-input" type="number" style={{width:72}} min="0" step="0.5" value={m.length} onChange={e=>update(i,'length',e.target.value)} /></td>
+                  <td className="td-num">{s.sticks > 0 ? s.sticks : '—'}</td>
+                  <td className="td-num" style={{color:'var(--nf-clay)',fontWeight:400}}>{s.sheets > 0 ? s.sheets : '—'}</td>
+                  <td><button className="btn btn-danger btn-sm" onClick={()=>removeRow(i)}>✕</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 4 — OFM PARTS
+═══════════════════════════════════════════════ */
+function Stage4({ state, setState }) {
+  const { ofmParts, materials } = state;
+  const newRowRef = useRef(null);
+
+  const addRow = () => {
+    setState(s => ({
+      ...s,
+      ofmParts: [...s.ofmParts, {
+        id: 'F' + String(s.ofmParts.length+1).padStart(2,'0'),
+        label:'', stretchout:'', materialId:''
+      }]
+    }));
+    setTimeout(() => { if (newRowRef.current) newRowRef.current.focus(); }, 50);
+  };
+
+  const removeRow = idx => setState(s => ({ ...s, ofmParts:s.ofmParts.filter((_,i)=>i!==idx) }));
+
+  const update = (idx,field,val) => setState(s => {
+    const p = [...s.ofmParts];
+    p[idx] = { ...p[idx], [field]:val };
+    return { ...s, ofmParts:p };
+  });
+
+  // Enter key on last row adds a new row
+  const handleKeyDown = (e, isLast) => {
+    if (e.key === 'Enter' && isLast) { e.preventDefault(); addRow(); }
+  };
+
+  useEffect(() => {
+    const handler = (e) => { if (e.altKey && e.key === 'n') { e.preventDefault(); addRow(); } };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [ofmParts.length]);
+
+  return (
+    <div>
+      <h2 className="stage-title">OFM Parts</h2>
+      <p className="stage-subtitle">Stage 04 — Part catalog · Alt+N to add · Enter to advance</p>
+      <div style={{marginBottom:14,display:'flex',gap:10,alignItems:'center'}}>
+        <button className="btn btn-secondary" onClick={addRow}>+ Add OFM Part</button>
+        <span style={{fontSize:12,color:'var(--nf-sand)',fontFamily:'var(--font-mono)'}}>Alt+N</span>
+      </div>
+      <div className="nf-table-wrap">
+        <table className="nf-table">
+          <thead><tr>
+            <th>Part ID</th><th>Label / Description</th><th>Stretchout (in)</th><th>Material</th><th style={{width:44}}></th>
+          </tr></thead>
+          <tbody>
+            {ofmParts.length === 0 && (
+              <tr><td colSpan={5} style={{textAlign:'center',color:'var(--nf-sand)',fontFamily:'var(--font-mono)',fontSize:12,padding:'24px'}}>
+                No OFM parts. Add one above.
+              </td></tr>
+            )}
+            {ofmParts.map((p,i) => {
+              const isLast = i === ofmParts.length - 1;
+              return (
+                <tr key={i}>
+                  <td>
+                    <input className="td-input"
+                      ref={isLast ? newRowRef : null}
+                      style={{width:76,fontFamily:'var(--font-mono)',textTransform:'uppercase'}}
+                      value={p.id}
+                      onChange={e=>update(i,'id',e.target.value.toUpperCase())}
+                      onKeyDown={e=>handleKeyDown(e,isLast)}
+                      placeholder="F01" />
+                  </td>
+                  <td>
+                    <input className="td-input" value={p.label}
+                      onChange={e=>update(i,'label',e.target.value)}
+                      onKeyDown={e=>handleKeyDown(e,isLast)}
+                      placeholder="Counter Flashing" />
+                  </td>
+                  <td>
+                    <input className="td-input" type="number" style={{width:90}} min="0" step="0.25"
+                      value={p.stretchout}
+                      onChange={e=>update(i,'stretchout',e.target.value)}
+                      onKeyDown={e=>handleKeyDown(e,isLast)}
+                      placeholder="8.5" />
+                  </td>
+                  <td>
+                    <select className="nf-select" value={p.materialId}
+                      onChange={e=>update(i,'materialId',e.target.value)}>
+                      <option value="">— Select Material —</option>
+                      {materials.map(m => <option key={m.id} value={m.id}>{m.id} — {m.description}</option>)}
+                    </select>
+                  </td>
+                  <td><button className="btn btn-danger btn-sm" onClick={()=>removeRow(i)}>✕</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 5 — DETAIL ASSIGNMENT
+═══════════════════════════════════════════════ */
+function Stage5({ state, setState }) {
+  const { detailAssignments, ofmParts, materials, pivotData } = state;
+
+  // Sync detailAssignments rows with pivotData when pivotData changes
+  useEffect(() => {
+    if (pivotData.length === 0) return;
+    setState(s => {
+      const existingMap = {};
+      s.detailAssignments.forEach(da => { existingMap[da.detail] = da; });
+      const merged = pivotData.map(p => existingMap[p.detail]
+        ? { ...existingMap[p.detail], measurement:p.measurement, count:p.count, isUnit:p.isUnit, areas:p.areas }
+        : { id:genId(), detail:p.detail, measurement:p.measurement, count:p.count, isUnit:p.isUnit, areas:p.areas, ofms:[] }
+      );
+      return { ...s, detailAssignments: merged };
+    });
+  }, [pivotData]);
+
+  const addSlot = (daIdx) => {
+    setState(s => {
+      const das = s.detailAssignments.map((da,i) =>
+        i !== daIdx ? da : { ...da, ofms:[...da.ofms, {id:genId(), ofmId:''}] }
+      );
+      return { ...s, detailAssignments:das };
+    });
+  };
+
+  const removeSlot = (daIdx, slotIdx) => {
+    setState(s => {
+      const das = s.detailAssignments.map((da,i) =>
+        i !== daIdx ? da : { ...da, ofms:da.ofms.filter((_,j)=>j!==slotIdx) }
+      );
+      return { ...s, detailAssignments:das };
+    });
+  };
+
+  const updateSlot = (daIdx, slotIdx, ofmId) => {
+    setState(s => {
+      const das = s.detailAssignments.map((da,i) =>
+        i !== daIdx ? da : { ...da, ofms:da.ofms.map((slot,j)=>j!==slotIdx ? slot : {...slot,ofmId}) }
+      );
+      return { ...s, detailAssignments:das };
+    });
+  };
+
+  const matSummary = useMemo(() => {
+    const map = {};
+    detailAssignments.forEach(da => {
+      da.ofms.forEach(slot => {
+        if (!slot.ofmId) return;
+        const part = ofmParts.find(p=>p.id===slot.ofmId);
+        if (!part) return;
+        const mat = materials.find(m=>m.id===part.materialId);
+        if (!mat) return;
+        const { sheets } = computeSticks(da, mat, part);
+        if (!map[mat.id]) map[mat.id] = { mat, sheets:0 };
+        map[mat.id].sheets += sheets;
+      });
+    });
+    return Object.values(map);
+  }, [detailAssignments, ofmParts, materials]);
+
+  const sorted = useMemo(() =>
+    detailAssignments.map((da,i) => ({ ...da, _idx:i }))
+      .sort((a,b) => a.detail.localeCompare(b.detail, undefined, {numeric:true})),
+    [detailAssignments]
+  );
+
+  if (pivotData.length === 0) {
+    return (
+      <div>
+        <h2 className="stage-title">Detail Assignment</h2>
+        <p className="stage-subtitle">Stage 05 — Assign OFM parts to each detail</p>
+        <div className="alert alert-warn"><span>⚠</span><span>Import a CSV in Stage 2 first.</span></div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="stage-title">Detail Assignment</h2>
+      <p className="stage-subtitle">Stage 05 — {sorted.length} details · sorted A→Z</p>
+      <div className="s5-layout">
+        <div className="s5-detail-list">
+          {sorted.map((da) => {
+            const daIdx = da._idx;
+            return (
+              <div className="s5-detail-card" key={da.id || da.detail}>
+                <div className="s5-detail-hdr">
+                  <span className="s5-detail-name">{da.detail}</span>
+                  <span className="s5-detail-meas">
+                    {da.isUnit ? `${da.count} ea` : `${da.measurement} LF`}
+                  </span>
+                  <span className={`tag ${da.isUnit?'tag-unit':'tag-lf'}`}>{da.isUnit?'Unit':'LF'}</span>
+                  {da.areas && da.areas.length > 0 && (
+                    <span style={{fontSize:11,color:'var(--nf-sand)',fontFamily:'var(--font-mono)',marginLeft:'auto'}}>
+                      Zones: {da.areas.join(', ')}
+                    </span>
+                  )}
+                </div>
+                <div className="s5-slots">
+                  {da.ofms.map((slot, sIdx) => {
+                    const part = ofmParts.find(p=>p.id===slot.ofmId);
+                    const mat  = part ? materials.find(m=>m.id===part.materialId) : null;
+                    const { sticks, pps, sheets } = part && mat
+                      ? computeSticks(da, mat, part)
+                      : {sticks:0,pps:0,sheets:0};
+                    return (
+                      <div key={slot.id || sIdx} className="s5-slot">
+                        <button className="s5-slot-remove" onClick={()=>removeSlot(daIdx,sIdx)}>✕</button>
+                        <select className="s5-slot-select" value={slot.ofmId}
+                          onChange={e=>updateSlot(daIdx,sIdx,e.target.value)}>
+                          <option value="">— Select Part —</option>
+                          {ofmParts.map(p=><option key={p.id} value={p.id}>{p.id}</option>)}
+                        </select>
+                        {part && (
+                          <>
+                            <div className="s5-slot-meta">
+                              <div>{part.label}</div>
+                              <div>Mat: {mat ? mat.id : <em>unset</em>} · SO: {part.stretchout}"</div>
+                            </div>
+                            <div className="s5-slot-calcs">
+                              Stk:{sticks} · PPS:{pps} · Sheets:{sheets}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <button className="btn btn-ghost btn-xs" onClick={()=>addSlot(daIdx)}
+                    style={{alignSelf:'flex-start',marginTop:2}}>+ Add OFM</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Material Summary */}
+        <div className="mat-summary">
+          <div className="mat-summary-title">Material Summary</div>
+          {matSummary.length === 0
+            ? <div style={{fontSize:12,color:'var(--nf-sand)',fontFamily:'var(--font-mono)'}}>Assign OFMs to see counts.</div>
+            : matSummary.map(({mat,sheets}) => (
+                <div className="mat-row" key={mat.id}>
+                  <div>
+                    <div style={{fontSize:13}}>{mat.description||mat.id}</div>
+                    <div className="mat-sub">{mat.id} · {mat.width}ft × {mat.length}ft</div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div className="mat-sheets">{sheets}</div>
+                    <div className="mat-sub">sheets</div>
+                  </div>
+                </div>
+              ))
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   DRAWING CANVAS  (SVG-based)
+═══════════════════════════════════════════════ */
+const DW = 600, DH = 320;
+
+const ptDist = (x1,y1,x2,y2) => Math.sqrt((x1-x2)**2+(y1-y2)**2);
+
+function arrowPts(x,y,dx,dy,sz=7) {
+  const len=Math.sqrt(dx*dx+dy*dy)||1;
+  const ux=dx/len,uy=dy/len,px=-uy,py=ux;
+  return `${x},${y} ${x-ux*sz+px*sz*.4},${y-uy*sz+py*sz*.4} ${x-ux*sz-px*sz*.4},${y-uy*sz-py*sz*.4}`;
+}
+
+function arcPath(cx,cy,r,sa,ea) {
+  const x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa);
+  const x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+  const large=Math.abs(ea-sa)>Math.PI?1:0;
+  return `M${x1},${y1} A${r},${r},0,${large},1,${x2},${y2}`;
+}
+
+function getHandles(s) {
+  switch(s.type) {
+    case 'line':     return [{k:'p1',x:s.x1,y:s.y1},{k:'p2',x:s.x2,y:s.y2}];
+    case 'polyline': return s.pts.map((p,i)=>({k:`p${i}`,x:p[0],y:p[1]}));
+    case 'circle':   return [{k:'c',x:s.cx,y:s.cy},{k:'r',x:s.cx+s.r,y:s.cy}];
+    case 'arc':      return [
+      {k:'c',x:s.cx,y:s.cy},
+      {k:'s',x:s.cx+s.r*Math.cos(s.sa),y:s.cy+s.r*Math.sin(s.sa)},
+      {k:'e',x:s.cx+s.r*Math.cos(s.ea),y:s.cy+s.r*Math.sin(s.ea)},
+    ];
+    case 'dimL':   return [{k:'p1',x:s.x1,y:s.y1},{k:'p2',x:s.x2,y:s.y2}];
+    case 'dimA':   return [{k:'c',x:s.cx,y:s.cy}];
+    case 'text':   return [{k:'p',x:s.x,y:s.y}];
+    case 'leader': return s.pts.map((p,i)=>({k:`p${i}`,x:p[0],y:p[1]}));
+    case 'image':  return [{k:'tl',x:s.x,y:s.y},{k:'br',x:s.x+s.w,y:s.y+s.h}];
+    default: return [];
+  }
+}
+
+function applyHandle(s, hk, nx, ny) {
+  switch(s.type) {
+    case 'line':   return hk==='p1'?{...s,x1:nx,y1:ny}:{...s,x2:nx,y2:ny};
+    case 'polyline':{ const i=parseInt(hk.slice(1)),pts=[...s.pts]; pts[i]=[nx,ny]; return {...s,pts}; }
+    case 'circle': return hk==='c'?{...s,cx:nx,cy:ny}:{...s,r:ptDist(s.cx,s.cy,nx,ny)};
+    case 'arc':
+      if(hk==='c') return {...s,cx:nx,cy:ny};
+      if(hk==='s') return {...s,sa:Math.atan2(ny-s.cy,nx-s.cx)};
+      return {...s,ea:Math.atan2(ny-s.cy,nx-s.cx)};
+    case 'dimL':   return hk==='p1'?{...s,x1:nx,y1:ny}:{...s,x2:nx,y2:ny};
+    case 'dimA':   return {...s,cx:nx,cy:ny};
+    case 'text':   return {...s,x:nx,y:ny};
+    case 'leader': { const i=parseInt(hk.slice(1)),pts=[...s.pts]; pts[i]=[nx,ny]; return {...s,pts}; }
+    case 'image':
+      if(hk==='tl') return {...s,x:nx,y:ny,w:s.w+(s.x-nx),h:s.h+(s.y-ny)};
+      return {...s,w:Math.max(20,nx-s.x),h:Math.max(20,ny-s.y)};
+    default: return s;
+  }
+}
+
+// ── Shape SVG element (shared by canvas + print) ──
+function ShapeEl({ shape:s, selected, onMD }) {
+  const clr = selected ? '#1a7ae8' : (s.stroke||'#000');
+  const sw  = s.sw||1.5;
+  const G   = { stroke:clr, strokeWidth:sw, fill:'none',
+    style:{cursor:onMD?'pointer':'default'},
+    onMouseDown: onMD ? e=>{e.stopPropagation();onMD(e);} : undefined };
+
+  switch(s.type) {
+    case 'line':
+      return <line {...G} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}/>;
+    case 'polyline':
+      return <polyline {...G} points={s.pts.map(p=>p.join(',')).join(' ')}/>;
+    case 'circle':
+      return <circle {...G} cx={s.cx} cy={s.cy} r={s.r}/>;
+    case 'arc':
+      return <path {...G} d={arcPath(s.cx,s.cy,s.r,s.sa,s.ea)}/>;
+    case 'dimL': {
+      const dx=s.x2-s.x1,dy=s.y2-s.y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+      const ux=dx/len,uy=dy/len,px=-uy,py=ux,off=s.off||30;
+      const ox1=s.x1+px*off,oy1=s.y1+py*off,ox2=s.x2+px*off,oy2=s.y2+py*off;
+      const mx=(ox1+ox2)/2,my=(oy1+oy2)/2;
+      return (
+        <g onMouseDown={G.onMouseDown} style={G.style}>
+          <line stroke={clr} strokeWidth={sw} x1={s.x1} y1={s.y1} x2={ox1} y2={oy1}/>
+          <line stroke={clr} strokeWidth={sw} x1={s.x2} y1={s.y2} x2={ox2} y2={oy2}/>
+          <line stroke={clr} strokeWidth={sw} x1={ox1} y1={oy1} x2={ox2} y2={oy2}/>
+          <polygon points={arrowPts(ox1,oy1,ox1-ox2,oy1-oy2)} fill={clr}/>
+          <polygon points={arrowPts(ox2,oy2,ox2-ox1,oy2-oy1)} fill={clr}/>
+          <text x={mx} y={my-(s.fs||11)-2} textAnchor="middle" fontSize={s.fs||11} fill={clr} stroke="none">{s.label||''}</text>
+        </g>
+      );
+    }
+    case 'dimA': {
+      const mid=(s.a1+s.a2)/2, mr=(s.r||40)*1.4;
+      return (
+        <g onMouseDown={G.onMouseDown} style={G.style}>
+          <path stroke={clr} strokeWidth={sw} fill="none" d={arcPath(s.cx,s.cy,s.r||40,s.a1,s.a2)}/>
+          <text x={s.cx+mr*Math.cos(mid)} y={s.cy+mr*Math.sin(mid)} textAnchor="middle"
+            dominantBaseline="middle" fontSize={s.fs||11} fill={clr} stroke="none">{s.label||''}</text>
+        </g>
+      );
+    }
+    case 'text':
+      return <text x={s.x} y={s.y} fontSize={s.fs||12} fill={s.fill||'#000'} stroke="none"
+        style={G.style} onMouseDown={G.onMouseDown}>{s.text}</text>;
+    case 'leader': {
+      if(!s.pts||s.pts.length<2) return null;
+      const last=s.pts[s.pts.length-1];
+      const p0=s.pts[0],p1=s.pts[1];
+      return (
+        <g onMouseDown={G.onMouseDown} style={G.style}>
+          <polyline stroke={clr} strokeWidth={sw} fill="none" points={s.pts.map(p=>p.join(',')).join(' ')}/>
+          <polygon points={arrowPts(p0[0],p0[1],p0[0]-p1[0],p0[1]-p1[1])} fill={clr}/>
+          <text x={last[0]+4} y={last[1]} fontSize={s.fs||11} fill={clr} stroke="none">{s.text||''}</text>
+        </g>
+      );
+    }
+    case 'image':
+      return <image href={s.data} x={s.x} y={s.y} width={s.w} height={s.h}
+        preserveAspectRatio="xMidYMid meet"
+        style={G.style} onMouseDown={G.onMouseDown}/>;
+    default: return null;
+  }
+}
+
+// ── Read-only SVG render (print) ──
+function DrawingView({ drawing }) {
+  const shapes = drawing?.shapes||[];
+  const images = drawing?.images||[];
+  if(!shapes.length&&!images.length) {
+    return (
+      <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',
+        color:'#ccc',fontSize:10,letterSpacing:'0.12em',textTransform:'uppercase'}}>
+        Profile Drawing
+      </div>
+    );
+  }
+  return (
+    <svg width="100%" height="100%" viewBox={`0 0 ${DW} ${DH}`} preserveAspectRatio="xMidYMid meet">
+      {images.map(s=><ShapeEl key={s.id} shape={s}/>)}
+      {shapes.map(s=><ShapeEl key={s.id} shape={s}/>)}
+    </svg>
+  );
+}
+
+// ── Interactive Drawing Canvas ──
+const TOOLS = ['select','line','polyline','circle','arc','dimL','dimA','text','leader'];
+const TLBL  = {select:'⬡ Select',line:'Line',polyline:'Polyline',circle:'Circle',
+               arc:'Arc',dimL:'Dim-L',dimA:'Dim-A',text:'Text',leader:'Leader'};
+
+function DrawingCanvas({ drawing, onChange }) {
+  const shapes = drawing?.shapes||[];
+  const images = drawing?.images||[];
+
+  const [tool,  setTool]    = useState('select');
+  const [selId, setSelId]   = useState(null);
+  const [preview, setPrev]  = useState(null);
+  const [clicks,  setClicks]= useState([]);
+  const [clr,  setClr]      = useState('#000000');
+  const [sw,   setSw]       = useState(1.5);
+  const [fs,   setFs]       = useState(12);
+
+  const dragRef = useRef(null);
+  const histRef = useRef([{shapes:[],images:[]}]);
+  const hidxRef = useRef(0);
+  const svgRef  = useRef();
+
+  // Init history from prop on first mount
+  useEffect(() => {
+    histRef.current = [{shapes:[...(drawing?.shapes||[])],images:[...(drawing?.images||[])]}];
+    hidxRef.current = 0;
+  }, []); // eslint-disable-line
+
+  const commit = useCallback((ns, ni) => {
+    const state = {shapes:ns, images:ni??images};
+    onChange(state);
+    histRef.current = histRef.current.slice(0, hidxRef.current+1);
+    histRef.current.push(state);
+    hidxRef.current = histRef.current.length-1;
+  }, [images, onChange]);
+
+  const undo = useCallback(() => {
+    if(hidxRef.current<=0) return;
+    hidxRef.current--;
+    onChange(histRef.current[hidxRef.current]);
+  }, [onChange]);
+
+  const redo = useCallback(() => {
+    if(hidxRef.current>=histRef.current.length-1) return;
+    hidxRef.current++;
+    onChange(histRef.current[hidxRef.current]);
+  }, [onChange]);
+
+  const getSVGPos = (e) => {
+    const rect = svgRef.current.getBoundingClientRect();
+    return [
+      ((e.clientX-rect.left)/rect.width )*DW,
+      ((e.clientY-rect.top )/rect.height)*DH,
+    ];
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const h = e => {
+      const tag = e.target.tagName;
+      if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+      if((e.key==='Delete'||e.key==='Backspace')&&selId) {
+        commit(shapes.filter(s=>s.id!==selId), images.filter(i=>i.id!==selId));
+        setSelId(null);
+      }
+      if(e.ctrlKey&&e.key==='z'){ e.preventDefault(); undo(); }
+      if(e.ctrlKey&&e.key==='y'){ e.preventDefault(); redo(); }
+      if(e.key==='Escape'){ setClicks([]); setPrev(null); }
+    };
+    window.addEventListener('keydown',h);
+    return ()=>window.removeEventListener('keydown',h);
+  }, [selId, shapes, images, commit, undo, redo]);
+
+  // Paste image
+  useEffect(() => {
+    const h = async e => {
+      const items = e.clipboardData?.items;
+      if(!items) return;
+      for(const item of items) {
+        if(item.type.startsWith('image/')) {
+          const blob = item.getAsFile();
+          const url  = URL.createObjectURL(blob);
+          const img  = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, (DW/2)/img.width, (DH/2)/img.height);
+            const cv = document.createElement('canvas');
+            cv.width  = Math.round(img.width *scale);
+            cv.height = Math.round(img.height*scale);
+            cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+            const data = cv.toDataURL('image/jpeg',0.7);
+            commit(shapes, [...images,{id:genId(),type:'image',x:10,y:10,w:cv.width,h:cv.height,data}]);
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+          break;
+        }
+      }
+    };
+    window.addEventListener('paste',h);
+    return ()=>window.removeEventListener('paste',h);
+  }, [shapes, images, commit]);
+
+  const addShape = (shape) => {
+    commit([...shapes,{...shape,id:genId(),stroke:clr,sw,fs}], images);
+    setClicks([]); setPrev(null);
+  };
+
+  const handleMD = (e) => {
+    if(e.button!==0) return;
+    const [x,y] = getSVGPos(e);
+
+    if(tool==='select'){ setSelId(null); return; }
+
+    if(tool==='line'){
+      dragRef.current={act:'draw',tool:'line',x1:x,y1:y};
+      setPrev({type:'line',x1:x,y1:y,x2:x,y2:y,stroke:clr,sw});
+    }
+    if(tool==='circle'){
+      dragRef.current={act:'draw',tool:'circle',cx:x,cy:y};
+      setPrev({type:'circle',cx:x,cy:y,r:0,stroke:clr,sw});
+    }
+    if(tool==='dimL'){
+      dragRef.current={act:'draw',tool:'dimL',x1:x,y1:y};
+      setPrev({type:'dimL',x1:x,y1:y,x2:x,y2:y,off:30,label:'',stroke:clr,sw,fs});
+    }
+    if(tool==='polyline'||tool==='leader'){
+      const nc=[...clicks,[x,y]];
+      setClicks(nc);
+      setPrev({type:tool==='leader'?'leader':'polyline',pts:[...nc,[x,y]],stroke:clr,sw,fs,text:''});
+    }
+    if(tool==='arc'){
+      const nc=[...clicks,[x,y]];
+      setClicks(nc);
+      if(nc.length===3){
+        const [c,s2,ep]=nc;
+        const r=ptDist(c[0],c[1],s2[0],s2[1]);
+        const sa=Math.atan2(s2[1]-c[1],s2[0]-c[0]);
+        const ea=Math.atan2(ep[1]-c[1],ep[0]-c[0]);
+        addShape({type:'arc',cx:c[0],cy:c[1],r,sa,ea});
+      } else {
+        setPrev({type:'arc',cx:x,cy:y,r:0,sa:0,ea:0,stroke:clr,sw});
+      }
+    }
+    if(tool==='dimA'){
+      const nc=[...clicks,[x,y]];
+      setClicks(nc);
+      if(nc.length===3){
+        const [c,p1,p2]=nc;
+        const a1=Math.atan2(p1[1]-c[1],p1[0]-c[0]);
+        const a2=Math.atan2(p2[1]-c[1],p2[0]-c[0]);
+        const label=window.prompt('Angle label:','')||'';
+        addShape({type:'dimA',cx:c[0],cy:c[1],r:40,a1,a2,label});
+      }
+    }
+    if(tool==='text'){
+      const text=window.prompt('Text:','');
+      if(text) addShape({type:'text',x,y,text,fs,fill:clr});
+    }
+  };
+
+  const handleMM = (e) => {
+    const [x,y]=getSVGPos(e);
+    const d=dragRef.current;
+    if(d){
+      if(d.act==='draw'){
+        if(d.tool==='line')   setPrev(p=>({...p,x2:x,y2:y}));
+        if(d.tool==='circle') setPrev(p=>({...p,r:ptDist(d.cx,d.cy,x,y)}));
+        if(d.tool==='dimL')   setPrev(p=>({...p,x2:x,y2:y}));
+      }
+      if(d.act==='handle'){
+        const ns=shapes.map(s=>s.id===d.sid?applyHandle(s,d.hk,x,y):s);
+        const ni=images.map(s=>s.id===d.sid?applyHandle(s,d.hk,x,y):s);
+        onChange({shapes:ns,images:ni});
+      }
+      if(d.act==='move'){
+        const dx=x-d.sx,dy=y-d.sy;
+        const moveShape=s=>{
+          switch(s.type){
+            case 'line':    return {...s,x1:d.ox1+dx,y1:d.oy1+dy,x2:d.ox2+dx,y2:d.oy2+dy};
+            case 'circle':
+            case 'arc':     return {...s,cx:d.ocx+dx,cy:d.ocy+dy};
+            case 'dimL':    return {...s,x1:d.ox1+dx,y1:d.oy1+dy,x2:d.ox2+dx,y2:d.oy2+dy};
+            case 'dimA':    return {...s,cx:d.ocx+dx,cy:d.ocy+dy};
+            case 'text':    return {...s,x:d.ox+dx,y:d.oy+dy};
+            case 'polyline':
+            case 'leader':  return {...s,pts:d.opts.map(p=>[p[0]+dx,p[1]+dy])};
+            case 'image':   return {...s,x:d.ox+dx,y:d.oy+dy};
+            default: return s;
+          }
+        };
+        const ns=shapes.map(s=>s.id===d.sid?moveShape(s):s);
+        const ni=images.map(s=>s.id===d.sid?moveShape(s):s);
+        onChange({shapes:ns,images:ni});
+      }
+    }
+    if((tool==='polyline'||tool==='leader')&&clicks.length>0)
+      setPrev(p=>({...p,pts:[...clicks,[x,y]]}));
+  };
+
+  const handleMU = (e) => {
+    const d=dragRef.current;
+    if(d){
+      if(d.act==='draw'){
+        const [x,y]=getSVGPos(e);
+        if(d.tool==='line'&&ptDist(d.x1,d.y1,x,y)>4)
+          addShape({type:'line',x1:d.x1,y1:d.y1,x2:x,y2:y});
+        if(d.tool==='circle'){const r=ptDist(d.cx,d.cy,x,y);if(r>4) addShape({type:'circle',cx:d.cx,cy:d.cy,r});}
+        if(d.tool==='dimL'&&ptDist(d.x1,d.y1,x,y)>4){
+          const label=window.prompt('Dimension label:','')||'';
+          addShape({type:'dimL',x1:d.x1,y1:d.y1,x2:x,y2:y,off:30,label});
+        }
+        setPrev(null);
+      }
+      if(d.act==='handle'||d.act==='move') commit(shapes,images);
+      dragRef.current=null;
+    }
+  };
+
+  const handleDbl = (e) => {
+    const [x,y]=getSVGPos(e);
+    if(tool==='polyline'&&clicks.length>=2) addShape({type:'polyline',pts:[...clicks,[x,y]]});
+    if(tool==='leader'&&clicks.length>=1){
+      const text=window.prompt('Leader text:','')||'';
+      addShape({type:'leader',pts:[...clicks,[x,y]],text});
+    }
+  };
+
+  const onShapeMD = (e,shape) => {
+    if(tool!=='select') return;
+    e.stopPropagation();
+    setSelId(shape.id);
+    const [x,y]=getSVGPos(e);
+    const s=shapes.find(sh=>sh.id===shape.id)||images.find(im=>im.id===shape.id);
+    if(!s) return;
+    dragRef.current={act:'move',sid:shape.id,sx:x,sy:y,
+      ox1:s.x1,oy1:s.y1,ox2:s.x2,oy2:s.y2,ocx:s.cx,ocy:s.cy,
+      ox:s.x,oy:s.y,opts:s.pts?s.pts.map(p=>[...p]):undefined};
+  };
+
+  const onHandleMD = (e,shape,hk) => {
+    e.stopPropagation();
+    dragRef.current={act:'handle',sid:shape.id,hk};
+  };
+
+  const delShape = (id) => {
+    commit(shapes.filter(s=>s.id!==id),images.filter(i=>i.id!==id));
+    if(selId===id) setSelId(null);
+  };
+
+  const selShape = selId?(shapes.find(s=>s.id===selId)||images.find(i=>i.id===selId)):null;
+  const allItems = [...images,...shapes];
+
+  return (
+    <div>
+      <div className="draw-toolbar">
+        {TOOLS.map(t=>(
+          <button key={t} className={`btn btn-xs ${tool===t?'btn-primary':'btn-ghost'}`}
+            onClick={()=>{setTool(t);setClicks([]);setPrev(null);}}>
+            {TLBL[t]}
+          </button>
+        ))}
+        <div className="draw-sep"/>
+        <label style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',display:'flex',alignItems:'center',gap:4}}>
+          Color <input type="color" value={clr} onChange={e=>setClr(e.target.value)}
+            style={{width:26,height:20,padding:1,border:'var(--border-mid)',borderRadius:3,cursor:'pointer'}}/>
+        </label>
+        <label style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',display:'flex',alignItems:'center',gap:4}}>
+          W<input type="number" min="0.5" max="8" step="0.5" value={sw} onChange={e=>setSw(parseFloat(e.target.value)||1.5)}
+            style={{width:38,fontFamily:'var(--font-mono)',fontSize:11,padding:'2px 4px',border:'var(--border-mid)',borderRadius:3}}/>
+        </label>
+        <label style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',display:'flex',alignItems:'center',gap:4}}>
+          Sz<input type="number" min="6" max="36" step="1" value={fs} onChange={e=>setFs(parseInt(e.target.value)||12)}
+            style={{width:38,fontFamily:'var(--font-mono)',fontSize:11,padding:'2px 4px',border:'var(--border-mid)',borderRadius:3}}/>
+        </label>
+        <div className="draw-sep"/>
+        <button className="btn btn-ghost btn-xs" onClick={undo} title="Ctrl+Z">↩</button>
+        <button className="btn btn-ghost btn-xs" onClick={redo} title="Ctrl+Y">↪</button>
+        {selId && <button className="btn btn-danger btn-xs" onClick={()=>delShape(selId)}>✕ Del</button>}
+        <span style={{fontSize:10,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',marginLeft:'auto',whiteSpace:'nowrap'}}>
+          Paste img · Dbl=finish · Esc=cancel
+        </span>
+      </div>
+
+      <div className="draw-canvas-row">
+        <svg ref={svgRef}
+          viewBox={`0 0 ${DW} ${DH}`}
+          style={{flex:1,border:'var(--border-mid)',borderRadius:'var(--radius-sm)',background:'#fff',
+            cursor:tool==='select'?'default':'crosshair',display:'block'}}
+          onMouseDown={handleMD} onMouseMove={handleMM} onMouseUp={handleMU} onDoubleClick={handleDbl}>
+
+          {images.map(s=>(
+            <image key={s.id} href={s.data} x={s.x} y={s.y} width={s.w} height={s.h}
+              preserveAspectRatio="xMidYMid meet"
+              style={{cursor:tool==='select'?'pointer':'default'}}
+              onMouseDown={e=>onShapeMD(e,s)}/>
+          ))}
+          {shapes.map(s=>(
+            <ShapeEl key={s.id} shape={s} selected={s.id===selId} onMD={e=>onShapeMD(e,s)}/>
+          ))}
+          {preview && <ShapeEl shape={{...preview,id:'__prev'}}/>}
+
+          {selShape && getHandles(selShape).map(h=>(
+            <circle key={h.k} cx={h.x} cy={h.y} r={5} fill="#fff" stroke="#1a7ae8" strokeWidth={1.5}
+              style={{cursor:'crosshair'}}
+              onMouseDown={e=>{e.stopPropagation();onHandleMD(e,selShape,h.k);}}/>
+          ))}
+          {clicks.map((c,i)=>(
+            <circle key={i} cx={c[0]} cy={c[1]} r={3} fill="#1a7ae8" opacity={0.5}/>
+          ))}
+        </svg>
+
+        <div className="draw-marks">
+          <div style={{fontFamily:'var(--font-mono)',fontSize:9,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--nf-sand)',marginBottom:4}}>
+            Marks ({allItems.length})
+          </div>
+          <div style={{overflowY:'auto',maxHeight:DH,display:'flex',flexDirection:'column',gap:2}}>
+            {allItems.map(s=>(
+              <div key={s.id} className={`draw-mark-item${selId===s.id?' sel':''}`}
+                onClick={()=>{setSelId(s.id);setTool('select');}}>
+                <span>{s.type}</span>
+                <button onClick={e=>{e.stopPropagation();delShape(s.id);}}>✕</button>
+              </div>
+            ))}
+            {allItems.length===0 && <div style={{fontFamily:'var(--font-mono)',fontSize:10,color:'var(--nf-sand)'}}>empty</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 6 — OFM OUTPUT SHEETS (screen view)
+═══════════════════════════════════════════════ */
+function Stage6({ state, setState, onPrint }) {
+  const { ofmParts, detailAssignments, materials, job, ofmSheetNotes } = state;
+
+  const setNote = (ofmId,field,val) => {
+    setState(s => ({
+      ...s,
+      ofmSheetNotes: { ...s.ofmSheetNotes, [ofmId]: { ...(s.ofmSheetNotes[ofmId]||{}), [field]:val } }
+    }));
+  };
+
+  const setDrawing = (ofmId, drawing) => {
+    setState(s => ({
+      ...s,
+      ofmSheetNotes: { ...s.ofmSheetNotes, [ofmId]: { ...(s.ofmSheetNotes[ofmId]||{}), drawing } }
+    }));
+  };
+
+  if (ofmParts.length === 0) {
+    return (
+      <div>
+        <h2 className="stage-title">OFM Output Sheets</h2>
+        <p className="stage-subtitle">Stage 06 — Print-ready manufacture orders</p>
+        <div className="alert alert-warn"><span>⚠</span><span>Add OFM parts in Stage 4 first.</span></div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="stage-title">OFM Output Sheets</h2>
+      <p className="stage-subtitle">Stage 06 — {ofmParts.length} part{ofmParts.length!==1?'s':''}</p>
+      <div style={{display:'flex',gap:10,marginBottom:24}}>
+        <button className="btn btn-primary" onClick={()=>onPrint('all')}>
+          ⎙ Print All (Summary + Assignments + Cards)
+        </button>
+        <button className="btn btn-secondary" onClick={()=>onPrint('summary')}>
+          ⎙ Print Summary Only
+        </button>
+      </div>
+
+      <div className="ofm-screen-cards">
+        {ofmParts.map((part, idx) => {
+          const mat = materials.find(m=>m.id===part.materialId);
+          const notes = ofmSheetNotes[part.id] || {};
+          const n4 = getNoteVal(notes, 'notch4');
+          const n2q = getNoteVal(notes,'notch2quarter');
+          const tap = getNoteVal(notes,'taperToLap');
+          const none = getNoteVal(notes,'none');
+          const details = detailAssignments.filter(da=>da.ofms.some(s=>s.ofmId===part.id));
+          const isUnit = details.some(d=>d.isUnit);
+          const qtyLabel = isUnit ? 'ea' : 'LF';
+          const totalQty = details.reduce((acc,da) => acc + (da.isUnit ? da.count : da.measurement), 0);
+          return (
+            <div key={part.id} className="ofm-screen-card">
+              <div className="ofm-screen-card-hdr">
+                <div>
+                  <div className="ofm-screen-part-id">{part.id}</div>
+                  <div style={{fontSize:12,opacity:0.75,marginTop:2}}>{part.label}</div>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <div style={{fontSize:20,fontFamily:'var(--font-mono)',fontWeight:400}}>
+                    {totalQty} <span style={{fontSize:12}}>{qtyLabel}</span>
+                  </div>
+                  <button className="btn btn-ghost btn-sm" style={{marginTop:6,color:'var(--nf-linen)',borderColor:'rgba(240,234,216,0.3)'}}
+                    onClick={()=>onPrint(part.id)}>
+                    ⎙ Print this card
+                  </button>
+                </div>
+              </div>
+
+              <div className="ofm-screen-card-body">
+                <div className="ofm-screen-row">
+                  <div className="ofm-screen-field">
+                    <label>Material</label>
+                    <div className="ofm-screen-val">{mat ? `[${mat.id}] ${mat.description}` : <em style={{color:'var(--nf-sand)'}}>—</em>}</div>
+                  </div>
+                  <div className="ofm-screen-field">
+                    <label>Stretchout</label>
+                    <div className="ofm-screen-val" style={{fontFamily:'var(--font-mono)'}}>{part.stretchout||'—'}"</div>
+                  </div>
+                  <div className="ofm-screen-field">
+                    <label>Manufacture / Notes</label>
+                    <input className="ofm-screen-input" value={notes.manufacture||''}
+                      onChange={e=>setNote(part.id,'manufacture',e.target.value)}
+                      placeholder="Shop notes…" />
+                  </div>
+                </div>
+
+                {/* Notch */}
+                <div className="notch-bar">
+                  <span className="notch-bar-label">Notch</span>
+                  <label className="notch-chk" style={n4?{background:'#FFE066',borderRadius:3,padding:'1px 5px'}:{}}>
+                    <input type="checkbox" checked={n4} onChange={e=>setNote(part.id,'notch4',e.target.checked)} />
+                    4"
+                  </label>
+                  <label className="notch-chk">
+                    <input type="checkbox" checked={!!n2q} onChange={e=>setNote(part.id,'notch2quarter',e.target.checked)} />
+                    2-1/4"
+                  </label>
+                  <span className="notch-num">
+                    Left <input type="number" min="0" step="0.25" value={notes.left||''} onChange={e=>setNote(part.id,'left',e.target.value)} placeholder="ft" />
+                  </span>
+                  <span className="notch-num">
+                    Right <input type="number" min="0" step="0.25" value={notes.right||''} onChange={e=>setNote(part.id,'right',e.target.value)} placeholder="ft" />
+                  </span>
+                  <label className="notch-chk">
+                    <input type="checkbox" checked={!!tap} onChange={e=>setNote(part.id,'taperToLap',e.target.checked)} />
+                    Taper to Lap
+                  </label>
+                  <label className="notch-chk">
+                    <input type="checkbox" checked={!!none} onChange={e=>setNote(part.id,'none',e.target.checked)} />
+                    None
+                  </label>
+                </div>
+
+                {/* Details assigned */}
+                {details.length > 0 && (
+                  <div style={{marginTop:8}}>
+                    <div style={{fontFamily:'var(--font-mono)',fontSize:10,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--nf-sand)',marginBottom:6}}>
+                      Details ({details.length})
+                    </div>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                      {details.map(da => (
+                        <span key={da.detail} style={{fontFamily:'var(--font-mono)',fontSize:11,background:'var(--nf-linen)',border:'var(--border-subtle)',borderRadius:'var(--radius-sm)',padding:'2px 8px',color:'var(--nf-bark)'}}>
+                          {da.detail} · {da.isUnit ? `${da.count}ea` : `${da.measurement}LF`}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Profile Drawing */}
+                <div className="draw-wrap">
+                  <div style={{fontFamily:'var(--font-mono)',fontSize:10,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--nf-sand)',marginBottom:6}}>
+                    Profile Drawing
+                  </div>
+                  <DrawingCanvas
+                    drawing={notes.drawing || {shapes:[],images:[]}}
+                    onChange={d => setDrawing(part.id, d)}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE 7 — SAVE / LOAD
+═══════════════════════════════════════════════ */
+function Stage7({ state, setState }) {
+  const [spCfg, setSpCfg] = useState(() => lsGet('nenc_sp_config', {siteUrl:'',clientId:'',tenantId:''}));
+  const [authStatus, setAuthStatus] = useState('disconnected');
+  const [msalInst, setMsalInst] = useState(null);
+  const [spFiles, setSpFiles] = useState([]);
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+  const uploadRef = useRef();
+  const saveCfg = c => { setSpCfg(c); lsSet('nenc_sp_config',c); };
+
+  const initMsal = async () => {
+    try {
+      if (!window.msal) throw new Error('MSAL library not loaded');
+      if (!spCfg.clientId||!spCfg.tenantId) { setMsg('Enter Client ID and Tenant ID first.'); return; }
+      const inst = new window.msal.PublicClientApplication({
+        auth: { clientId:spCfg.clientId, authority:`https://login.microsoftonline.com/${spCfg.tenantId}`, redirectUri:window.location.origin+window.location.pathname },
+        cache: { cacheLocation:'localStorage' }
+      });
+      await inst.initialize();
+      setMsalInst(inst);
+      const accs = inst.getAllAccounts();
+      if (accs.length) { setAuthStatus('connected'); setMsg(`Signed in: ${accs[0].username}`); }
+      else {
+        await inst.loginPopup({scopes:['Files.ReadWrite','Sites.ReadWrite.All']});
+        const a2 = inst.getAllAccounts();
+        setAuthStatus('connected'); setMsg(`Signed in: ${a2[0]?.username||'user'}`);
+      }
+    } catch(err) { setAuthStatus('disconnected'); setMsg('Auth error: '+err.message); }
+  };
+
+  const getToken = async () => {
+    if (!msalInst) throw new Error('Not authenticated');
+    const acc = msalInst.getAllAccounts()[0];
+    const r = await msalInst.acquireTokenSilent({scopes:['Files.ReadWrite','Sites.ReadWrite.All'],account:acc});
+    return r.accessToken;
+  };
+
+  const getSiteId = async (token) => {
+    const u = new URL(spCfg.siteUrl.replace(/\/$/,''));
+    const r = await fetch(`https://graph.microsoft.com/v1.0/sites/${u.hostname}:${u.pathname}`,
+      {headers:{Authorization:`Bearer ${token}`}});
+    if (!r.ok) throw new Error('Cannot find SharePoint site');
+    return (await r.json()).id;
+  };
+
+  const saveToSP = async () => {
+    setBusy(true);
+    try {
+      const token = await getToken();
+      const siteId = await getSiteId(token);
+      const fname = `OFM_${state.job.jobNumber}_${state.job.jobName}.json`.replace(/[<>:"/\\|?*\s]/g,'_');
+      const dr = await (await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive`,{headers:{Authorization:`Bearer ${token}`}})).json();
+      await fetch(`https://graph.microsoft.com/v1.0/drives/${dr.id}/root:/OFM Jobs/${fname}:/content`,
+        {method:'PUT',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(state,null,2)});
+      setMsg(`Saved: ${fname}`);
+    } catch(e) { setMsg('Save error: '+e.message); }
+    setBusy(false);
+  };
+
+  const listFiles = async () => {
+    setBusy(true);
+    try {
+      const token = await getToken();
+      const siteId = await getSiteId(token);
+      const dr = await (await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive`,{headers:{Authorization:`Bearer ${token}`}})).json();
+      const fls = await (await fetch(`https://graph.microsoft.com/v1.0/drives/${dr.id}/root:/OFM Jobs:/children`,{headers:{Authorization:`Bearer ${token}`}})).json();
+      setSpFiles((fls.value||[]).filter(f=>f.name.endsWith('.json')));
+      setMsg(`${fls.value?.length||0} files found.`);
+    } catch(e) { setMsg('List error: '+e.message); }
+    setBusy(false);
+  };
+
+  const loadSPFile = async (f) => {
+    setBusy(true);
+    try {
+      const token = await getToken();
+      const data = await (await fetch(f['@microsoft.graph.downloadUrl']||f.webUrl,{headers:{Authorization:`Bearer ${token}`}})).json();
+      setState(data); setMsg(`Loaded: ${f.name}`);
+    } catch(e) { setMsg('Load error: '+e.message); }
+    setBusy(false);
+  };
+
+  const downloadJSON = () => {
+    const fname = `OFM_${state.job.jobNumber||'DRAFT'}_${state.job.jobName||'job'}.json`.replace(/[<>:"/\\|?*\s]/g,'_');
+    const url = URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));
+    Object.assign(document.createElement('a'),{href:url,download:fname}).click();
+    URL.revokeObjectURL(url);
+    setMsg(`Downloaded ${fname}`);
+  };
+
+  const uploadJSON = f => {
+    const r = new FileReader();
+    r.onload = e => { try { setState(JSON.parse(e.target.result)); setMsg(`Loaded: ${f.name}`); } catch { setMsg('Invalid JSON.'); } };
+    r.readAsText(f);
+  };
+
+  return (
+    <div>
+      <h2 className="stage-title">Save / Load</h2>
+      <p className="stage-subtitle">Stage 07 — local backup</p>
+      <div className="save-load-grid">
+        <div>
+          <div className="sp-panel" style={{marginBottom:16}}>
+            <div className="sp-panel-title">SharePoint / M365</div>
+            <div className="field-group"><label className="field-label">SharePoint Site URL</label>
+              <input className="nf-input" value={spCfg.siteUrl} onChange={e=>saveCfg({...spCfg,siteUrl:e.target.value})} placeholder="https://yourco.sharepoint.com/sites/site" />
+            </div>
+            <div className="field-group"><label className="field-label">Azure App Client ID</label>
+              <input className="nf-input" value={spCfg.clientId} onChange={e=>saveCfg({...spCfg,clientId:e.target.value})} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+            </div>
+            <div className="field-group"><label className="field-label">Tenant ID</label>
+              <input className="nf-input" value={spCfg.tenantId} onChange={e=>saveCfg({...spCfg,tenantId:e.target.value})} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+            </div>
+            <div className="auth-row">
+              {authStatus==='disconnected'
+                ? <button className="btn btn-primary btn-sm" onClick={initMsal} disabled={busy}>Sign In with M365</button>
+                : <button className="btn btn-ghost btn-sm" onClick={()=>{setMsalInst(null);setAuthStatus('disconnected');}}>Sign Out</button>
+              }
+              <div className={`auth-dot ${authStatus==='connected'?'ok':'no'}`}></div>
+              <span style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--nf-slate)'}}>{authStatus==='connected'?'Connected':'Not connected'}</span>
+            </div>
+          </div>
+          {authStatus==='connected' && (
+            <div style={{display:'flex',gap:10,marginBottom:12}}>
+              <button className="btn btn-moss btn-sm" onClick={saveToSP} disabled={busy}>↑ Save to SharePoint</button>
+              <button className="btn btn-secondary btn-sm" onClick={listFiles} disabled={busy}>↓ Browse Files</button>
+            </div>
+          )}
+          {spFiles.length>0 && (
+            <div className="nf-table-wrap">
+              <table className="nf-table">
+                <thead><tr><th>File</th><th>Modified</th><th></th></tr></thead>
+                <tbody>{spFiles.map((f,i)=>(
+                  <tr key={i}>
+                    <td className="td-mono" style={{fontSize:11}}>{f.name}</td>
+                    <td style={{fontSize:11,color:'var(--nf-sand)'}}>{new Date(f.lastModifiedDateTime).toLocaleDateString()}</td>
+                    <td><button className="btn btn-ghost btn-xs" onClick={()=>loadSPFile(f)}>Load</button></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div>
+          <div className="sp-panel" style={{marginBottom:16}}>
+            <div className="sp-panel-title">Local Backup</div>
+            <p style={{fontSize:13,color:'var(--nf-jute)',marginBottom:16}}>Download or upload a JSON file — use when SharePoint is unavailable.</p>
+            <div style={{display:'flex',gap:10}}>
+              <button className="btn btn-primary btn-sm" onClick={downloadJSON}>↓ Download JSON</button>
+              <button className="btn btn-secondary btn-sm" onClick={()=>uploadRef.current.click()}>↑ Load JSON File</button>
+              <input ref={uploadRef} type="file" accept=".json" style={{display:'none'}} onChange={e=>{if(e.target.files[0])uploadJSON(e.target.files[0]);}} />
+            </div>
+          </div>
+          {msg && (
+            <div className="alert alert-info">
+              <span>✓</span><span style={{fontFamily:'var(--font-mono)',fontSize:12}}>{msg}</span>
+            </div>
+          )}
+          <div className="sp-panel">
+            <div className="sp-panel-title" style={{marginBottom:10}}>Project Summary</div>
+            <div style={{fontFamily:'var(--font-mono)',fontSize:12,lineHeight:2.2,color:'var(--nf-jute)'}}>
+              <div>Job: <strong>{state.job.jobName||'—'}</strong> #{state.job.jobNumber||'—'}</div>
+              <div>Foreman: {state.job.foreman||'—'}</div>
+              <div>Details: {state.pivotData.length}</div>
+              <div>Materials: {state.materials.length}</div>
+              <div>OFM Parts: {state.ofmParts.length}</div>
+              <div>Assigned: {state.detailAssignments.filter(d=>d.ofms.some(s=>s.ofmId)).length} details</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN APP
+═══════════════════════════════════════════════ */
+function App() {
+  const [stage, setStage]       = useState(1);
+  const [appState, setAppState] = useState(() => lsGet('nenc_ofm_state_v2', INIT_STATE));
+  const [printTarget, setPrint] = useState(null); // null=not printing
+
+  // Auto-save
+  useEffect(() => { lsSet('nenc_ofm_state_v2', appState); }, [appState]);
+
+  // Trigger print after state update causes PrintRoot to render
+  useEffect(() => {
+    if (!printTarget) return;
+    const t = setTimeout(() => window.print(), 200);
+    return () => clearTimeout(t);
+  }, [printTarget]);
+
+  // Reset after print dialog closes
+  useEffect(() => {
+    const handler = () => setPrint(null);
+    window.addEventListener('afterprint', handler);
+    return () => window.removeEventListener('afterprint', handler);
+  }, []);
+
+  const handlePrint = useCallback((target) => {
+    setPrint(target);
+  }, []);
+
+  const stageOk = (id) => {
+    const { job, bluebeamData, materials, ofmParts, detailAssignments } = appState;
+    switch(id) {
+      case 1: return !!(job.jobName && job.jobNumber);
+      case 2: return bluebeamData.length > 0;
+      case 3: return materials.length > 0;
+      case 4: return ofmParts.length > 0;
+      case 5: return detailAssignments.some(d=>d.ofms.some(s=>s.ofmId));
+      default: return true;
+    }
+  };
+
+  // ── Print Mode: render only print content ──
+  if (printTarget) {
+    return <PrintRoot state={appState} printTarget={printTarget} />;
+  }
+
+  const renderStage = () => {
+    const p = { state:appState, setState:setAppState };
+    switch(stage) {
+      case 1: return <Stage1 {...p} />;
+      case 2: return <Stage2 {...p} />;
+      case 3: return <Stage3 {...p} />;
+      case 4: return <Stage4 {...p} />;
+      case 5: return <Stage5 {...p} />;
+      case 6: return <Stage6 {...p} onPrint={handlePrint} />;
+      case 7: return <Stage7 {...p} />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-header-brand">
+          Northshore Exteriors
+          <span>OFM Generator</span>
+        </div>
+        <div className="app-header-right">NENC · v2.0</div>
+      </header>
+
+      <nav className="stage-nav">
+        {STAGES.map(s => {
+          const done = stageOk(s.id);
+          const active = stage === s.id;
+          return (
+            <button key={s.id}
+              className={`stage-tab${active?' active':''}${done&&!active?' completed':''}`}
+              onClick={() => setStage(s.id)}>
+              <span className="stage-num">{String(s.id).padStart(2,'0')}</span>
+              {s.label}
+              {done && !active && <span style={{marginLeft:4,fontSize:9}}>✓</span>}
+            </button>
+          );
+        })}
+      </nav>
+
+      <main className="stage-content">
+        {renderStage()}
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:40,paddingTop:20,borderTop:'var(--border-subtle)'}}>
+          {stage > 1
+            ? <button className="btn btn-ghost" onClick={()=>setStage(s=>s-1)}>← Previous</button>
+            : <div/>}
+          {stage < 7
+            ? <button className="btn btn-primary" onClick={()=>setStage(s=>s+1)}>Next →</button>
+            : <div/>}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
