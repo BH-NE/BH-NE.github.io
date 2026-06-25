@@ -1031,6 +1031,7 @@
               <tr>
                 <th className="sortable" onClick={()=>handleSort('pri')}>PRI <SA f="pri" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('name')}>Project <SA f="name" sortBy={sortBy} sortDir={sortDir}/></th>
+                <th className="sortable" onClick={()=>handleSort('jobNumber')}>Job # <SA f="jobNumber" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th>Division</th>
                 <th>Type</th>
                 <th className="sortable" onClick={()=>handleSort('pe')}>PE <SA f="pe" sortBy={sortBy} sortDir={sortDir}/></th>
@@ -1049,7 +1050,7 @@
             </thead>
             <tbody>
               {displayed.length===0?(
-                <tr><td colSpan={17} className="table-empty">{base.length===0?(tab==='active'?'No active projects — click "+ Add Project" to get started.':'No archived projects.'):'No projects match the filters.'}</td></tr>
+                <tr><td colSpan={18} className="table-empty">{base.length===0?(tab==='active'?'No active projects — click "+ Add Project" to get started.':'No archived projects.'):'No projects match the filters.'}</td></tr>
               ):(
                 displayed.map(p=>{
                   const ov=isOverdue(p.dueDate,p.draftingStatus);
@@ -1060,8 +1061,9 @@
                     <tr key={p.id} onClick={()=>setModal({mode:'edit',project:p})} title="Click to edit">
                       <td style={{color:'var(--text-muted)',fontWeight:600,textAlign:'center'}}>{p.pri||'—'}</td>
                       <td style={{maxWidth:250}}>
-                        <span style={{display:'block',overflow:'hidden',textOverflow:'ellipsis',fontWeight:500}}>{p.name} {p.jobNumber}</span>
+                        <span style={{display:'block',overflow:'hidden',textOverflow:'ellipsis',fontWeight:500}}>{p.name}</span>
                       </td>
+                      <td style={{fontSize:'0.8rem',color:'var(--text-muted)',whiteSpace:'nowrap'}}>{p.jobNumber||'—'}</td>
                       
                       <td>{p.division?<Badge val={p.division} arr={DIVISIONS}/>:<span style={{color:'var(--text-muted)',maxWidth:40}}>—</span>}</td>
                       <td style={{fontSize:'0.78rem',color:'var(--text-muted)',maxWidth:100,overflow:'hidden',textOverflow:'ellipsis'}}>{p.projectType||'—'}</td>
