@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trade Notes — Northshore Exteriors</title>
+<style>
+  :root {
+    --bg:        #F2F4F6;
+    --surface:   #FFFFFF;
+    --border:    #D8DCE2;
+    --accent:    #1B4F72;
+    --accent2:   #2E86C1;
+    --text:      #1A1A1A;
+    --muted:     #6B7280;
+    --tag-bg:    #DDE8F4;
+    --tag-text:  #1B4F72;
+    --green:     #1A6B3C;
+    --green-bg:  #D4EDDA;
+    --red:       #842029;
+    --red-bg:    #F8D7DA;
+    --radius:    6px;
+    --shadow:    0 1px 4px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: var(--accent); color: #fff; padding: 0 24px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  header span { font-size: 12px; opacity: 0.6; letter-spacing: 0.05em; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .sheet-link {
+    color: rgba(255,255,255,0.7); font-size: 12px; text-decoration: none;
+    display: flex; align-items: center; gap: 5px; transition: color 0.15s;
+  }
+  .sheet-link:hover { color: #fff; }
+  .sheet-link svg { width: 14px; height: 14px; }
+
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 56px); }
+
+  aside {
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 20px 16px; display: flex; flex-direction: column; gap: 20px;
+  }
+  .sidebar-section h3 {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+  }
+  .filter-btn {
+    display: block; width: 100%; text-align: left; padding: 7px 10px;
+    border: none; background: none; border-radius: var(--radius);
+    font-size: 13px; color: var(--text); cursor: pointer; transition: background 0.1s;
+  }
+  .filter-btn:hover { background: var(--bg); }
+  .filter-btn.active { background: var(--tag-bg); color: var(--accent); font-weight: 600; }
+  .filter-count {
+    float: right; background: var(--bg); border-radius: 10px;
+    padding: 1px 7px; font-size: 11px; color: var(--muted);
+  }
+  .filter-btn.active .filter-count { background: var(--accent); color: #fff; }
+
+  main { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  .toolbar { display: flex; gap: 10px; align-items: center; }
+  .search-wrap { position: relative; flex: 1; }
+  .search-wrap svg {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; color: var(--muted); pointer-events: none;
+  }
+  #searchInput {
+    width: 100%; padding: 9px 12px 9px 34px; border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 14px; background: var(--surface);
+    color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  #searchInput:focus { border-color: var(--accent2); }
+
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none; padding: 9px 16px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+
+  .results-meta { font-size: 12px; color: var(--muted); }
+
+  .entries-list { display: flex; flex-direction: column; gap: 10px; }
+  .entry-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+    box-shadow: var(--shadow); transition: border-color 0.15s;
+  }
+  .entry-card:hover { border-color: var(--accent2); }
+  .entry-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .entry-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .entry-category {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent); white-space: nowrap;
+    background: var(--tag-bg); padding: 3px 8px; border-radius: 4px;
+  }
+  .entry-description { font-size: 13px; color: var(--text); line-height: 1.55; margin-bottom: 10px; }
+  .entry-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag { background: var(--tag-bg); color: var(--tag-text); font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .entry-link {
+    font-size: 12px; color: var(--accent2); text-decoration: none;
+    white-space: nowrap; display: flex; align-items: center; gap: 4px;
+  }
+  .entry-link:hover { text-decoration: underline; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state p { font-size: 14px; margin-top: 8px; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 8px; width: 100%; max-width: 520px;
+    max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h2 { font-size: 15px; font-weight: 700; }
+  .modal-close { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 20px; line-height: 1; padding: 2px 6px; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .form-field input, .form-field textarea, .form-field select {
+    padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; font-family: inherit; color: var(--text); background: var(--surface);
+    outline: none; transition: border-color 0.15s;
+  }
+  .form-field input:focus, .form-field textarea:focus, .form-field select:focus { border-color: var(--accent2); }
+  .form-field textarea { resize: vertical; min-height: 80px; }
+
+  .tag-selector {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 10px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--bg); min-height: 44px;
+  }
+  .tag-option {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-size: 12px; padding: 3px 10px; border-radius: 10px;
+    cursor: pointer; transition: all 0.1s; user-select: none;
+  }
+  .tag-option.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .modal-footer {
+    padding: 14px 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+  .btn-secondary {
+    background: none; border: 1px solid var(--border); color: var(--text);
+    padding: 8px 16px; border-radius: var(--radius); font-size: 13px; cursor: pointer;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; padding: 12px 18px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 300;
+    opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--green-bg); color: var(--green); }
+  .toast.error   { background: var(--red-bg);   color: var(--red); }
+  .loading { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Trade Notes <span style="opacity:0.4;margin:0 8px">|</span> <span>Northshore Exteriors</span></h1>
+  <div class="header-right">
+    <a class="sheet-link"
+       href="https://docs.google.com/spreadsheets/d/1I0lxor2TpIgGIgW6UH7wZjCT_qWWt0yjM4gEfGV-yYxPfoAF6NZsUqw5/edit"
+       target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Edit Sheet
+    </a>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="sidebar-section">
+      <h3>Category</h3>
+      <div id="categoryFilters"></div>
+    </div>
+    <div class="sidebar-section">
+      <h3>Tags</h3>
+      <div id="tagFilters"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search notes…" />
+      </div>
+      <button class="btn-primary" id="addBtn">+ Add Note</button>
+    </div>
+    <div class="results-meta" id="resultsMeta"></div>
+    <div class="entries-list" id="entriesList">
+      <div class="loading">Loading notes…</div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add Note</h2>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Title *</label>
+        <input type="text" id="fTitle" placeholder="e.g. Flashing lap allowance" />
+      </div>
+      <div class="form-field">
+        <label>Category *</label>
+        <select id="fCategory"><option value="">Select…</option></select>
+      </div>
+      <div class="form-field">
+        <label>Description *</label>
+        <textarea id="fDescription" placeholder="Enter the note…"></textarea>
+      </div>
+      <div class="form-field">
+        <label>Tags</label>
+        <div class="tag-selector" id="tagSelector"></div>
+      </div>
+      <div class="form-field">
+        <label>Linked Reference (optional)</label>
+        <input type="text" id="fLink" placeholder="URL or filename" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="cancelBtn">Cancel</button>
+      <button class="btn-primary" id="saveBtn">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwhNTQwSzoY2EjSy-B9D9AhDtsUgSvElLgUheSX71vN2r_MeAhlIyRzmFIBT16Sc-7tWA/exec';
+
+let allEntries = [];
+let categories = [];
+let tags = [];
+let selectedCategory = 'All';
+let selectedTags = [];
+let selectedFormTags = [];
+
+// ── JSONP ─────────────────────────────────────────────────────────────────────
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      reject(new Error('Request timed out'));
+    }, 30000);
+
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      document.getElementById('jsonp-script')?.remove();
+      resolve(data);
+    };
+
+    const qs = Object.entries({ ...params, callback: cbName })
+      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+
+    const s = document.createElement('script');
+    s.id = 'jsonp-script';
+    s.src = `${GAS_URL}?${qs}`;
+    s.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      reject(new Error('Script load failed'));
+    };
+    document.head.appendChild(s);
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  await loadConfig();
+  await loadEntries();
+  bindEvents();
+}
+
+async function loadConfig() {
+  try {
+    const data = await jsonp({ action: 'getConfig' });
+    if (data.success) {
+      categories = data.categories;
+      tags = data.tags;
+      buildCategoryFilters();
+      buildTagFilters();
+      buildFormSelects();
+    }
+  } catch (e) {
+    showToast('Failed to load config', 'error');
+  }
+}
+
+async function loadEntries() {
+  try {
+    const data = await jsonp({ action: 'getEntries' });
+    if (data.success) {
+      allEntries = data.entries;
+      renderEntries();
+    }
+  } catch (e) {
+    document.getElementById('entriesList').innerHTML =
+      '<div class="empty-state"><p>Could not load notes. Check GAS endpoint.</p></div>';
+  }
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function buildCategoryFilters() {
+  const el = document.getElementById('categoryFilters');
+  el.innerHTML = ['All', ...categories].map(c => `
+    <button class="filter-btn ${c === 'All' ? 'active' : ''}"
+            onclick="setCategory('${c}')" data-cat="${c}">
+      ${c} <span class="filter-count" id="count-cat-${c}">0</span>
+    </button>`).join('');
+}
+
+function buildTagFilters() {
+  const el = document.getElementById('tagFilters');
+  el.innerHTML = tags.map(t => `
+    <button class="filter-btn" onclick="toggleTagFilter('${t}')" data-tag="${t}">
+      ${t} <span class="filter-count" id="count-tag-${t}">0</span>
+    </button>`).join('');
+}
+
+function buildFormSelects() {
+  document.getElementById('fCategory').innerHTML =
+    '<option value="">Select…</option>' +
+    categories.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  document.getElementById('tagSelector').innerHTML =
+    tags.map(t => `<span class="tag-option" onclick="toggleFormTag('${t}')" data-tag="${t}">${t}</span>`).join('');
+}
+
+function setCategory(cat) {
+  selectedCategory = cat;
+  document.querySelectorAll('[data-cat]').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === cat));
+  renderEntries();
+}
+
+function toggleTagFilter(tag) {
+  const idx = selectedTags.indexOf(tag);
+  if (idx === -1) selectedTags.push(tag); else selectedTags.splice(idx, 1);
+  document.querySelectorAll('[data-tag]').forEach(b => {
+    if (b.dataset.tag === tag) b.classList.toggle('active', selectedTags.includes(tag));
+  });
+  renderEntries();
+}
+
+function toggleFormTag(tag) {
+  const idx = selectedFormTags.indexOf(tag);
+  if (idx === -1) selectedFormTags.push(tag); else selectedFormTags.splice(idx, 1);
+  document.querySelectorAll(`#tagSelector [data-tag="${tag}"]`).forEach(el =>
+    el.classList.toggle('selected', selectedFormTags.includes(tag)));
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderEntries() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  const filtered = allEntries.filter(e => {
+    const catMatch  = selectedCategory === 'All' || e.category === selectedCategory;
+    const tagMatch  = selectedTags.length === 0 || selectedTags.every(t => e.tags.includes(t));
+    const srchMatch = !query ||
+      e.title.toLowerCase().includes(query) ||
+      e.description.toLowerCase().includes(query) ||
+      e.tags.some(t => t.toLowerCase().includes(query));
+    return catMatch && tagMatch && srchMatch;
+  });
+
+  ['All', ...categories].forEach(c => {
+    const el = document.getElementById(`count-cat-${c}`);
+    if (el) el.textContent = c === 'All' ? allEntries.length : allEntries.filter(e => e.category === c).length;
+  });
+  tags.forEach(t => {
+    const el = document.getElementById(`count-tag-${t}`);
+    if (el) el.textContent = allEntries.filter(e => e.tags.includes(t)).length;
+  });
+
+  document.getElementById('resultsMeta').textContent =
+    filtered.length === allEntries.length
+      ? `${allEntries.length} notes`
+      : `${filtered.length} of ${allEntries.length} notes`;
+
+  const list = document.getElementById('entriesList');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <p>No notes match your search.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => `
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="entry-title">${esc(e.title)}</span>
+        <span class="entry-category">${esc(e.category)}</span>
+      </div>
+      <p class="entry-description">${esc(e.description)}</p>
+      <div class="entry-footer">
+        <div class="tag-list">${e.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        ${e.link ? `<a class="entry-link" href="${esc(e.link)}" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>Reference</a>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal() {
+  selectedFormTags = [];
+  ['fTitle','fDescription','fLink'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fCategory').value = '';
+  document.querySelectorAll('#tagSelector .tag-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('fTitle').focus();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function saveEntry() {
+  const title       = document.getElementById('fTitle').value.trim();
+  const category    = document.getElementById('fCategory').value;
+  const description = document.getElementById('fDescription').value.trim();
+  const link        = document.getElementById('fLink').value.trim();
+
+  if (!title || !category || !description) {
+    showToast('Title, category, and description are required.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  try {
+    const data = await jsonp({
+      action: 'addEntry',
+      data: JSON.stringify({ title, category, description, tags: selectedFormTags, link })
+    });
+    if (data.success) {
+      closeModal();
+      showToast('Note saved.', 'success');
+      await loadEntries();
+    } else {
+      showToast('Save failed. Try again.', 'error');
+    }
+  } catch (e) {
+    showToast('Network error. Try again.', 'error');
+  } finally {
+    btn.textContent = 'Save Note';
+    btn.disabled = false;
+  }
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
+function bindEvents() {
+  document.getElementById('addBtn').addEventListener('click', openModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  document.getElementById('saveBtn').addEventListener('click', saveEntry);
+  document.getElementById('searchInput').addEventListener('input', renderEntries);
+  document.getElementById('modalOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+}
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
