@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<style type='text/css'>
+    div#calc{
+            width:500px;
+            margin:0px auto;
+    }
+    div#calc h1{
+          font:bold 15px Verdana;
+          color:#333;
+        }
+    div#cleft{
+            float:left;
+            margin-right:20px;
+            background-color:#EEEEEE;
+            border:1px solid #999;
+            width:180px;
+            padding-left:5px;
+            height:400px;
+    }
+    div#cright{
+            float:left;   
+            width:200px;       
+        }
+    div#cleft label, div#cleft select, div#cleft em, div#cleft input, div#cright b{
+            clear:left;
+            color:#014583;
+            border:1px solid #999;
+            -moz-border-radius:2px;
+            font:10px Verdana;
+    }
+    div#cleft label, div#cright b, div#cright em, div#cleft em{
+            padding:15px 2px 10px 5px;
+            border:0px;
+    }
+    div#cright b, div#cright em{
+            padding:0px;
+            margin:0px;
+    }
+    
+    div#cright strong{
+            color:red;   
+            font:bold 10px Verdana;  
+     }
+    
+    div#cleft p{
+        margin:0px;
+        padding-bottom:15px;    
+    }
+    
+    div#cright p{
+        margin:0px;
+        padding-bottom:5px;
+        }
+    
+    div#cright b.answ, div#cright em.answ{
+            color:#C07710;
+            font-weight:bold;
+        }
+    div#cleft fieldset{
+            border:0px;
+            color:#014583;
+    }
+    div#cleft legend{
+           color:#C07710;
+           font:bold 12px Verdana;
+        }
+    div#cleft input, div#cleft select{
+            margin-left:35px;
+            color:#C07710;
+            font-weight:bold;
+    }
+    div#cleft input{
+            text-align:right;
+            padding-right:5px;
+            width:75px;            
+    }
+    div#cleft select{
+            width:75px;
+        }
+    div#cleft label{
+        display:block;
+        padding-right:0px,0px,5px,5px;
+        text-align:left;    
+    }
+    div#cleft em{
+            padding-left:5px;
+        }
+    div#cright em{
+        font:10px Verdana;
+        }
+    div#cright h2{
+        font:bold 12px Verdana;
+        color:#C07710;   
+    }
+    br{
+        clear:both;
+        float:none;
+        }
+
+    
+</style>
+<script type='text/javascript'>
+
+<!--
+var table1609=[];
+table1609[1]=[1.21,1,1.21,1.47];
+table1609[2]=[1.21,1,1.21,1.47];
+table1609[3]=[1.21,1,1.21,1.47];
+table1609[4]=[1.21,1,1.21,1.47];
+table1609[5]=[1.21,1,1.21,1.47];
+table1609[6]=[1.21,1,1.21,1.47];
+table1609[7]=[1.21,1,1.21,1.47];
+table1609[8]=[1.21,1,1.21,1.47];
+table1609[9]=[1.21,1,1.21,1.47];
+table1609[10]=[1.21,1,1.21,1.47];
+table1609[11]=[1.21,1,1.21,1.47];
+table1609[12]=[1.21,1,1.21,1.47];
+table1609[13]=[1.21,1,1.21,1.47];
+table1609[14]=[1.21,1,1.21,1.47];
+table1609[15]=[1.21,1,1.21,1.47];
+table1609[16]=[1.23,1,1.23,1.49];
+table1609[17]=[1.24,1,1.24,1.5];
+table1609[18]=[1.26,1,1.26,1.52];
+table1609[19]=[1.27,1,1.27,1.53];
+table1609[20]=[1.29,1,1.29,1.55];
+table1609[21]=[1.3,1,1.3,1.56];
+table1609[22]=[1.31,1,1.31,1.57];
+table1609[23]=[1.33,1,1.33,1.59];
+table1609[24]=[1.34,1,1.34,1.6];
+table1609[25]=[1.35,1,1.35,1.61];
+table1609[26]=[1.36,1,1.36,1.62];
+table1609[27]=[1.37,1,1.37,1.63];
+table1609[28]=[1.38,1,1.38,1.64];
+table1609[29]=[1.39,1,1.39,1.65];
+table1609[30]=[1.4,1,1.4,1.66];
+table1609[31]=[1.41,1.01,1.41,1.67];
+table1609[32]=[1.42,1.02,1.42,1.68];
+table1609[33]=[1.43,1.03,1.43,1.68];
+table1609[34]=[1.44,1.04,1.44,1.69];
+table1609[35]=[1.45,1.05,1.45,1.7];
+table1609[36]=[1.46,1.06,1.46,1.71];
+table1609[37]=[1.47,1.07,1.47,1.72];
+table1609[38]=[1.47,1.07,1.47,1.72];
+table1609[39]=[1.48,1.08,1.48,1.73];
+table1609[40]=[1.49,1.09,1.49,1.74];
+table1609[41]=[1.5,1.1,1.5,1.75];
+table1609[42]=[1.51,1.1,1.51,1.76];
+table1609[43]=[1.51,1.11,1.51,1.76];
+table1609[44]=[1.52,1.11,1.52,1.77];
+table1609[45]=[1.53,1.12,1.53,1.78];
+table1609[46]=[1.54,1.13,1.54,1.79];
+table1609[47]=[1.54,1.14,1.54,1.79];
+table1609[48]=[1.55,1.14,1.55,1.8];
+table1609[49]=[1.55,1.15,1.55,1.8];
+table1609[50]=[1.56,1.16,1.56,1.81];
+table1609[51]=[1.57,1.17,1.57,1.82];
+table1609[52]=[1.57,1.17,1.57,1.82];
+table1609[53]=[1.58,1.18,1.58,1.83];
+table1609[54]=[1.58,1.18,1.58,1.83];
+table1609[55]=[1.59,1.19,1.59,1.84];
+table1609[56]=[1.6,1.2,1.6,1.85];
+table1609[57]=[1.6,1.2,1.6,1.85];
+table1609[58]=[1.61,1.21,1.61,1.86];
+table1609[59]=[1.61,1.21,1.61,1.86];
+table1609[60]=[1.62,1.22,1.62,1.87];
+
+var table1609P=[];
+table1609P[0]=[0.00,14.60,-15.80,14.60,-19.50];
+table1609P[1]=[10.00,14.60,-15.80,14.60,-19.50];
+table1609P[2]=[15.00,14.25,-15.45,14.25,-18.85];
+table1609P[3]=[20.00,13.90,-15.10,13.90,-18.20];
+table1609P[4]=[35.00,13.45,-14.70,13.45,-17.35];
+table1609P[5]=[50.00,13.00,-14.30,13.00,-16.50];
+table1609P[6]=[75.00,12.70,-13.95,12.70,-15.80];
+table1609P[7]=[100.00,12.40,-13.60,12.40,-15.10];
+
+var UBC9716G=[];
+UBC9716G.push([70,1,1,1.48,1.77]);
+UBC9716G.push([80,1.04,1.04,1.53,1.81]);
+UBC9716G.push([90,1.09,1.09,1.57,1.85]);
+UBC9716G.push([100,1.13,1.13,1.61,1.88]);
+UBC9716G.push([110,1.17,1.17,1.64,1.91]);
+UBC9716G.push([120,1.20,1.20,1.67,1.93]);
+UBC9716G.push([140,1.26,1.26,1.73,1.98]);
+UBC9716G.push([160,1.31,1.31,1.79,2.02]);
+UBC9716G.push([180,1.37,1.37,1.83,2.06]);
+UBC9716G.push([200,1.42,1.42,1.87,2.10]);
+UBC9716G.push([250,1.53,1.53,1.96,2.17]);
+UBC9716G.push([300,1.63,1.63,2.05,2.23]);
+UBC9716G.push([350,1.72,1.72,2.12,2.29]);
+UBC9716G.push([400,1.80,1.80,2.19,2.34]);
+
+UBC9716H=[];
+UBC9716H.push([10.0,1.20,1.50]);
+UBC9716H.push([55.0,1.05,1.35]);
+UBC9716H.push([100.0,0.90,1.20]);
+
+UBC9716F=[];
+UBC9716F.push([70.0,12.6]);
+UBC9716F.push([75.0,14.5]);
+UBC9716F.push([80.0,16.4]);
+UBC9716F.push([85.0,18.6]);
+UBC9716F.push([90.0,20.8]);
+UBC9716F.push([95.0,23.2]);
+UBC9716F.push([100.0,25.6]);
+UBC9716F.push([105.0,28.3]);
+UBC9716F.push([110.0,31.0]);
+UBC9716F.push([115.0,33.95]);
+UBC9716F.push([120.0,36.9]);
+UBC9716F.push([125.0,40.1]);
+UBC9716F.push([130.0,43.3]);
+
+var exposures=new Array('A','B','C','D');
+
+String.prototype.lastCharAt = function(subj){
+	for(i=this.length;i>-1;i++){
+	    if(this.charAt(i)==subj){
+	            return i;
+	        }    
+	}
+	return -1;
+}
+
+
+window.onload=function(){
+        var frm=document.theForm;
+        for(i=0;i<frm.elements.length;i++){
+            frm.elements[i].onchange=function(){setData('cright');};
+            frm.elements[i].onkeyup=function(){setData('cright');};
+        }
+        setData('cright');
+}
+
+
+function br(){
+        return "<br />";
+    }
+
+function setData(divId){
+    var htmlData="";
+    var rHeight=parseInt(document.getElementById('rHeight').value);
+    var expCat=document.getElementById('expCat').options[document.getElementById('expCat').options.selectedIndex].text;
+    var windSpd=parseInt(document.getElementById('windSpd').value);
+    var eArea=10;
+    var iFactor=parseFloat(document.getElementById('iFactor').value);
+    var h=0;
+    var wsf=0;
+    var p30Cen=0;
+    var p30Corn=0;
+    var pnetcen=0;
+    var pnetcorn=0;
+    htmlData+="<p><b>Exposure Category = </b><em> "+expCat+"</em></p>";
+    if(!isNum(windSpd)) windSpd = 80; 
+    htmlData+="<p><b>Wind Speed = </b><em> "+windSpd+" mph</em></p>";
+    if(!isNum(rHeight)) rHeight = 50; 
+    htmlData+="<p><b>Average Roof Height = </b><em> "+rHeight+" ft.</em></p>";
+    if(!isNum(iFactor)) iFactor = 1.15; 
+    htmlData+="<p><b>Importance Factor = </b><em> "+iFactor+"</em></p>";     
+    var pos=arIndexOf(expCat,exposures);
+    if( rHeight <= 60 ){ // use UBI_03 data
+	    h=table1609[rHeight][pos];
+        htmlData+="<p><b>Height Factor = </b><em> "+h+"</em>";	    
+        if(isNum(windSpd)){
+                wsf=roundTo(Math.pow(windSpd,2)/Math.pow(90,2),3);
+                htmlData+="<p><b>Wind Speed Factor = </b><em > "+wsf+"</em></p><br />";                  
+                if(isNum(eArea)){
+                   var pos=findGreatest(eArea,table1609P,0);   
+                   p30Cen=roundTo(table1609P[pos][2]*wsf,3);
+                   p30Corn=roundTo(table1609P[pos][4]*wsf,3);
+                   htmlData+="<p><b>Pnet30 Center = </b><em> "+p30Cen+" psf</em></p>"; 
+                   htmlData+="<p><b>Pnet30 Corner = </b><em> "+p30Corn+" psf</em></p><br />";                     
+                   	if(isNum(iFactor)){
+	                	 pnetcen=roundTo(h*iFactor*p30Cen,3);
+		                 pnetcorn=roundTo(h*iFactor*p30Corn,3);
+                         htmlData+="<p><b>Pnet Center = </b><em class='answ'> "+pnetcen+" psf</em></p>";
+                         htmlData+="<p><b>Pnet Corner = </b><em class='answ'> "+pnetcorn+" psf</em></p>";   		                 
+	                }  
+                }
+        }
+    }else if( rHeight <= 400 ){ // use UBC_97 data
+        // no exposure A data available from UBC97
+        if( pos == 0 ){
+            htmlData+="<br /><p><strong>Note: Exposure A data unavailable above 60', exposure B data will be used.</strong></p><br />";
+            pos++;
+        }
+        // getting h
+        var gLen = UBC9716G.length;
+        var ptr = 0;
+        while( UBC9716G[ ptr ][0] < rHeight && ptr < gLen )
+            ptr++;    
+        var h = UBC9716G[ ptr ][++pos];
+        htmlData+="<p><b>Height Factor = </b><em> "+h+"</em><br /><br />";	
+        // getting Qs (wind stagnation pressure)
+        gLen = UBC9716F.length;
+        ptr = 0;
+        while( UBC9716F[ ptr ][0] < windSpd && ptr < gLen )
+            ptr++;
+        var Qs = UBC9716F[ ptr ][ 1 ];
+        htmlData+="<p><b>Wind Stagnation Pressure = </b><em> "+Qs+"</em><br />";
+        // getting Cqtyp and Cqcorner
+        gLen = UBC9716H.length;
+        ptr = 0;        
+        while( UBC9716H[ ptr ][0] < eArea && ptr < gLen )	
+            ptr++;
+        CQTyp = UBC9716H[ ptr ][1];
+        CQCorn = UBC9716H[ ptr ][2];
+        htmlData+="<p><b>Cq Typical = </b><em> "+CQTyp+"</em>";
+        htmlData+="<p><b>Cq Corner = </b><em> "+CQCorn+"</em><br /><br />";
+        var PTyp = -roundTo( h * iFactor * Qs * CQTyp, 3);
+        var PCorn = -roundTo( h * iFactor * Qs * CQCorn, 3);
+        htmlData+="<p><b>Pnet Center = </b><em class='answ'> "+PTyp+" psf</em></p>";
+        htmlData+="<p><b>Pnet Corner = </b><em class='answ'> "+PCorn+" psf</em></p>";           
+    }else{
+        htmlData+="<br /><p><strong>Note: This calculator does not contain data for buildings higher than 400'.</strong></p><br />";
+    }
+    document.getElementById(divId).innerHTML=htmlData;
+}
+
+function roundTo(n,decPlace){
+        return Math.round(n*Math.pow(10,decPlace))/Math.pow(10,decPlace);
+}
+
+function isNum(num){
+    return !isNaN(num);
+}
+
+function arIndexOf( needle, haystack ){
+	for( i in haystack ){
+		if( haystack[i] == needle )
+		return i;
+	}
+	return false;
+}
+
+function findGreatest(needle,haystack,offset){
+		for(i=0;i<haystack.length;i++){
+			if(needle>=haystack[i][offset]) return i;
+		}
+		return haystack[haystack.length-1];
+}
+//-->
+
+</script>
+
+</head>
+<body>
+<div id='calc'>
+<h1>Northshore Wind Loading Calculator</h1>
+<div id='cleft'>
+<form name='theForm' method="post">
+<fieldset>
+<p>
+<label for='expCat'>Exposure Category:</label>
+<select id='expCat' name='expCat'>
+<option>A</option>
+<option>B</option>
+<option selected>C</option>
+<option>D</option>
+</select>
+</p>
+<p><label for='windSpd'>Wind Speed:</label><input id='windSpd' name='windSpd' value='80' /><em>mph</em></p>
+<p><label for='rHeight'>Average Roof Height:</label><input id='rHeight' name='rHeight' value='50' /><em>ft.</em></p>
+<p><label for='iFactor'>Importance Factor:</label><input id='iFactor' name='iFactor' value='1.15' /></p>
+</fieldset>
+</form>
+</div>
+<div id='cright'>
+</div>
+<br />
+</div>
+</body>
+</html>
+
+
+
+
