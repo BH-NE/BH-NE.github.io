@@ -13,74 +13,110 @@
   <link rel="icon" href="logo.png">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   <link rel="stylesheet" href="main.css">
   <link rel="stylesheet" href="nav.css">
   <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="home.css">
 </head>
 
 <body>
 
-
-
-<!-- Top-left utility icons -->
-<div class="upperleft-links">
-  <a class="link" href="index.html">
-    <img src="Home-icon.png" title="Home">
+<header class="site-nav">
+  <a class="site-nav-brand" href="index.html">
+    <img src="logo.png" alt="">
+    <span>Northshore Drafting</span>
   </a>
-  <a class="link" href="mailto:brandan@northshoreext.com?subject=Drafting Tool Issue">
-    <img src="Bug-icon.png" title="Report Issue">
-  </a>
-</div>
+  <div class="site-nav-right">
+    <a class="site-nav-icon" href="mailto:brandan@northshoreext.com?subject=Drafting Tool Issue" title="Report Issue">
+      <img src="Bug-icon.png" alt="Report Issue">
+    </a>
+  </div>
+</header>
 
-<div class="container">
+<div class="home-wrap">
 
-  <h1>Northshore Drafting</h1>
-  <p class="text-muted">Internal tools for drafting, nesting, engineering, and reporting</p>
-
-  <hr>
+  <div class="hero">
+    <h1>Northshore Drafting</h1>
+    <p>Internal tools for drafting, nesting, engineering, and reporting</p>
+    <input id="toolSearch" class="hero-search" type="search" placeholder="Search tools..." autocomplete="off">
+  </div>
 
   <!-- ================= Drafting & Tracking ================= -->
-  <section>
-    <h2>Drafting & Tracking</h2>
-    <ul class="list-unstyled">
-      <li><a href="DraftingTracker.html">Drafting Tracker</a></li>
-      <li><a href="DraftingTracker-beta.html">Drafting Tracker (Beta)</a></li>
-      
-    </ul>
+  <section class="tool-section">
+    <h2>Drafting &amp; Tracking</h2>
+    <div class="card-grid">
+      <a class="tool-card" href="DraftingTracker-beta.html">
+        <span class="tool-name">Drafting Tracker<span class="badge-beta">Beta</span></span>
+        <span class="tool-desc">Track drafting jobs and status.</span>
+      </a>
+    </div>
   </section>
-
-  <hr>
 
   <!-- ================= Engineering / Generation ================= -->
-  <section>
-    <h2>Engineering & Generation</h2>
-    <ul class="list-unstyled">
-      <li><a href="OFMGenerator.html">OFM Generator</a></li>
-		<li>
-			<a href="OFMGeneratorv2.html">OFM Generator V2</a>
-		</li>
-      <li><a href="NENCNesting.html">NE Nesting</a></li>
-      </li>
-      <li>
-        <a href="windload.html">Windload</a>
-      </li>
-    </ul>
+  <section class="tool-section">
+    <h2>Engineering &amp; Generation</h2>
+    <div class="card-grid">
+      <a class="tool-card" href="NENCNesting.html">
+        <span class="tool-name">NE Nesting</span>
+        <span class="tool-desc">Nesting for CNC cutting.</span>
+      </a>
+      <a class="tool-card" href="windload.html">
+        <span class="tool-name">Windload</span>
+        <span class="tool-desc">Wind load calculations.</span>
+      </a>
+    </div>
   </section>
-
-  <hr>
 
   <!-- ================= Libraries ================= -->
-  <section>
+  <section class="tool-section">
     <h2>Libraries</h2>
-    <ul class="list-unstyled">
-      <li><a href="fasteners2.html">Fastener Library</a></li>
-      <li><a href="flashing_library.html">Flashing Library</a></li>
-    </ul>
+    <div class="card-grid">
+      <a class="tool-card" href="fasteners2.html">
+        <span class="tool-name">Fastener Library WA</span>
+        <span class="tool-desc">Find the right fastener by object and substrate.</span>
+      </a>
+    </div>
   </section>
 
+  <!-- ================= Training ================= -->
+  <section class="tool-section">
+    <h2>Training</h2>
+    <div class="card-grid">
+      <a class="tool-card" href="tutorials.html">
+        <span class="tool-name">Template Tutorials<span class="badge-new">New</span></span>
+        <span class="tool-desc">Searchable how-tos for the drafting template, with GIFs.</span>
+      </a>
+      <a class="tool-card" href="TradeNotes.html">
+        <span class="tool-name">Trade Notes<span class="badge-beta">Beta</span></span>
+        <span class="tool-desc">Drafting notes and best practices.</span>
+      </a>
+    </div>
+  </section>
+
+  <div id="noTools" class="no-tools">No tools match your search.</div>
 
 </div>
+
+<script>
+  // Quick filter: hides cards that don't match, and hides empty sections
+  const box = document.getElementById('toolSearch');
+  box.addEventListener('input', () => {
+    const q = box.value.toLowerCase().trim();
+    let total = 0;
+    document.querySelectorAll('.tool-section').forEach(sec => {
+      let shown = 0;
+      sec.querySelectorAll('.tool-card').forEach(card => {
+        const ok = !q || (card.textContent + ' ' + sec.querySelector('h2').textContent).toLowerCase().includes(q);
+        card.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      sec.style.display = shown ? '' : 'none';
+      total += shown;
+    });
+    document.getElementById('noTools').style.display = total ? 'none' : 'block';
+  });
+</script>
 
 </body>
 </html>

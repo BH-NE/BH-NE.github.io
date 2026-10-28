@@ -1,0 +1,173 @@
+/* Drafting Template Tutorials - extends main.css (reuses .collapsible-section, .section-header, .section-content) */
+
+.tut-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Toolbar */
+.tut-toolbar {
+    background-color: #2a2d2d;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.tut-search {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    background-color: #1f2121;
+    color: #d7dcdc;
+    border: 2px solid #6ccce2;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.tut-search:focus {
+    outline: none;
+    border-color: #f3e722;
+}
+
+.tut-toolbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.tut-count {
+    color: #d7dcdc;
+    font-size: 15px;
+}
+
+.tut-btn {
+    background-color: #1f2121;
+    color: #6ccce2;
+    border: 2px solid #6ccce2;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 6px;
+}
+
+.tut-btn:hover {
+    border-color: #f3e722;
+    color: #f3e722;
+}
+
+/* Tag chips */
+.tut-tags {
+    margin-top: 12px;
+}
+
+.tag-chip {
+    display: inline-block;
+    background-color: #1f2121;
+    color: #d7dcdc;
+    border: 1px solid #555555;
+    border-radius: 14px;
+    padding: 3px 12px;
+    margin: 3px 4px 3px 0;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.tag-chip:hover,
+.tag-chip.active {
+    border-color: #f3e722;
+    color: #f3e722;
+}
+
+/* Subject body */
+.tut-body {
+    background-color: #2a2d2d;
+    border-radius: 8px;
+    padding: 25px;
+    margin: 10px 0 20px 0;
+}
+
+.tut-gif {
+    background-color: #1f2121;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.tut-gif img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.gif-missing {
+    padding: 60px 20px;
+    color: #888888;
+    font-style: italic;
+}
+
+.tut-summary {
+    color: #d7dcdc;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.tut-body h3 {
+    color: #f3e722;
+    font-size: 20px;
+    margin: 20px 0 10px 0;
+}
+
+.tut-body ol,
+.tut-body ul {
+    color: #d7dcdc;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.tut-tip {
+    border-left: 4px solid #6ccce2;
+    padding: 8px 15px;
+    margin: 8px 0;
+    color: #d7dcdc;
+    font-size: 15px;
+}
+
+.tut-meta {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #888888;
+}
+
+.tut-none {
+    text-align: center;
+    color: #d7dcdc;
+    font-size: 18px;
+    padding: 40px;
+    display: none;
+}
+
+mark {
+    background-color: #f3e722;
+    color: #1f2121;
+    border-radius: 2px;
+}
+
+.section-header small {
+    font-size: 14px;
+    font-weight: normal;
+    margin-left: 12px;
+}
+
+@media screen and (max-width: 800px) {
+    .tut-toolbar { position: static; }
+    .section-header { font-size: 22px; }
+}

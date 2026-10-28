@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta property="og:title" content="Drafting Template Tutorials" />
+    <meta property="og:image" content="logo.png" />
+    <meta property="og:description" content="" />
+    <meta property="og:site_name" content="BH-NE.github.io" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Northshore Drafting - Template Tutorials</title>
+    <link rel="icon" href="logo.png">
+
+    <link href="https://s3.amazonaws.com/codecademy-content/courses/ltp/css/shift.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://s3.amazonaws.com/codecademy-content/courses/ltp/css/bootstrap.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="tutorials.css">
+</head>
+
+<body>
+    <header class="site-nav">
+        <a class="site-nav-brand" href="index.html">
+            <img src="logo.png" alt="">
+            <span>Northshore Drafting</span>
+        </a>
+        <span class="site-nav-page"><span class="site-nav-sep">/</span> Template Tutorials</span>
+    </header>
+
+    <H1>Drafting Template Tutorials</H1>
+
+    <div class="tut-container">
+
+        <!-- SEARCH / CONTROLS -->
+        <div class="tut-toolbar">
+            <input id="searchBox" class="tut-search" type="search" placeholder="Search subjects, steps, or tags..." autocomplete="off">
+            <div class="tut-toolbar-row">
+                <span id="resultCount" class="tut-count"></span>
+                <span>
+                    <button class="tut-btn" onclick="setAll(true)">Expand all</button>
+                    <button class="tut-btn" onclick="setAll(false)">Collapse all</button>
+                    <button class="tut-btn" onclick="clearFilters()">Clear</button>
+                </span>
+            </div>
+            <div id="tagBar" class="tut-tags"></div>
+        </div>
+
+        <div id="tutList"></div>
+        <div id="noResults" class="tut-none">No subjects match your search.</div>
+    </div>
+
+    <script>
+        /* ============================================================
+           ADD NEW SUBJECTS HERE - copy one block, fill it in.
+           id    : unique, no spaces (used for direct links: tutorials.html#detail-bubble)
+           title : subject name
+           tags  : words people might search for
+           gif   : path to the GIF
+           summary : one or two sentence description
+           steps : ordered list
+           tips  : optional notes / common mistakes
+           updated: optional date shown at the bottom
+           ============================================================ */
+        const tutorials = [
+            {
+                id: "detail-bubble",
+                title: "Placing a Detail Bubble",
+                tags: ["detail", "bubble", "callout", "annotation", "template"],
+                gif: "tutorialgifs/PlacingCalloutBlocks.gif",
+                summary: "How to place a detail bubble using the Sheet Set Manager on a drawing sheet so it references the correct detail and sheet number.",
+                steps: [
+                    "Open the drawing where the detail bubble will be placed (Sheet or BaseDrawings.dwg).",
+                    "In the sheet set manager window select the ‘Sheet Views’ tab.",
+                    "a. Right-Click the detail you want to place a callout for.",
+                    "b.	Select place callout block > NSSM Callout Bubble.",
+                    "c.	Click your insertion point.",
+                    "d.	You can change the type of callout by selecting the block and changing the view with the dropdown."
+                ],
+                tips: [
+                    "DO NOT rename and renumber if the detail properties window opens. close this and renumber from the sheet set manager window.",
+                    "ATTREQ to 0 to remove the window when placing a detail callout."
+                ],
+                updated: "2026-10-28"
+            }
+            // , { id: "next-subject", title: "...", tags: [], gif: "", summary: "", steps: [], tips: [] }
+        ];
+
+        /* ---------- Rendering ---------- */
+        const listEl = document.getElementById('tutList');
+        const searchEl = document.getElementById('searchBox');
+        const countEl = document.getElementById('resultCount');
+        const noResEl = document.getElementById('noResults');
+        const tagBarEl = document.getElementById('tagBar');
+        let activeTag = null;
+
+        function esc(s) {
+            return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        }
+
+        function buildCard(t) {
+            const steps = (t.steps || []).map(s => `<li>${esc(s)}</li>`).join('');
+            const tips = (t.tips || []).map(s => `<div class="tut-tip">${esc(s)}</div>`).join('');
+            const tags = (t.tags || []).map(x => `<span class="tag-chip" onclick="toggleTag('${esc(x)}')">${esc(x)}</span>`).join('');
+            const gif = t.gif
+                ? `<img src="${esc(t.gif)}" alt="${esc(t.title)}" loading="lazy"
+                        onerror="this.parentNode.innerHTML='<div class=&quot;gif-missing&quot;>GIF not added yet: ${esc(t.gif)}</div>'">`
+                : `<div class="gif-missing">No GIF yet</div>`;
+
+            return `
+            <div class="collapsible-section tut-item" id="${esc(t.id)}" data-id="${esc(t.id)}">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="tut-title">${esc(t.title)}</span>
+                    <span class="arrow">&#9660;</span>
+                </div>
+                <div class="section-content">
+                    <div class="tut-body">
+                        <div class="tut-gif">${gif}</div>
+                        <div class="tut-summary">${esc(t.summary)}</div>
+                        ${steps ? `<h3>Steps</h3><ol>${steps}</ol>` : ''}
+                        ${tips ? `<h3>Tips</h3>${tips}` : ''}
+                        <div class="tut-tags">${tags}</div>
+                        ${t.updated ? `<div class="tut-meta">Updated ${esc(t.updated)}</div>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function render() {
+            // sort alphabetically so it stays predictable as the list grows
+            tutorials.sort((a, b) => a.title.localeCompare(b.title));
+            listEl.innerHTML = tutorials.map(buildCard).join('');
+
+            const allTags = [...new Set(tutorials.flatMap(t => t.tags || []))].sort();
+            tagBarEl.innerHTML = allTags.map(x =>
+                `<span class="tag-chip" data-tag="${esc(x)}" onclick="toggleTag('${esc(x)}')">${esc(x)}</span>`
+            ).join('');
+        }
+
+        /* ---------- Collapse / expand ---------- */
+        function toggleSection(header) {
+            header.classList.toggle('active');
+            header.nextElementSibling.classList.toggle('active');
+        }
+
+        function setSection(item, open) {
+            item.querySelector('.section-header').classList.toggle('active', open);
+            item.querySelector('.section-content').classList.toggle('active', open);
+        }
+
+        function setAll(open) {
+            document.querySelectorAll('.tut-item').forEach(el => {
+                if (el.style.display !== 'none') setSection(el, open);
+            });
+        }
+
+        /* ---------- Search / filter ---------- */
+        function textOf(t) {
+            return [t.title, t.summary, (t.tags || []).join(' '), (t.steps || []).join(' '), (t.tips || []).join(' ')]
+                .join(' ').toLowerCase();
+        }
+
+        function applyFilters() {
+            const terms = searchEl.value.toLowerCase().split(/\s+/).filter(Boolean);
+            let shown = 0;
+
+            tutorials.forEach(t => {
+                const el = document.getElementById(t.id);
+                const hay = textOf(t);
+                const matchTerms = terms.every(w => hay.includes(w));   // all words must match
+                const matchTag = !activeTag || (t.tags || []).includes(activeTag);
+                const ok = matchTerms && matchTag;
+
+                el.style.display = ok ? '' : 'none';
+                if (ok) shown++;
+
+                // auto-open matches while searching, close when search is cleared
+                if (ok && terms.length) setSection(el, true);
+                if (!terms.length && !activeTag) setSection(el, false);
+
+                // title highlight
+                const titleEl = el.querySelector('.tut-title');
+                let html = esc(t.title);
+                terms.forEach(w => {
+                    const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                    html = html.replace(re, '<mark>$1</mark>');
+                });
+                titleEl.innerHTML = html;
+            });
+
+            tagBarEl.querySelectorAll('.tag-chip').forEach(c =>
+                c.classList.toggle('active', c.dataset.tag === activeTag));
+
+            countEl.textContent = `${shown} of ${tutorials.length} subject${tutorials.length === 1 ? '' : 's'}`;
+            noResEl.style.display = shown ? 'none' : 'block';
+        }
+
+        function toggleTag(tag) {
+            activeTag = (activeTag === tag) ? null : tag;
+            applyFilters();
+        }
+
+        function clearFilters() {
+            searchEl.value = '';
+            activeTag = null;
+            applyFilters();
+        }
+
+        searchEl.addEventListener('input', applyFilters);
+
+        /* ---------- Init + direct links (tutorials.html#detail-bubble) ---------- */
+        render();
+        applyFilters();
+
+        function openFromHash() {
+            const id = location.hash.slice(1);
+            const el = id && document.getElementById(id);
+            if (el && el.classList.contains('tut-item')) {
+                setSection(el, true);
+                el.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
+        }
+        window.addEventListener('hashchange', openFromHash);
+        openFromHash();
+    </script>
+</body>
+</html>

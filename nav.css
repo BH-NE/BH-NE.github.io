@@ -1,60 +1,97 @@
 @font-face {
-	font-family: 'grobold';
-	src: url('fonts/GROBOLD.ttf') format('truetype');
-}
-
-@font-face {
 	font-family: 'ubuntu';
 	src: url('fonts/Ubuntu-Regular.ttf') format('truetype');
 }
 
-.upperleft-links {
-	font-size: 30px;
-	background-color: #555555;
-	padding: 10px 0px 0px 20px;
-    position: sticky !important;
-	top: 0 !important;
-	z-index: 1000 !important;
-}
-
-	.upperleft-links img {
-		height: 30px;
-		padding: 0px 10px 0px 10px;
-	}
-
-	.upperleft-links a {
-		vertical-align: top;
-	}
-
-.email {
-	display: inline-block;
-	height: 30px;
-	width: 30px;
-	background-position: center center;
-	background-repeat: no-repeat;
-	background-image: url("img/logos/logo_email - copy.png");
-	background-color: #555555;
-}
-
-	.email:hover {
-		background-color: #f3e722;
-	}
-
-.link {
-	display: inline-block;
-}
-
-a.email:hover {
-	background-image: url('img/logos/logo_email_hover.png');
-	cursor: pointer;
-}
-
-.upperleft-links H1 {
-	display: inline-block;
-	color: #f3e722;
-	font-size: 30px;
-	margin: 0;
+.site-nav {
+	position: sticky;
+	top: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	height: 56px;
 	padding: 0 20px;
-	vertical-align: center;
-	text-align: center;
+	background-color: #26292a;
+	border-bottom: 1px solid #3a3e3e;
+	box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+
+.site-nav-brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-family: ubuntu;
+	font-size: 17px;
+	font-weight: bold;
+	color: #f3e722;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.site-nav-brand:hover {
+	color: #f3e722;
+	text-decoration: none;
+	opacity: 0.85;
+}
+
+.site-nav-brand img {
+	height: 26px;
+	width: 26px;
+	display: block;
+	margin: 0;
+	border-radius: 4px;
+}
+
+.site-nav-sep {
+	color: #6b7070;
+	font-weight: normal;
+	margin: 0 2px;
+}
+
+.site-nav-page {
+	color: #d7dcdc;
+	font-weight: normal;
+	font-size: 15px;
+}
+
+.site-nav-right {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.site-nav-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 6px;
+	transition: background-color 0.15s;
+}
+
+.site-nav-icon:hover {
+	background-color: #3a3e3e;
+}
+
+.site-nav-icon img {
+	height: 18px;
+	width: 18px;
+	display: block;
+	margin: 0;
+}
+
+@media screen and (max-width: 800px) {
+	.site-nav {
+		padding: 0 14px;
+		gap: 10px;
+	}
+	.site-nav-brand span {
+		display: none;
+	}
+	.site-nav-page {
+		font-size: 13px;
+	}
 }
