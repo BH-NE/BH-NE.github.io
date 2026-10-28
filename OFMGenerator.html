@@ -306,6 +306,16 @@ body{background:var(--nf-cream);color:var(--nf-espresso);font-family:var(--font-
   .stage-content{padding:24px 16px;}
   .ofm-screen-row{grid-template-columns:1fr 1fr;}
 }
+/* ── Drawing Canvas ── */
+.draw-wrap{margin-top:12px;border-top:var(--border-subtle);padding-top:10px;}
+.draw-toolbar{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:7px 10px;background:var(--nf-linen);border-radius:var(--radius-md);border:var(--border-subtle);margin-bottom:6px;}
+.draw-sep{width:1px;height:18px;background:var(--nf-raw-cotton);margin:0 3px;flex-shrink:0;}
+.draw-canvas-row{display:flex;gap:8px;align-items:flex-start;}
+.draw-marks{width:120px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;}
+.draw-mark-item{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--nf-jute);text-transform:uppercase;border:1px solid transparent;}
+.draw-mark-item.sel{background:var(--nf-linen);border-color:var(--nf-undyed-wool);}
+.draw-mark-item button{background:none;border:none;cursor:pointer;color:var(--nf-sand);font-size:11px;padding:0 2px;line-height:1;}
+.draw-mark-item button:hover{color:#9C4848;}
 </style>
 </head>
 <body>
@@ -543,8 +553,8 @@ function PrintOFMCard({ part, mat, zones, details, notes, pageNum, totalPages, j
 
       {/* ── Main: Drawing + Zones ── */}
       <div className="ofm-main-area">
-        <div className="ofm-drawing-area">
-          <span>Profile Drawing — V2</span>
+        <div className="ofm-drawing-area" style={{padding:0,overflow:'hidden'}}>
+          <DrawingView drawing={notes.drawing} />
         </div>
         <div className="ofm-zone-col">
           <table className="ofm-zone-tbl">
@@ -1297,6 +1307,482 @@ function Stage5({ state, setState }) {
 }
 
 /* ═══════════════════════════════════════════════
+   DRAWING CANVAS  (SVG-based)
+═══════════════════════════════════════════════ */
+const DW = 600, DH = 320;
+
+const ptDist = (x1,y1,x2,y2) => Math.sqrt((x1-x2)**2+(y1-y2)**2);
+
+function arrowPts(x,y,dx,dy,sz=7) {
+  const len=Math.sqrt(dx*dx+dy*dy)||1;
+  const ux=dx/len,uy=dy/len,px=-uy,py=ux;
+  return `${x},${y} ${x-ux*sz+px*sz*.4},${y-uy*sz+py*sz*.4} ${x-ux*sz-px*sz*.4},${y-uy*sz-py*sz*.4}`;
+}
+
+function arcPath(cx,cy,r,sa,ea) {
+  const x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa);
+  const x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+  const large=Math.abs(ea-sa)>Math.PI?1:0;
+  return `M${x1},${y1} A${r},${r},0,${large},1,${x2},${y2}`;
+}
+
+function getHandles(s) {
+  switch(s.type) {
+    case 'line':     return [{k:'p1',x:s.x1,y:s.y1},{k:'p2',x:s.x2,y:s.y2}];
+    case 'polyline': return s.pts.map((p,i)=>({k:`p${i}`,x:p[0],y:p[1]}));
+    case 'circle':   return [{k:'c',x:s.cx,y:s.cy},{k:'r',x:s.cx+s.r,y:s.cy}];
+    case 'arc':      return [
+      {k:'c',x:s.cx,y:s.cy},
+      {k:'s',x:s.cx+s.r*Math.cos(s.sa),y:s.cy+s.r*Math.sin(s.sa)},
+      {k:'e',x:s.cx+s.r*Math.cos(s.ea),y:s.cy+s.r*Math.sin(s.ea)},
+    ];
+    case 'dimL':   return [{k:'p1',x:s.x1,y:s.y1},{k:'p2',x:s.x2,y:s.y2}];
+    case 'dimA':   return [{k:'c',x:s.cx,y:s.cy}];
+    case 'text':   return [{k:'p',x:s.x,y:s.y}];
+    case 'leader': return s.pts.map((p,i)=>({k:`p${i}`,x:p[0],y:p[1]}));
+    case 'image':  return [{k:'tl',x:s.x,y:s.y},{k:'br',x:s.x+s.w,y:s.y+s.h}];
+    default: return [];
+  }
+}
+
+function applyHandle(s, hk, nx, ny) {
+  switch(s.type) {
+    case 'line':   return hk==='p1'?{...s,x1:nx,y1:ny}:{...s,x2:nx,y2:ny};
+    case 'polyline':{ const i=parseInt(hk.slice(1)),pts=[...s.pts]; pts[i]=[nx,ny]; return {...s,pts}; }
+    case 'circle': return hk==='c'?{...s,cx:nx,cy:ny}:{...s,r:ptDist(s.cx,s.cy,nx,ny)};
+    case 'arc':
+      if(hk==='c') return {...s,cx:nx,cy:ny};
+      if(hk==='s') return {...s,sa:Math.atan2(ny-s.cy,nx-s.cx)};
+      return {...s,ea:Math.atan2(ny-s.cy,nx-s.cx)};
+    case 'dimL':   return hk==='p1'?{...s,x1:nx,y1:ny}:{...s,x2:nx,y2:ny};
+    case 'dimA':   return {...s,cx:nx,cy:ny};
+    case 'text':   return {...s,x:nx,y:ny};
+    case 'leader': { const i=parseInt(hk.slice(1)),pts=[...s.pts]; pts[i]=[nx,ny]; return {...s,pts}; }
+    case 'image':
+      if(hk==='tl') return {...s,x:nx,y:ny,w:s.w+(s.x-nx),h:s.h+(s.y-ny)};
+      return {...s,w:Math.max(20,nx-s.x),h:Math.max(20,ny-s.y)};
+    default: return s;
+  }
+}
+
+// ── Shape SVG element (shared by canvas + print) ──
+function ShapeEl({ shape:s, selected, onMD }) {
+  const clr = selected ? '#1a7ae8' : (s.stroke||'#000');
+  const sw  = s.sw||1.5;
+  const G   = { stroke:clr, strokeWidth:sw, fill:'none',
+    style:{cursor:onMD?'pointer':'default'},
+    onMouseDown: onMD ? e=>{e.stopPropagation();onMD(e);} : undefined };
+
+  switch(s.type) {
+    case 'line':
+      return <line {...G} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}/>;
+    case 'polyline':
+      return <polyline {...G} points={s.pts.map(p=>p.join(',')).join(' ')}/>;
+    case 'circle':
+      return <circle {...G} cx={s.cx} cy={s.cy} r={s.r}/>;
+    case 'arc':
+      return <path {...G} d={arcPath(s.cx,s.cy,s.r,s.sa,s.ea)}/>;
+    case 'dimL': {
+      const dx=s.x2-s.x1,dy=s.y2-s.y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+      const ux=dx/len,uy=dy/len,px=-uy,py=ux,off=s.off||30;
+      const ox1=s.x1+px*off,oy1=s.y1+py*off,ox2=s.x2+px*off,oy2=s.y2+py*off;
+      const mx=(ox1+ox2)/2,my=(oy1+oy2)/2;
+      return (
+        <g onMouseDown={G.onMouseDown} style={G.style}>
+          <line stroke={clr} strokeWidth={sw} x1={s.x1} y1={s.y1} x2={ox1} y2={oy1}/>
+          <line stroke={clr} strokeWidth={sw} x1={s.x2} y1={s.y2} x2={ox2} y2={oy2}/>
+          <line stroke={clr} strokeWidth={sw} x1={ox1} y1={oy1} x2={ox2} y2={oy2}/>
+          <polygon points={arrowPts(ox1,oy1,ox1-ox2,oy1-oy2)} fill={clr}/>
+          <polygon points={arrowPts(ox2,oy2,ox2-ox1,oy2-oy1)} fill={clr}/>
+          <text x={mx} y={my-(s.fs||11)-2} textAnchor="middle" fontSize={s.fs||11} fill={clr} stroke="none">{s.label||''}</text>
+        </g>
+      );
+    }
+    case 'dimA': {
+      const mid=(s.a1+s.a2)/2, mr=(s.r||40)*1.4;
+      return (
+        <g onMouseDown={G.onMouseDown} style={G.style}>
+          <path stroke={clr} strokeWidth={sw} fill="none" d={arcPath(s.cx,s.cy,s.r||40,s.a1,s.a2)}/>
+          <text x={s.cx+mr*Math.cos(mid)} y={s.cy+mr*Math.sin(mid)} textAnchor="middle"
+            dominantBaseline="middle" fontSize={s.fs||11} fill={clr} stroke="none">{s.label||''}</text>
+        </g>
+      );
+    }
+    case 'text':
+      return <text x={s.x} y={s.y} fontSize={s.fs||12} fill={s.fill||'#000'} stroke="none"
+        style={G.style} onMouseDown={G.onMouseDown}>{s.text}</text>;
+    case 'leader': {
+      if(!s.pts||s.pts.length<2) return null;
+      const last=s.pts[s.pts.length-1];
+      const p0=s.pts[0],p1=s.pts[1];
+      return (
+        <g onMouseDown={G.onMouseDown} style={G.style}>
+          <polyline stroke={clr} strokeWidth={sw} fill="none" points={s.pts.map(p=>p.join(',')).join(' ')}/>
+          <polygon points={arrowPts(p0[0],p0[1],p0[0]-p1[0],p0[1]-p1[1])} fill={clr}/>
+          <text x={last[0]+4} y={last[1]} fontSize={s.fs||11} fill={clr} stroke="none">{s.text||''}</text>
+        </g>
+      );
+    }
+    case 'image':
+      return <image href={s.data} x={s.x} y={s.y} width={s.w} height={s.h}
+        preserveAspectRatio="xMidYMid meet"
+        style={G.style} onMouseDown={G.onMouseDown}/>;
+    default: return null;
+  }
+}
+
+// ── Read-only SVG render (print) ──
+function DrawingView({ drawing }) {
+  const shapes = drawing?.shapes||[];
+  const images = drawing?.images||[];
+  if(!shapes.length&&!images.length) {
+    return (
+      <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',
+        color:'#ccc',fontSize:10,letterSpacing:'0.12em',textTransform:'uppercase'}}>
+        Profile Drawing
+      </div>
+    );
+  }
+  return (
+    <svg width="100%" height="100%" viewBox={`0 0 ${DW} ${DH}`} preserveAspectRatio="xMidYMid meet">
+      {images.map(s=><ShapeEl key={s.id} shape={s}/>)}
+      {shapes.map(s=><ShapeEl key={s.id} shape={s}/>)}
+    </svg>
+  );
+}
+
+// ── Interactive Drawing Canvas ──
+const TOOLS = ['select','line','polyline','circle','arc','dimL','dimA','text','leader'];
+const TLBL  = {select:'⬡ Select',line:'Line',polyline:'Polyline',circle:'Circle',
+               arc:'Arc',dimL:'Dim-L',dimA:'Dim-A',text:'Text',leader:'Leader'};
+
+function DrawingCanvas({ drawing, onChange }) {
+  const shapes = drawing?.shapes||[];
+  const images = drawing?.images||[];
+
+  const [tool,  setTool]    = useState('select');
+  const [selId, setSelId]   = useState(null);
+  const [preview, setPrev]  = useState(null);
+  const [clicks,  setClicks]= useState([]);
+  const [clr,  setClr]      = useState('#000000');
+  const [sw,   setSw]       = useState(1.5);
+  const [fs,   setFs]       = useState(12);
+
+  const dragRef = useRef(null);
+  const histRef = useRef([{shapes:[],images:[]}]);
+  const hidxRef = useRef(0);
+  const svgRef  = useRef();
+
+  // Init history from prop on first mount
+  useEffect(() => {
+    histRef.current = [{shapes:[...(drawing?.shapes||[])],images:[...(drawing?.images||[])]}];
+    hidxRef.current = 0;
+  }, []); // eslint-disable-line
+
+  const commit = useCallback((ns, ni) => {
+    const state = {shapes:ns, images:ni??images};
+    onChange(state);
+    histRef.current = histRef.current.slice(0, hidxRef.current+1);
+    histRef.current.push(state);
+    hidxRef.current = histRef.current.length-1;
+  }, [images, onChange]);
+
+  const undo = useCallback(() => {
+    if(hidxRef.current<=0) return;
+    hidxRef.current--;
+    onChange(histRef.current[hidxRef.current]);
+  }, [onChange]);
+
+  const redo = useCallback(() => {
+    if(hidxRef.current>=histRef.current.length-1) return;
+    hidxRef.current++;
+    onChange(histRef.current[hidxRef.current]);
+  }, [onChange]);
+
+  const getSVGPos = (e) => {
+    const rect = svgRef.current.getBoundingClientRect();
+    return [
+      ((e.clientX-rect.left)/rect.width )*DW,
+      ((e.clientY-rect.top )/rect.height)*DH,
+    ];
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const h = e => {
+      const tag = e.target.tagName;
+      if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+      if((e.key==='Delete'||e.key==='Backspace')&&selId) {
+        commit(shapes.filter(s=>s.id!==selId), images.filter(i=>i.id!==selId));
+        setSelId(null);
+      }
+      if(e.ctrlKey&&e.key==='z'){ e.preventDefault(); undo(); }
+      if(e.ctrlKey&&e.key==='y'){ e.preventDefault(); redo(); }
+      if(e.key==='Escape'){ setClicks([]); setPrev(null); }
+    };
+    window.addEventListener('keydown',h);
+    return ()=>window.removeEventListener('keydown',h);
+  }, [selId, shapes, images, commit, undo, redo]);
+
+  // Paste image
+  useEffect(() => {
+    const h = async e => {
+      const items = e.clipboardData?.items;
+      if(!items) return;
+      for(const item of items) {
+        if(item.type.startsWith('image/')) {
+          const blob = item.getAsFile();
+          const url  = URL.createObjectURL(blob);
+          const img  = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, (DW/2)/img.width, (DH/2)/img.height);
+            const cv = document.createElement('canvas');
+            cv.width  = Math.round(img.width *scale);
+            cv.height = Math.round(img.height*scale);
+            cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+            const data = cv.toDataURL('image/jpeg',0.7);
+            commit(shapes, [...images,{id:genId(),type:'image',x:10,y:10,w:cv.width,h:cv.height,data}]);
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+          break;
+        }
+      }
+    };
+    window.addEventListener('paste',h);
+    return ()=>window.removeEventListener('paste',h);
+  }, [shapes, images, commit]);
+
+  const addShape = (shape) => {
+    commit([...shapes,{...shape,id:genId(),stroke:clr,sw,fs}], images);
+    setClicks([]); setPrev(null);
+  };
+
+  const handleMD = (e) => {
+    if(e.button!==0) return;
+    const [x,y] = getSVGPos(e);
+
+    if(tool==='select'){ setSelId(null); return; }
+
+    if(tool==='line'){
+      dragRef.current={act:'draw',tool:'line',x1:x,y1:y};
+      setPrev({type:'line',x1:x,y1:y,x2:x,y2:y,stroke:clr,sw});
+    }
+    if(tool==='circle'){
+      dragRef.current={act:'draw',tool:'circle',cx:x,cy:y};
+      setPrev({type:'circle',cx:x,cy:y,r:0,stroke:clr,sw});
+    }
+    if(tool==='dimL'){
+      dragRef.current={act:'draw',tool:'dimL',x1:x,y1:y};
+      setPrev({type:'dimL',x1:x,y1:y,x2:x,y2:y,off:30,label:'',stroke:clr,sw,fs});
+    }
+    if(tool==='polyline'||tool==='leader'){
+      const nc=[...clicks,[x,y]];
+      setClicks(nc);
+      setPrev({type:tool==='leader'?'leader':'polyline',pts:[...nc,[x,y]],stroke:clr,sw,fs,text:''});
+    }
+    if(tool==='arc'){
+      const nc=[...clicks,[x,y]];
+      setClicks(nc);
+      if(nc.length===3){
+        const [c,s2,ep]=nc;
+        const r=ptDist(c[0],c[1],s2[0],s2[1]);
+        const sa=Math.atan2(s2[1]-c[1],s2[0]-c[0]);
+        const ea=Math.atan2(ep[1]-c[1],ep[0]-c[0]);
+        addShape({type:'arc',cx:c[0],cy:c[1],r,sa,ea});
+      } else {
+        setPrev({type:'arc',cx:x,cy:y,r:0,sa:0,ea:0,stroke:clr,sw});
+      }
+    }
+    if(tool==='dimA'){
+      const nc=[...clicks,[x,y]];
+      setClicks(nc);
+      if(nc.length===3){
+        const [c,p1,p2]=nc;
+        const a1=Math.atan2(p1[1]-c[1],p1[0]-c[0]);
+        const a2=Math.atan2(p2[1]-c[1],p2[0]-c[0]);
+        const label=window.prompt('Angle label:','')||'';
+        addShape({type:'dimA',cx:c[0],cy:c[1],r:40,a1,a2,label});
+      }
+    }
+    if(tool==='text'){
+      const text=window.prompt('Text:','');
+      if(text) addShape({type:'text',x,y,text,fs,fill:clr});
+    }
+  };
+
+  const handleMM = (e) => {
+    const [x,y]=getSVGPos(e);
+    const d=dragRef.current;
+    if(d){
+      if(d.act==='draw'){
+        if(d.tool==='line')   setPrev(p=>({...p,x2:x,y2:y}));
+        if(d.tool==='circle') setPrev(p=>({...p,r:ptDist(d.cx,d.cy,x,y)}));
+        if(d.tool==='dimL')   setPrev(p=>({...p,x2:x,y2:y}));
+      }
+      if(d.act==='handle'){
+        const ns=shapes.map(s=>s.id===d.sid?applyHandle(s,d.hk,x,y):s);
+        const ni=images.map(s=>s.id===d.sid?applyHandle(s,d.hk,x,y):s);
+        onChange({shapes:ns,images:ni});
+      }
+      if(d.act==='move'){
+        const dx=x-d.sx,dy=y-d.sy;
+        const moveShape=s=>{
+          switch(s.type){
+            case 'line':    return {...s,x1:d.ox1+dx,y1:d.oy1+dy,x2:d.ox2+dx,y2:d.oy2+dy};
+            case 'circle':
+            case 'arc':     return {...s,cx:d.ocx+dx,cy:d.ocy+dy};
+            case 'dimL':    return {...s,x1:d.ox1+dx,y1:d.oy1+dy,x2:d.ox2+dx,y2:d.oy2+dy};
+            case 'dimA':    return {...s,cx:d.ocx+dx,cy:d.ocy+dy};
+            case 'text':    return {...s,x:d.ox+dx,y:d.oy+dy};
+            case 'polyline':
+            case 'leader':  return {...s,pts:d.opts.map(p=>[p[0]+dx,p[1]+dy])};
+            case 'image':   return {...s,x:d.ox+dx,y:d.oy+dy};
+            default: return s;
+          }
+        };
+        const ns=shapes.map(s=>s.id===d.sid?moveShape(s):s);
+        const ni=images.map(s=>s.id===d.sid?moveShape(s):s);
+        onChange({shapes:ns,images:ni});
+      }
+    }
+    if((tool==='polyline'||tool==='leader')&&clicks.length>0)
+      setPrev(p=>({...p,pts:[...clicks,[x,y]]}));
+  };
+
+  const handleMU = (e) => {
+    const d=dragRef.current;
+    if(d){
+      if(d.act==='draw'){
+        const [x,y]=getSVGPos(e);
+        if(d.tool==='line'&&ptDist(d.x1,d.y1,x,y)>4)
+          addShape({type:'line',x1:d.x1,y1:d.y1,x2:x,y2:y});
+        if(d.tool==='circle'){const r=ptDist(d.cx,d.cy,x,y);if(r>4) addShape({type:'circle',cx:d.cx,cy:d.cy,r});}
+        if(d.tool==='dimL'&&ptDist(d.x1,d.y1,x,y)>4){
+          const label=window.prompt('Dimension label:','')||'';
+          addShape({type:'dimL',x1:d.x1,y1:d.y1,x2:x,y2:y,off:30,label});
+        }
+        setPrev(null);
+      }
+      if(d.act==='handle'||d.act==='move') commit(shapes,images);
+      dragRef.current=null;
+    }
+  };
+
+  const handleDbl = (e) => {
+    const [x,y]=getSVGPos(e);
+    if(tool==='polyline'&&clicks.length>=2) addShape({type:'polyline',pts:[...clicks,[x,y]]});
+    if(tool==='leader'&&clicks.length>=1){
+      const text=window.prompt('Leader text:','')||'';
+      addShape({type:'leader',pts:[...clicks,[x,y]],text});
+    }
+  };
+
+  const onShapeMD = (e,shape) => {
+    if(tool!=='select') return;
+    e.stopPropagation();
+    setSelId(shape.id);
+    const [x,y]=getSVGPos(e);
+    const s=shapes.find(sh=>sh.id===shape.id)||images.find(im=>im.id===shape.id);
+    if(!s) return;
+    dragRef.current={act:'move',sid:shape.id,sx:x,sy:y,
+      ox1:s.x1,oy1:s.y1,ox2:s.x2,oy2:s.y2,ocx:s.cx,ocy:s.cy,
+      ox:s.x,oy:s.y,opts:s.pts?s.pts.map(p=>[...p]):undefined};
+  };
+
+  const onHandleMD = (e,shape,hk) => {
+    e.stopPropagation();
+    dragRef.current={act:'handle',sid:shape.id,hk};
+  };
+
+  const delShape = (id) => {
+    commit(shapes.filter(s=>s.id!==id),images.filter(i=>i.id!==id));
+    if(selId===id) setSelId(null);
+  };
+
+  const selShape = selId?(shapes.find(s=>s.id===selId)||images.find(i=>i.id===selId)):null;
+  const allItems = [...images,...shapes];
+
+  return (
+    <div>
+      <div className="draw-toolbar">
+        {TOOLS.map(t=>(
+          <button key={t} className={`btn btn-xs ${tool===t?'btn-primary':'btn-ghost'}`}
+            onClick={()=>{setTool(t);setClicks([]);setPrev(null);}}>
+            {TLBL[t]}
+          </button>
+        ))}
+        <div className="draw-sep"/>
+        <label style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',display:'flex',alignItems:'center',gap:4}}>
+          Color <input type="color" value={clr} onChange={e=>setClr(e.target.value)}
+            style={{width:26,height:20,padding:1,border:'var(--border-mid)',borderRadius:3,cursor:'pointer'}}/>
+        </label>
+        <label style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',display:'flex',alignItems:'center',gap:4}}>
+          W<input type="number" min="0.5" max="8" step="0.5" value={sw} onChange={e=>setSw(parseFloat(e.target.value)||1.5)}
+            style={{width:38,fontFamily:'var(--font-mono)',fontSize:11,padding:'2px 4px',border:'var(--border-mid)',borderRadius:3}}/>
+        </label>
+        <label style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',display:'flex',alignItems:'center',gap:4}}>
+          Sz<input type="number" min="6" max="36" step="1" value={fs} onChange={e=>setFs(parseInt(e.target.value)||12)}
+            style={{width:38,fontFamily:'var(--font-mono)',fontSize:11,padding:'2px 4px',border:'var(--border-mid)',borderRadius:3}}/>
+        </label>
+        <div className="draw-sep"/>
+        <button className="btn btn-ghost btn-xs" onClick={undo} title="Ctrl+Z">↩</button>
+        <button className="btn btn-ghost btn-xs" onClick={redo} title="Ctrl+Y">↪</button>
+        {selId && <button className="btn btn-danger btn-xs" onClick={()=>delShape(selId)}>✕ Del</button>}
+        <span style={{fontSize:10,fontFamily:'var(--font-mono)',color:'var(--nf-sand)',marginLeft:'auto',whiteSpace:'nowrap'}}>
+          Paste img · Dbl=finish · Esc=cancel
+        </span>
+      </div>
+
+      <div className="draw-canvas-row">
+        <svg ref={svgRef}
+          viewBox={`0 0 ${DW} ${DH}`}
+          style={{flex:1,border:'var(--border-mid)',borderRadius:'var(--radius-sm)',background:'#fff',
+            cursor:tool==='select'?'default':'crosshair',display:'block'}}
+          onMouseDown={handleMD} onMouseMove={handleMM} onMouseUp={handleMU} onDoubleClick={handleDbl}>
+
+          {images.map(s=>(
+            <image key={s.id} href={s.data} x={s.x} y={s.y} width={s.w} height={s.h}
+              preserveAspectRatio="xMidYMid meet"
+              style={{cursor:tool==='select'?'pointer':'default'}}
+              onMouseDown={e=>onShapeMD(e,s)}/>
+          ))}
+          {shapes.map(s=>(
+            <ShapeEl key={s.id} shape={s} selected={s.id===selId} onMD={e=>onShapeMD(e,s)}/>
+          ))}
+          {preview && <ShapeEl shape={{...preview,id:'__prev'}}/>}
+
+          {selShape && getHandles(selShape).map(h=>(
+            <circle key={h.k} cx={h.x} cy={h.y} r={5} fill="#fff" stroke="#1a7ae8" strokeWidth={1.5}
+              style={{cursor:'crosshair'}}
+              onMouseDown={e=>{e.stopPropagation();onHandleMD(e,selShape,h.k);}}/>
+          ))}
+          {clicks.map((c,i)=>(
+            <circle key={i} cx={c[0]} cy={c[1]} r={3} fill="#1a7ae8" opacity={0.5}/>
+          ))}
+        </svg>
+
+        <div className="draw-marks">
+          <div style={{fontFamily:'var(--font-mono)',fontSize:9,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--nf-sand)',marginBottom:4}}>
+            Marks ({allItems.length})
+          </div>
+          <div style={{overflowY:'auto',maxHeight:DH,display:'flex',flexDirection:'column',gap:2}}>
+            {allItems.map(s=>(
+              <div key={s.id} className={`draw-mark-item${selId===s.id?' sel':''}`}
+                onClick={()=>{setSelId(s.id);setTool('select');}}>
+                <span>{s.type}</span>
+                <button onClick={e=>{e.stopPropagation();delShape(s.id);}}>✕</button>
+              </div>
+            ))}
+            {allItems.length===0 && <div style={{fontFamily:'var(--font-mono)',fontSize:10,color:'var(--nf-sand)'}}>empty</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
    STAGE 6 — OFM OUTPUT SHEETS (screen view)
 ═══════════════════════════════════════════════ */
 function Stage6({ state, setState, onPrint }) {
@@ -1306,6 +1792,13 @@ function Stage6({ state, setState, onPrint }) {
     setState(s => ({
       ...s,
       ofmSheetNotes: { ...s.ofmSheetNotes, [ofmId]: { ...(s.ofmSheetNotes[ofmId]||{}), [field]:val } }
+    }));
+  };
+
+  const setDrawing = (ofmId, drawing) => {
+    setState(s => ({
+      ...s,
+      ofmSheetNotes: { ...s.ofmSheetNotes, [ofmId]: { ...(s.ofmSheetNotes[ofmId]||{}), drawing } }
     }));
   };
 
@@ -1422,6 +1915,17 @@ function Stage6({ state, setState, onPrint }) {
                     </div>
                   </div>
                 )}
+
+                {/* Profile Drawing */}
+                <div className="draw-wrap">
+                  <div style={{fontFamily:'var(--font-mono)',fontSize:10,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--nf-sand)',marginBottom:6}}>
+                    Profile Drawing
+                  </div>
+                  <DrawingCanvas
+                    drawing={notes.drawing || {shapes:[],images:[]}}
+                    onChange={d => setDrawing(part.id, d)}
+                  />
+                </div>
               </div>
             </div>
           );
@@ -1678,7 +2182,7 @@ function App() {
         </div>
         <div className="app-header-right">
           <a className="app-header-home" href="index.html">← Home</a>
-          <span>NENC · v1.1</span>
+          <span>NENC · v2.0</span>
         </div>
       </header>
 

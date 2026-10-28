@@ -39,7 +39,6 @@
   <div class="hero">
     <h1>Northshore Drafting</h1>
     <p>Internal tools for drafting, nesting, engineering, and reporting</p>
-    <input id="toolSearch" class="hero-search" type="search" placeholder="Search tools..." autocomplete="off">
   </div>
 
   <!-- ================= Drafting & Tracking ================= -->
@@ -61,6 +60,10 @@
         <span class="tool-name">NE Nesting</span>
         <span class="tool-desc">Nesting for CNC cutting.</span>
       </a>
+      <a class="tool-card" href="OFMGenerator.html">
+        <span class="tool-name">OFM Generator</span>
+        <span class="tool-desc">Generate order for materials paperwork.</span>
+      </a>
       <a class="tool-card" href="windload.html">
         <span class="tool-name">Windload</span>
         <span class="tool-desc">Wind load calculations.</span>
@@ -72,7 +75,7 @@
   <section class="tool-section">
     <h2>Libraries</h2>
     <div class="card-grid">
-      <a class="tool-card" href="fasteners2.html">
+      <a class="tool-card" href="fasteners.html">
         <span class="tool-name">Fastener Library WA</span>
         <span class="tool-desc">Find the right fastener by object and substrate.</span>
       </a>
@@ -94,29 +97,18 @@
     </div>
   </section>
 
-  <div id="noTools" class="no-tools">No tools match your search.</div>
+    <!-- ================= Training ================= -->
+  <section class="tool-section">
+    <h2>Data</h2>
+    <div class="card-grid">
+  <a class="tool-card" href="Report.html">
+        <span class="tool-name">Report</span>
+        <span class="tool-desc">Read-only Reporting.</span>
+      </a>
+    </div>
+  </section>
 
 </div>
-
-<script>
-  // Quick filter: hides cards that don't match, and hides empty sections
-  const box = document.getElementById('toolSearch');
-  box.addEventListener('input', () => {
-    const q = box.value.toLowerCase().trim();
-    let total = 0;
-    document.querySelectorAll('.tool-section').forEach(sec => {
-      let shown = 0;
-      sec.querySelectorAll('.tool-card').forEach(card => {
-        const ok = !q || (card.textContent + ' ' + sec.querySelector('h2').textContent).toLowerCase().includes(q);
-        card.style.display = ok ? '' : 'none';
-        if (ok) shown++;
-      });
-      sec.style.display = shown ? '' : 'none';
-      total += shown;
-    });
-    document.getElementById('noTools').style.display = total ? 'none' : 'block';
-  });
-</script>
 
 </body>
 </html>

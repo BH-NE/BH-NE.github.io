@@ -1,5 +1,406 @@
-<iframe scrolling="no" frameborder="0" style="border: medium none ; margin: 0px auto; overflow: hidden; width: 600px; height: 460px;" src="http://www.northshoreext.com/main/tools/windloadingjavascript.html"></iframe>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta property="og:title" content="Windload" />
+    <meta property="og:image" content="logo.png" />
+    <meta property="og:description" content="Northshore wind loading calculator." />
+    <meta property="og:site_name" content="BH-NE.github.io" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Northshore Drafting - Windload</title>
+    <link rel="icon" href="logo.png">
 
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="nav.css">
 
+    <style>
+        .finder-container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: #2a2d2d;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
 
-<iframe scrolling="no" frameborder="0" style="border: medium none ; margin: 0px auto; overflow: hidden; width: 600px; height: 460px;" src="windloadingjavascript.html"></iframe>
+        .finder-title {
+            color: #6ccce2;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .finder-subtitle {
+            color: #d7dcdc;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dropdown-group {
+            margin-bottom: 26px;
+        }
+
+        .dropdown-label {
+            color: #f3e722;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .dropdown-group select,
+        .dropdown-group input {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-family: ubuntu;
+            background-color: #1f2121;
+            color: #d7dcdc;
+            border: 2px solid #6ccce2;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .dropdown-group select:hover,
+        .dropdown-group input:hover {
+            border-color: #f3e722;
+        }
+
+        .dropdown-group select:focus,
+        .dropdown-group input:focus {
+            outline: none;
+            border-color: #f3e722;
+        }
+
+        .dropdown-unit {
+            color: #9aa3a3;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .result-box {
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #1f2121;
+            border-radius: 8px;
+            border: 3px solid #6ccce2;
+        }
+
+        .result-title {
+            color: #f3e722;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 6px 0;
+            border-bottom: 1px solid #3a3e3e;
+            color: #d7dcdc;
+            font-size: 16px;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-row.answer {
+            margin-top: 8px;
+            border-top: 2px solid #6ccce2;
+            border-bottom: none;
+            padding-top: 14px;
+        }
+
+        .result-row.answer span:last-child {
+            color: #f3e722;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .result-row.answer + .result-row.answer {
+            margin-top: 0;
+            border-top: none;
+            padding-top: 6px;
+        }
+
+        .result-note {
+            color: #f365cb;
+            font-size: 14px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        .glossary {
+            max-width: 700px;
+            margin: 0 auto 60px auto;
+            padding: 0 40px;
+        }
+
+        .glossary h2 {
+            color: #6ccce2;
+            font-size: 22px;
+            margin: 0 0 18px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3a3e3e;
+            text-align: left;
+        }
+
+        .glossary-item {
+            margin-bottom: 18px;
+        }
+
+        .glossary-item dt {
+            color: #f3e722;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .glossary-item dd {
+            margin: 0;
+            color: #d7dcdc;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media screen and (max-width: 800px) {
+            .finder-container {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            .finder-title {
+                font-size: 28px;
+            }
+
+            .glossary {
+                padding: 0 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-nav">
+        <a class="site-nav-brand" href="index.html">
+            <img src="logo.png" alt="">
+            <span>Northshore Drafting</span>
+        </a>
+        <span class="site-nav-page"><span class="site-nav-sep">/</span> Windload</span>
+    </header>
+
+    <div class="finder-container">
+        <div class="finder-title">Wind Loading Calculator</div>
+        <div class="finder-subtitle">Enter the building parameters to calculate net wind pressure</div>
+
+        <div class="dropdown-group">
+            <label class="dropdown-label" for="expCat">Exposure Category</label>
+            <select id="expCat">
+                <option>A</option>
+                <option>B</option>
+                <option selected>C</option>
+                <option>D</option>
+            </select>
+        </div>
+
+        <div class="dropdown-group">
+            <label class="dropdown-label" for="windSpd">Wind Speed</label>
+            <input id="windSpd" type="number" value="80">
+            <div class="dropdown-unit">mph</div>
+        </div>
+
+        <div class="dropdown-group">
+            <label class="dropdown-label" for="rHeight">Average Roof Height</label>
+            <input id="rHeight" type="number" value="50">
+            <div class="dropdown-unit">ft.</div>
+        </div>
+
+        <div class="dropdown-group">
+            <label class="dropdown-label" for="iFactor">Importance Factor</label>
+            <input id="iFactor" type="number" step="0.01" value="1.15">
+        </div>
+
+        <div class="result-box">
+            <div class="result-title">Results</div>
+            <div id="resultBody"></div>
+        </div>
+    </div>
+
+    <div class="glossary">
+        <h2>What these mean</h2>
+        <dl>
+            <div class="glossary-item">
+                <dt>Exposure Category</dt>
+                <dd>How rough or open the terrain is around the building, which affects how hard the wind hits it. 
+                    <br><strong>A</strong> Exposure A is the old “heavy urban/city-center” category, which is rarely used today.
+                    <br><strong>B</strong> is urban/suburban or wooded terrain with lots of obstructions. 
+                    <br><strong>C</strong> is open terrain with scattered obstructions under 30 ft (the most common choice). 
+                    <br><strong>D</strong> is flat, unobstructed terrain facing open water. Use the category called out on the project's structural/civil drawings or geotechnical report.</dd>
+            </div>
+            <div class="glossary-item">
+                <dt>Importance Factor</dt>
+                <dd>A multiplier for how critical the building is if it fails. Standard buildings use <strong>1.0</strong>. Essential facilities (hospitals, fire/police stations, shelters) or buildings with high occupancy use a higher factor, typically <strong>1.15</strong>. Confirm the correct value against the project's structural drawings before using it for design.</dd>
+            </div>
+            <div class="glossary-item">
+                <dt>Pnet30</dt>
+                <dd>The reference net wind pressure for a small component area, straight from the code's exposure/wind-speed tables, before it's adjusted for this building's actual roof height or importance factor. It's an intermediate number used to get to Pnet, not the final design value.</dd>
+            </div>
+            <div class="glossary-item">
+                <dt>Pnet</dt>
+                <dd>The final net design wind pressure (Pnet30 &times; Height Factor &times; Importance Factor), in pounds per square foot. This is the number to use for component and cladding design. A negative value means suction (pulling outward); a positive value means the wind is pushing inward.</dd>
+            </div>
+            <div class="glossary-item">
+                <dt>Center vs. Corner</dt>
+                <dd><strong>Center</strong> applies to the typical field of the wall or roof, away from edges. <strong>Corner</strong> applies to the higher-pressure zones near building corners and edges, where wind pressures are always greater &mdash; use Corner values for fasteners and components in those zones.</dd>
+            </div>
+        </dl>
+    </div>
+
+    <script>
+        // Height factor by exposure (ASCE/UBI table, roof height 1-60 ft)
+        var table1609 = [];
+        table1609[1]=[1.21,1,1.21,1.47]; table1609[2]=[1.21,1,1.21,1.47]; table1609[3]=[1.21,1,1.21,1.47];
+        table1609[4]=[1.21,1,1.21,1.47]; table1609[5]=[1.21,1,1.21,1.47]; table1609[6]=[1.21,1,1.21,1.47];
+        table1609[7]=[1.21,1,1.21,1.47]; table1609[8]=[1.21,1,1.21,1.47]; table1609[9]=[1.21,1,1.21,1.47];
+        table1609[10]=[1.21,1,1.21,1.47]; table1609[11]=[1.21,1,1.21,1.47]; table1609[12]=[1.21,1,1.21,1.47];
+        table1609[13]=[1.21,1,1.21,1.47]; table1609[14]=[1.21,1,1.21,1.47]; table1609[15]=[1.21,1,1.21,1.47];
+        table1609[16]=[1.23,1,1.23,1.49]; table1609[17]=[1.24,1,1.24,1.5]; table1609[18]=[1.26,1,1.26,1.52];
+        table1609[19]=[1.27,1,1.27,1.53]; table1609[20]=[1.29,1,1.29,1.55]; table1609[21]=[1.3,1,1.3,1.56];
+        table1609[22]=[1.31,1,1.31,1.57]; table1609[23]=[1.33,1,1.33,1.59]; table1609[24]=[1.34,1,1.34,1.6];
+        table1609[25]=[1.35,1,1.35,1.61]; table1609[26]=[1.36,1,1.36,1.62]; table1609[27]=[1.37,1,1.37,1.63];
+        table1609[28]=[1.38,1,1.38,1.64]; table1609[29]=[1.39,1,1.39,1.65]; table1609[30]=[1.4,1,1.4,1.66];
+        table1609[31]=[1.41,1.01,1.41,1.67]; table1609[32]=[1.42,1.02,1.42,1.68]; table1609[33]=[1.43,1.03,1.43,1.68];
+        table1609[34]=[1.44,1.04,1.44,1.69]; table1609[35]=[1.45,1.05,1.45,1.7]; table1609[36]=[1.46,1.06,1.46,1.71];
+        table1609[37]=[1.47,1.07,1.47,1.72]; table1609[38]=[1.47,1.07,1.47,1.72]; table1609[39]=[1.48,1.08,1.48,1.73];
+        table1609[40]=[1.49,1.09,1.49,1.74]; table1609[41]=[1.5,1.1,1.5,1.75]; table1609[42]=[1.51,1.1,1.51,1.76];
+        table1609[43]=[1.51,1.11,1.51,1.76]; table1609[44]=[1.52,1.11,1.52,1.77]; table1609[45]=[1.53,1.12,1.53,1.78];
+        table1609[46]=[1.54,1.13,1.54,1.79]; table1609[47]=[1.54,1.14,1.54,1.79]; table1609[48]=[1.55,1.14,1.55,1.8];
+        table1609[49]=[1.55,1.15,1.55,1.8]; table1609[50]=[1.56,1.16,1.56,1.81]; table1609[51]=[1.57,1.17,1.57,1.82];
+        table1609[52]=[1.57,1.17,1.57,1.82]; table1609[53]=[1.58,1.18,1.58,1.83]; table1609[54]=[1.58,1.18,1.58,1.83];
+        table1609[55]=[1.59,1.19,1.59,1.84]; table1609[56]=[1.6,1.2,1.6,1.85]; table1609[57]=[1.6,1.2,1.6,1.85];
+        table1609[58]=[1.61,1.21,1.61,1.86]; table1609[59]=[1.61,1.21,1.61,1.86]; table1609[60]=[1.62,1.22,1.62,1.87];
+
+        // Center/corner pressure at effective wind area 10 sf (ASCE/UBI reference, 90 mph)
+        var table1609P = [];
+        table1609P[0]=[0.00,-15.80,-19.50]; table1609P[1]=[10.00,-15.80,-19.50]; table1609P[2]=[15.00,-15.45,-18.85];
+        table1609P[3]=[20.00,-15.10,-18.20]; table1609P[4]=[35.00,-14.70,-17.35]; table1609P[5]=[50.00,-14.30,-16.50];
+        table1609P[6]=[75.00,-13.95,-15.80]; table1609P[7]=[100.00,-13.60,-15.10];
+
+        // UBC97 height factor by exposure [height, A/B, (dup), C, D], roof height 61-400 ft
+        var UBC9716G = [];
+        UBC9716G.push([70,1,1,1.48,1.77]); UBC9716G.push([80,1.04,1.04,1.53,1.81]); UBC9716G.push([90,1.09,1.09,1.57,1.85]);
+        UBC9716G.push([100,1.13,1.13,1.61,1.88]); UBC9716G.push([110,1.17,1.17,1.64,1.91]); UBC9716G.push([120,1.20,1.20,1.67,1.93]);
+        UBC9716G.push([140,1.26,1.26,1.73,1.98]); UBC9716G.push([160,1.31,1.31,1.79,2.02]); UBC9716G.push([180,1.37,1.37,1.83,2.06]);
+        UBC9716G.push([200,1.42,1.42,1.87,2.10]); UBC9716G.push([250,1.53,1.53,1.96,2.17]); UBC9716G.push([300,1.63,1.63,2.05,2.23]);
+        UBC9716G.push([350,1.72,1.72,2.12,2.29]); UBC9716G.push([400,1.80,1.80,2.19,2.34]);
+
+        var UBC9716H = [];
+        UBC9716H.push([10.0,1.20,1.50]); UBC9716H.push([55.0,1.05,1.35]); UBC9716H.push([100.0,0.90,1.20]);
+
+        var UBC9716F = [];
+        UBC9716F.push([70.0,12.6]); UBC9716F.push([75.0,14.5]); UBC9716F.push([80.0,16.4]);
+        UBC9716F.push([85.0,18.6]); UBC9716F.push([90.0,20.8]); UBC9716F.push([95.0,23.2]);
+        UBC9716F.push([100.0,25.6]); UBC9716F.push([105.0,28.3]); UBC9716F.push([110.0,31.0]);
+        UBC9716F.push([115.0,33.95]); UBC9716F.push([120.0,36.9]); UBC9716F.push([125.0,40.1]);
+        UBC9716F.push([130.0,43.3]);
+
+        var exposures = ['A', 'B', 'C', 'D'];
+
+        function isNum(num) { return !isNaN(num); }
+        function roundTo(n, decPlace) { return Math.round(n * Math.pow(10, decPlace)) / Math.pow(10, decPlace); }
+        function arIndexOf(needle, haystack) {
+            for (var i = 0; i < haystack.length; i++) if (haystack[i] === needle) return i;
+            return false;
+        }
+        function findGreatest(needle, haystack, offset) {
+            for (var i = 0; i < haystack.length; i++) if (needle >= haystack[i][offset]) return i;
+            return haystack.length - 1;
+        }
+        function row(label, value, isAnswer) {
+            return '<div class="result-row' + (isAnswer ? ' answer' : '') + '"><span>' + label + '</span><span>' + value + '</span></div>';
+        }
+
+        function calculate() {
+            var rHeight = parseInt(document.getElementById('rHeight').value);
+            var expCat = document.getElementById('expCat').value;
+            var windSpd = parseInt(document.getElementById('windSpd').value);
+            var eArea = 10;
+            var iFactor = parseFloat(document.getElementById('iFactor').value);
+
+            if (!isNum(windSpd)) windSpd = 80;
+            if (!isNum(rHeight)) rHeight = 50;
+            if (!isNum(iFactor)) iFactor = 1.15;
+
+            var html = '';
+            html += row('Exposure Category', expCat);
+            html += row('Wind Speed', windSpd + ' mph');
+            html += row('Average Roof Height', rHeight + ' ft.');
+            html += row('Importance Factor', iFactor);
+
+            var pos = arIndexOf(expCat, exposures);
+
+            if (rHeight <= 60) {
+                var h = table1609[rHeight][pos];
+                html += row('Height Factor', h);
+
+                var wsf = roundTo(Math.pow(windSpd, 2) / Math.pow(90, 2), 3);
+                html += row('Wind Speed Factor', wsf);
+
+                var tPos = findGreatest(eArea, table1609P, 0);
+                var p30Cen = roundTo(table1609P[tPos][1] * wsf, 3);
+                var p30Corn = roundTo(table1609P[tPos][2] * wsf, 3);
+                html += row('Pnet30 Center', p30Cen + ' psf');
+                html += row('Pnet30 Corner', p30Corn + ' psf');
+
+                var pnetcen = roundTo(h * iFactor * p30Cen, 3);
+                var pnetcorn = roundTo(h * iFactor * p30Corn, 3);
+                html += row('Pnet Center', pnetcen + ' psf', true);
+                html += row('Pnet Corner', pnetcorn + ' psf', true);
+            } else if (rHeight <= 400) {
+                if (pos === 0) {
+                    html += '<div class="result-note">Note: Exposure A data unavailable above 60&rsquo;, exposure B data used.</div>';
+                    pos++;
+                }
+                var gLen = UBC9716G.length, ptr = 0;
+                while (ptr < gLen - 1 && UBC9716G[ptr][0] < rHeight) ptr++;
+                var h2 = UBC9716G[ptr][1 + pos];
+                html += row('Height Factor', h2);
+
+                gLen = UBC9716F.length; ptr = 0;
+                while (ptr < gLen - 1 && UBC9716F[ptr][0] < windSpd) ptr++;
+                var Qs = UBC9716F[ptr][1];
+                html += row('Wind Stagnation Pressure', Qs);
+
+                gLen = UBC9716H.length; ptr = 0;
+                while (ptr < gLen - 1 && UBC9716H[ptr][0] < eArea) ptr++;
+                var CQTyp = UBC9716H[ptr][1];
+                var CQCorn = UBC9716H[ptr][2];
+                html += row('Cq Typical', CQTyp);
+                html += row('Cq Corner', CQCorn);
+
+                var PTyp = -roundTo(h2 * iFactor * Qs * CQTyp, 3);
+                var PCorn = -roundTo(h2 * iFactor * Qs * CQCorn, 3);
+                html += row('Pnet Center', PTyp + ' psf', true);
+                html += row('Pnet Corner', PCorn + ' psf', true);
+            } else {
+                html += '<div class="result-note">This calculator does not contain data for buildings higher than 400&rsquo;.</div>';
+            }
+
+            document.getElementById('resultBody').innerHTML = html;
+        }
+
+        ['expCat', 'windSpd', 'rHeight', 'iFactor'].forEach(function (id) {
+            var el = document.getElementById(id);
+            el.addEventListener('input', calculate);
+            el.addEventListener('change', calculate);
+        });
+
+        calculate();
+    </script>
+</body>
+</html>

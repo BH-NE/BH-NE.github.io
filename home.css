@@ -23,26 +23,6 @@
     margin: 10px 0 25px 0;
 }
 
-.hero-search {
-    display: block;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 480px;
-    padding: 12px 18px;
-    font-size: 17px;
-    font-family: ubuntu;
-    background-color: #2a2d2d;
-    color: #d7dcdc;
-    border: 2px solid #3a3e3e;
-    border-radius: 30px;
-    box-sizing: border-box;
-}
-
-.hero-search:focus {
-    outline: none;
-    border-color: #6ccce2;
-}
-
 /* Sections */
 .tool-section {
     margin-top: 40px;
@@ -113,14 +93,6 @@
 
 .badge-beta { background-color: #f365cb; }
 .badge-new  { background-color: #6ccce2; }
-
-.no-tools {
-    display: none;
-    text-align: center;
-    color: #9aa3a3;
-    font-size: 18px;
-    margin-top: 40px;
-}
 
 @media screen and (max-width: 800px) {
     .hero h1 { font-size: 34px; }
