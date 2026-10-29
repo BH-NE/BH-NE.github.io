@@ -434,6 +434,31 @@
       background: rgba(255,255,255,0.18);
       background: rgba(42, 177, 114, 0.18);
     }
+
+    /* ─── Compact vertical spacing (more rows on screen) ─── */
+    .app-header{padding-top:6px!important;padding-bottom:6px!important;}
+    .app-title h1{font-size:1.05rem;margin:0;}
+    .app-subtitle{font-size:0.7rem;}
+    .app-footer{padding:3px 18px 4px;font-size:0.72rem;}
+    .content{padding:8px 12px;gap:6px;}
+    .sidebar{padding:10px;gap:6px;}
+    .panel{padding:6px 10px;}
+    .filter-row{margin-bottom:2px;}
+    .view-btn{margin-bottom:1px;padding-top:4px;padding-bottom:4px;}
+    .table th,.table td{padding:4px 8px!important;line-height:1.38;}
+    .table .btn-icon{padding:1px 6px;font-size:0.72rem;}
+    .table .badge{padding-top:0;padding-bottom:0;}
+    .tab-btn{padding:3px 12px;}
+    .view-toggle-btn{padding:3px 10px;}
+    .quick-grid{gap:5px;}
+    .quick-card{padding:7px 12px;}
+    .qc-header{margin-bottom:2px;}
+    .qc-bottom{margin-top:4px;gap:12px;}
+    .qc-info{margin-bottom:1px;}
+    .pe-group{margin-bottom:10px;}
+    .pe-group-header{margin-bottom:5px;}
+    .tile-grid{gap:6px;}
+    .tile-card{padding:7px 10px;gap:3px;min-height:0;}
   </style>
 </head>
 <body>
@@ -447,9 +472,9 @@
   // Data now stored in Google Sheets via GAS. LOCAL_KEY is cache only.
 
   const TEAM = [
-    'Alan P','Axel P','Brandan H','Charles L','Colton R','Dante B','Dave K','Dave M',
+    'Alan P','Axel P','Brandan H','Charles L','Chris R (Remote)','Colton R','Dante B','Dave K','Dave M',
     'Dennis E','Eric K','Grant T','Halden H','Jason W','Jeffery H','Jeremy H','Joey M',
-    'Josh F','Keith E','Kristi G','Mike S','Patrick K','Peter J','Ryan M','Taylor K','Tina H',
+    'John J','Josh F','Keith E','Kristi G','Matt D','Mike F','Mike S','Patrick K','Peter J','Ryan M','Taylor K','Tina H','Ziggy H (Remote)',
   ];
 
   
@@ -487,7 +512,29 @@
     {value:'name',      label:'Project Name'},
     {value:'jobNumber', label:'Job Number'},
     {value:'pm', label:'Project Manager'},
+    {value:'division',  label:'Division'},
+    {value:'projectType', label:'Type'},
+    {value:'review',    label:'Review'},
+    {value:'cad',       label:'CAD'},
+    {value:'price',     label:'Price'},
+    {value:'sqft',      label:'Sq Ft'},
   ];
+
+  // Builds a starting form for "Duplicate" — copies project info, resets per-project progress
+  function makeTemplate(src){
+    const p={...src}; delete p.id; delete p.createdAt; delete p.updatedAt;
+    return {
+      ...DEFAULT_FORM,
+      ...p,
+      name:(p.name||'')+' (Copy)',
+      pri:'',
+      draftingStatus:'Ready',
+      detailsDone:0,
+      reviewState:0,
+      archived:false,
+      notes:[],
+    };
+  }
 
   const DEFAULT_FORM = {
     pri:'',name:'',jobNumber:'',division:'',projectType:'',
@@ -634,9 +681,9 @@
   }
 
   /* Project Modal */
-  function ProjectModal({project,onSave,onClose}){
+  function ProjectModal({project,template,onSave,onClose,onDuplicate}){
     const isEdit=Boolean(project);
-    const [form,setForm]=useState(isEdit?{...DEFAULT_FORM,...project}:{...DEFAULT_FORM,notes:[]});
+    const [form,setForm]=useState(isEdit?{...DEFAULT_FORM,...project}:{...DEFAULT_FORM,...(template||{}),notes:[]});
     const [errors,setErrors]=useState({});
     const nameRef=useRef(null);
     useEffect(()=>{
@@ -660,7 +707,7 @@
       <div className="modal-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)trySave();}}>
         <div className="modal-panel">
           <div className="modal-header">
-            <h2>{isEdit?'Edit Project':'Add Project'}</h2>
+            <h2>{isEdit?'Edit Project':template?'Duplicate Project':'Add Project'}</h2>
             <button className="modal-close" type="button" onClick={trySave}>✕</button>
           </div>
           <form onSubmit={submit} className="modal-body">
@@ -805,6 +852,7 @@
             </div>
 
             <div className="modal-footer">
+              {isEdit&&<button type="button" style={{marginRight:'auto'}} onClick={()=>{ if(!form.name.trim()){setErrors(e=>({...e,name:'Required'}));return;} onDuplicate({...form,name:form.name.trim()}); }}>⧉ Duplicate</button>}
               <button type="button" onClick={onClose}>Cancel</button>
               <button type="submit" className="btn-primary">{isEdit?'Save Changes':'Add Project'}</button>
             </div>
@@ -930,7 +978,7 @@
     function handleSave(fd){
       let saved;
       if(modal.mode==='add'){
-        saved = {id:uid(),...fd,archived:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+        saved = {...fd,id:uid(),archived:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
         setProjects(p=>[...p,saved]);
       } else {
         saved = {...modal.project,...fd,updatedAt:new Date().toISOString()};
@@ -938,6 +986,14 @@
       }
       setModal(null);
       saveProject(saved);
+    }
+
+    // Save pending edits on the original, then open a pre-filled "Add" form for the copy
+    function handleDuplicateFromModal(fd){
+      const saved = {...modal.project,...fd,updatedAt:new Date().toISOString()};
+      setProjects(p=>p.map(x=>x.id===saved.id?saved:x));
+      saveProject(saved);
+      setModal({mode:'add',template:makeTemplate(saved)});
     }
 
     function doArchive(p){
@@ -1006,6 +1062,12 @@
           case 'dueDate':   if(!a.dueDate&&!b.dueDate)c=0;else if(!a.dueDate)c=1;else if(!b.dueDate)c=-1;else c=a.dueDate.localeCompare(b.dueDate); break;
           case 'status':    c=(STATUS_ORDER[a.draftingStatus]??99)-(STATUS_ORDER[b.draftingStatus]??99); break;
           case 'pm':        c=(a.pm||'').localeCompare(b.pm||''); break;
+          case 'division':  c=(a.division||'').localeCompare(b.division||''); break;
+          case 'projectType': c=(a.projectType||'').localeCompare(b.projectType||''); break;
+          case 'review':    { const ra=a.reviewState===true?2:a.reviewState===false?0:(a.reviewState||0), rb=b.reviewState===true?2:b.reviewState===false?0:(b.reviewState||0); c=ra-rb; break; }
+          case 'cad':       c=(a.cadAvailable?1:0)-(b.cadAvailable?1:0); break;
+          case 'price':     c=(parseFloat(a.price)||0)-(parseFloat(b.price)||0); break;
+          case 'sqft':      c=(parseFloat(a.sqftTotal)||0)-(parseFloat(b.sqftTotal)||0); break;
           default:          c=(a.pe||'').localeCompare(b.pe||''); break;
         }
         return sortDir==='asc'?c:-c;
@@ -1032,25 +1094,22 @@
                 <th className="sortable" onClick={()=>handleSort('pri')}>PRI <SA f="pri" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('name')}>Project <SA f="name" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('jobNumber')}>Job # <SA f="jobNumber" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th>Division</th>
-                <th>Type</th>
+                <th className="sortable" onClick={()=>handleSort('division')}>Division <SA f="division" sortBy={sortBy} sortDir={sortDir}/></th>
+                <th className="sortable" onClick={()=>handleSort('projectType')}>Type <SA f="projectType" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('pe')}>PE <SA f="pe" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('pm')}>PM <SA f="pm" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('status')}>Status <SA f="status" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th className="sortable" onClick={()=>handleSort('dueDate')}>Due <SA f="dueDate" sortBy={sortBy} sortDir={sortDir}/></th>
-                <th title="Review state — click to cycle: none → flag → checked">Rev</th>
-                <th title="CAD Available">CAD</th>
-                <th>WO</th>
-                <th>Plans</th>
-                <th>Notes</th>
-                <th>Price</th>
-                <th>Sq Ft</th>
+                <th className="sortable" onClick={()=>handleSort('review')} title="Review state — click to sort">Rev <SA f="review" sortBy={sortBy} sortDir={sortDir}/></th>
+                <th className="sortable" onClick={()=>handleSort('cad')} title="CAD Available — click to sort">CAD <SA f="cad" sortBy={sortBy} sortDir={sortDir}/></th>
+                <th className="sortable" onClick={()=>handleSort('price')}>Price <SA f="price" sortBy={sortBy} sortDir={sortDir}/></th>
+                <th className="sortable" onClick={()=>handleSort('sqft')}>Sq Ft <SA f="sqft" sortBy={sortBy} sortDir={sortDir}/></th>
                 <th style={{textAlign:'right'}}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {displayed.length===0?(
-                <tr><td colSpan={18} className="table-empty">{base.length===0?(tab==='active'?'No active projects — click "+ Add Project" to get started.':'No archived projects.'):'No projects match the filters.'}</td></tr>
+                <tr><td colSpan={14} className="table-empty">{base.length===0?(tab==='active'?'No active projects — click "+ Add Project" to get started.':'No archived projects.'):'No projects match the filters.'}</td></tr>
               ):(
                 displayed.map(p=>{
                   const ov=isOverdue(p.dueDate,p.draftingStatus);
@@ -1091,15 +1150,11 @@
                           title={p.cadAvailable?'CAD Available — click to unmark':'Click to mark CAD available'}>
                         {p.cadAvailable?<span style={{color:'var(--accent)',fontSize:'1rem',cursor:'pointer'}}>✓</span>:<span style={{color:'var(--border)',fontSize:'0.9rem',cursor:'pointer'}}>○</span>}
                       </td>
-                      <td onClick={e=>e.stopPropagation()}>{p.woLink?<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link">WO ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
-                      <td onClick={e=>e.stopPropagation()}>{p.plansLink?<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link">Plans ↗</a>:<span style={{color:'var(--text-muted)',fontSize:'0.75rem'}}>—</span>}</td>
-                      <td style={{fontSize:'0.75rem',color:'var(--text-muted)',textAlign:'center'}}>{p.notes?.length?<span style={{color:'var(--accent)'}}>{p.notes.length}</span>:'—'}</td>
                       <td style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>{fmtCurrency(p.price)}</td>
                       <td style={{fontSize:'0.72rem',color:'var(--text-muted)',textAlign:'center'}}>{p.sqftTotal?Number(p.sqftTotal).toLocaleString():'—'}</td>
                       
                       
                       <td style={{textAlign:'right',whiteSpace:'nowrap'}} onClick={e=>e.stopPropagation()}>
-
                         {tab==='active'
                           ?<button className="btn-icon btn-warning" style={{marginLeft:4}} onClick={()=>setConfirm({type:'archive',project:p})}>Archive</button>
                           :<button className="btn-icon btn-success" style={{marginLeft:4}} onClick={()=>doRestore(p)}>Restore</button>}
@@ -1174,11 +1229,7 @@
               CAD {p.cadAvailable?<span style={{color:'var(--accent)',fontSize:'0.9rem'}}>✓</span>:<span style={{color:'var(--border)',fontSize:'0.9rem'}}>○</span>}
             </span>
 
-            <div className="qc-links">
-              {p.woLink&&<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>WO ↗</a>}
-              {p.plansLink&&<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>Plans ↗</a>}
-              {!!p.notes?.length&&<span style={{fontSize:'0.76rem',color:'var(--accent)'}}>{p.notes.length} note{p.notes.length!==1?'s':''}</span>}
-            </div>
+            <div className="qc-links"/>
 
             <div style={{display:'flex',gap:4}}>
               {tab==='active'
@@ -1257,11 +1308,7 @@
           )}
 
           <div className="tile-footer" onClick={e=>e.stopPropagation()}>
-            <div style={{display:'flex',gap:6,fontSize:'0.7rem',color:'var(--text-muted)'}}>
-              {p.woLink&&<a href={p.woLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>WO ↗</a>}
-              {p.plansLink&&<a href={p.plansLink} target="_blank" rel="noopener noreferrer" className="tbl-link" onClick={e=>e.stopPropagation()}>Plans ↗</a>}
-              {!!p.notes?.length&&<span style={{color:'var(--accent)',fontSize:'0.7rem'}}>{p.notes.length}📝</span>}
-            </div>
+            <div/>
             <div className="tile-actions">
               {tab==='active'
                 ?<button className="btn-icon btn-warning" onClick={e=>{e.stopPropagation();setConfirm({type:'archive',project:p});}}>Archive</button>
@@ -1377,7 +1424,7 @@
 
         <footer className="app-footer">Northshore Exteriors | NorthClad Rainscreen Drafting Tracker · Synced to Google Sheets · Export JSON as additional backup</footer>
 
-        {modal&&<ProjectModal project={modal.mode==='edit'?modal.project:null} onSave={handleSave} onClose={()=>setModal(null)}/>}
+        {modal&&<ProjectModal key={modal.mode+(modal.project?.id||'')+(modal.template?'-dup':'')} project={modal.mode==='edit'?modal.project:null} template={modal.template} onSave={handleSave} onDuplicate={handleDuplicateFromModal} onClose={()=>setModal(null)}/>}
 
         {confirm?.type==='archive'&&(
           <ConfirmDialog title="Archive Project" message={`Archive "${confirm.project.name}"? It can be restored from the Archived tab.`}
